@@ -1,0 +1,65 @@
+﻿<Window x:Class="PracticalTools.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PracticalTools"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="600" Width="1090">
+    
+    <!-- HorizontalAlignment="Stretch" 水平方向拉伸填充 -->
+    <!-- VerticalAlignment="Stretch"   垂直方向拉伸填充 -->
+    <TabControl
+        HorizontalAlignment="Stretch"  
+        VerticalAlignment="Stretch"
+        TabStripPlacement="Left"
+        materialDesign:ColorZoneAssist.Foreground="DeepSkyBlue"
+        materialDesign:ColorZoneAssist.Mode="Custom"
+        >
+        <TabItem Header="重复文件">
+            <Grid Background="#f2f3f8">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                
+                <DataGrid Grid.Row="0" Background="White" Margin="10,10,5,0"
+                    Name="DuplicateFiles"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    ItemsSource="{Binding FileList}" >
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn>
+                            <DataGridCheckBoxColumn.Header>
+                                <Border
+                                    Background="Transparent">
+                                    <!-- <CheckBox -->
+                                    <!--     IsChecked="{Binding DataContext.IsAllItems1Selected, Source={x:Reference DataContextProxy}}" /> -->
+                                </Border>
+                            </DataGridCheckBoxColumn.Header>
+                            <DataGridCheckBoxColumn.HeaderStyle>
+                                <Style
+                                    TargetType="{x:Type DataGridColumnHeader}"
+                                    BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                    <Setter
+                                        Property="HorizontalContentAlignment"
+                                        Value="Center" />
+                                </Style>
+                            </DataGridCheckBoxColumn.HeaderStyle>
+                        </DataGridCheckBoxColumn>
+                        <DataGridTextColumn IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="文件大小" Binding="{Binding FileSize}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="时间" Binding="{Binding FileCreateTime}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </TabItem>
+        <TabItem Header="黑名单">
+            <Grid>
+                <Button Click="SqliteTest" Content="Sqlite Test" />
+            </Grid>
+        </TabItem>
+    </TabControl>
+</Window>
