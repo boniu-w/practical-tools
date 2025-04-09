@@ -5,8 +5,12 @@ using PracticalTools.util;
 
 namespace PracticalTools.Sqlite;
 
-public class MyDbContext: DbContext
+public class MyDbContext : DbContext
 {
+    public DbSet<TheFile> DuplicateFiles { get; set; }
+
+    public DbSet<Blacklist.Model.Blacklist> Blacklist { get; set; }
+
     /// <summary>
     /// sqlite
     /// </summary>
@@ -15,7 +19,7 @@ public class MyDbContext: DbContext
     {
         optionsBuilder.UseSqlite("Data Source=sqlite-PracticalTools.db");
     }
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // 获取预定义的 DateTime 转换器
@@ -36,17 +40,13 @@ public class MyDbContext: DbContext
             }
         }
     }
-    
-    // 定义数据变更事件
-    public event EventHandler<DataChangedEventArgs> DataChanged;
-    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-    {
-        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        DataChanged?.Invoke(this, new DataChangedEventArgs { EntityName = "Blacklist" });
-        return result;
-    }
 
-    public DbSet<TheFile> DuplicateFiles{ get; set; }
-    
-    public DbSet<Blacklist.Model.Blacklist> Blacklist { get; set; }
+    // 定义数据变更事件
+    // public event EventHandler<DataChangedEventArgs> DataChanged;
+    // public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    // {
+    //     var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    //     DataChanged?.Invoke(this, new DataChangedEventArgs { EntityName = "Blacklist" });
+    //     return result;
+    // }
 }

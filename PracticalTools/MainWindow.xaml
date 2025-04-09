@@ -58,13 +58,14 @@
                         <DataGridTextColumn IsReadOnly="True" Header="时间" Binding="{Binding FileCreateTime}" />
                     </DataGrid.Columns>
                 </DataGrid>
+               
             </Grid>
         </TabItem>
         <TabItem Header="黑名单">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
-                    <RowDefinition></RowDefinition>
-                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="0.5*"></RowDefinition>
+                    <RowDefinition Height="0.5*"></RowDefinition>
                 </Grid.RowDefinitions>
 
                 <DataGrid Grid.Row="0" Background="White" Margin="10,10,5,0"
@@ -83,6 +84,10 @@
                         <DataGridTextColumn IsReadOnly="True" Header="创建时间" Binding="{Binding CreateTime}" />
                     </DataGrid.Columns>
                 </DataGrid>
+                
+                <Grid Grid.Row="1" Background="White" Margin="10,10,5,0">
+                    <Button Content="刷新" Click="RefreshButton_Click" />
+                </Grid>
             </Grid>
         </TabItem>
 

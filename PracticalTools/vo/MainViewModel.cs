@@ -27,12 +27,15 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /**************************************************************************************************************/
-    MyDbContext myDbContext = new MyDbContext();
+    public readonly MyDbContext _myDbContext;
 
     public MainViewModel()
     {
-        FileList = new ObservableCollection<TheFile>(myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList());
-        _blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
+        _myDbContext = new MyDbContext();
+        FileList = new ObservableCollection<TheFile>(_myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList());
+        _blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
+        // _myDbContext.DataChanged += OnDataChanged;
+        // LoadDataAsync();
     }
 
     private ObservableCollection<TheFile>? _fileList;
@@ -55,22 +58,22 @@ public class MainViewModel : INotifyPropertyChanged
         set
         {
             _blacklists = value;
-            OnPropertyChanged();
+            OnPropertyChanged(nameof(Blacklists));
         }
     }
 
-    private async void OnDataChanged(object sender, DataChangedEventArgs e)
-    {
-        if (e.EntityName == "Blacklist")
-        {
-            await LoadDataAsync();
-        }
-    }
+    // private async void OnDataChanged(object sender, DataChangedEventArgs e)
+    // {
+    //     if (e.EntityName == "Blacklist")
+    //     {
+    //         await LoadDataAsync();
+    //     }
+    // }
 
-    private async Task LoadDataAsync()
-    {
-        var data = await myDbContext.Blacklist.ToListAsync();
-        // 通过 Dispatcher 确保 UI 线程更新
-        Application.Current.Dispatcher.Invoke(() => { Blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(data); });
-    }
+    // private async Task LoadDataAsync()
+    // {
+    //     var data = await _myDbContext.Blacklist.ToListAsync();
+    //     // 通过 Dispatcher 确保 UI 线程更新
+    //     Application.Current.Dispatcher.Invoke(() => { Blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(data); });
+    // }
 }
