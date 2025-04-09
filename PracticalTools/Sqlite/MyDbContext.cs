@@ -23,7 +23,25 @@ public class MyDbContext: DbContext
                     v => v.HasValue ? v.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
                     v => v != null ? DateTime.Parse(v) : null);
         });
+        
+        modelBuilder.Entity<Blacklist.Model.Blacklist>(entity =>
+        {
+            entity.Property(e => e.CreateTime)
+                .HasConversion(
+                    v => v.HasValue ? v.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
+                    v => v != null ? DateTime.Parse(v) : null);
+        });
+        
+        modelBuilder.Entity<Blacklist.Model.Blacklist>(entity =>
+        {
+            entity.Property(e => e.UpdateTime)
+                .HasConversion(
+                    v => v.HasValue ? v.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
+                    v => v != null ? DateTime.Parse(v) : null);
+        });
     }
 
     public DbSet<TheFile> DuplicateFiles{ get; set; }
+    
+    public DbSet<Blacklist.Model.Blacklist> Blacklist { get; set; }
 }

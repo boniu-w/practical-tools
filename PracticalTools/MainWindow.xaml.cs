@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Windows;
+﻿using System.Windows;
 using PracticalTools.Sqlite;
 
 namespace PracticalTools;
@@ -7,30 +6,31 @@ namespace PracticalTools;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
+public partial class MainWindow : Window
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-    public void Dispose()
-    {
-        throw new NotImplementedException();
-    }
     public MainWindow()
     {
         InitializeComponent();
     }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+    }
+    
+
+    /*****************************************************************************************************************************/
     
     public void SqliteTest(Object sender, EventArgs args)
     {
         SQLiteDemo demo = new SQLiteDemo();
         // demo.Open();
-        // demo.CreateTable();
-        // demo.Insert(null);
+        // demo.CreateTableBlackList();
+        demo.InsertTheFile(null);
+        // demo.InsertBlackList();
         //
         // demo.Select();
         // demo.Close();
-            
-        demo.List();
-    }
 
-    
+        // demo.List();
+    }
 }

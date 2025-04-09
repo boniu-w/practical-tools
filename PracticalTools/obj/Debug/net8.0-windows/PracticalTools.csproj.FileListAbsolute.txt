@@ -62,3 +62,4 @@ D:\c-project\wg\PracticalTools\PracticalTools\bin\Debug\net8.0-windows\runtimes\
 D:\c-project\wg\PracticalTools\PracticalTools\bin\Debug\net8.0-windows\runtimes\win-arm64\native\e_sqlite3.dll
 D:\c-project\wg\PracticalTools\PracticalTools\bin\Debug\net8.0-windows\runtimes\win-x64\native\e_sqlite3.dll
 D:\c-project\wg\PracticalTools\PracticalTools\bin\Debug\net8.0-windows\runtimes\win-x86\native\e_sqlite3.dll
+D:\c-project\wg\PracticalTools\PracticalTools\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs

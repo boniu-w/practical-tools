@@ -5,8 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PracticalTools"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:vo="clr-namespace:PracticalTools.vo"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1090">
+        Title="MainWindow" Height="600" Width="1090"
+        Loaded="Window_Loaded"
+        >
+    <Window.DataContext>
+        <vo:MainViewModel />
+    </Window.DataContext>
     
     <!-- HorizontalAlignment="Stretch" 水平方向拉伸填充 -->
     <!-- VerticalAlignment="Stretch"   垂直方向拉伸填充 -->
@@ -57,7 +63,27 @@
             </Grid>
         </TabItem>
         <TabItem Header="黑名单">
-            <Grid>
+            <Grid Background="#f2f3f8">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                
+                <DataGrid Grid.Row="0" Background="White" Margin="10,10,5,0"
+                    Name="BlackL"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    ItemsSource="{Binding Blacklists}" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn IsReadOnly="True" Header="平台名称(淘宝, 知乎, b站)" Binding="{Binding PlatformName}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="作者" Binding="{Binding Author}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="作品" Binding="{Binding Product}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="作品日期" Binding="{Binding WorksTime}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="原因" Binding="{Binding Reason}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="类型(电商, 视频网站, 知识网站)" Binding="{Binding WorksType}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="备注" Binding="{Binding Remarks}" />
+                    </DataGrid.Columns>
+                </DataGrid>
                 <Button Click="SqliteTest" Content="Sqlite Test" />
             </Grid>
         </TabItem>
