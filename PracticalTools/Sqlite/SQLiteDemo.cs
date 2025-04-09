@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using PracticalTools.DuplicateFiles.Model;
+using PracticalTools.util;
 using PracticalTools.vo;
 
 namespace PracticalTools.Sqlite;
@@ -51,7 +52,7 @@ public class SQLiteDemo
             command.ExecuteNonQuery();
         }
     }
-    
+
     public void CreateTableBlackList()
     {
         using (var command = SqliteConnection.CreateCommand())
@@ -100,22 +101,24 @@ public class SQLiteDemo
     {
         Blacklist.Model.Blacklist blacklist = new Blacklist.Model.Blacklist()
         {
-            Id = 11111111112,
-            PlatformName ="淘宝",
+            Id = new SnowflakeIdGenerator(1,1).NextId(),
+            PlatformName = "淘宝",
             Author = "张三",
             Product = "茶杯",
             Reason = "质量差",
+            WorksTime = DateTime.Now,
             CreateTime = DateTime.Now,
             UpdateTime = DateTime.Now,
             CreateUser = "王刚",
             UpdateUser = "王刚"
         };
-        
+
         using (var myDbContext = new MyDbContext())
         {
             myDbContext.Database.EnsureCreated(); // 确保数据库存在
             myDbContext.Blacklist.Add(blacklist);
-            myDbContext.SaveChanges();
+            myDbContext.SaveChangesAsync();
+            // myDbContext.SaveChanges();
         }
     }
 
@@ -136,7 +139,7 @@ public class SQLiteDemo
             }
         }
     }
-    
+
     /// <summary>
     /// Microsoft.EntityFrameworkCore 框架
     /// </summary>

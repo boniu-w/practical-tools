@@ -8,33 +8,31 @@
         xmlns:vo="clr-namespace:PracticalTools.vo"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="1090"
-        Loaded="Window_Loaded"
-        >
+        Loaded="Window_Loaded">
     <Window.DataContext>
         <vo:MainViewModel />
     </Window.DataContext>
-    
+
     <!-- HorizontalAlignment="Stretch" 水平方向拉伸填充 -->
     <!-- VerticalAlignment="Stretch"   垂直方向拉伸填充 -->
     <TabControl
-        HorizontalAlignment="Stretch"  
+        HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
         TabStripPlacement="Left"
         materialDesign:ColorZoneAssist.Foreground="DeepSkyBlue"
-        materialDesign:ColorZoneAssist.Mode="Custom"
-        >
+        materialDesign:ColorZoneAssist.Mode="Custom">
         <TabItem Header="重复文件">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
                     <RowDefinition></RowDefinition>
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
-                
+
                 <DataGrid Grid.Row="0" Background="White" Margin="10,10,5,0"
-                    Name="DuplicateFiles"
-                    AutoGenerateColumns="False"
-                    CanUserAddRows="False"
-                    ItemsSource="{Binding FileList}" >
+                          Name="DuplicateFiles"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          ItemsSource="{Binding FileList}">
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn>
                             <DataGridCheckBoxColumn.Header>
@@ -68,12 +66,12 @@
                     <RowDefinition></RowDefinition>
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
-                
+
                 <DataGrid Grid.Row="0" Background="White" Margin="10,10,5,0"
-                    Name="BlackL"
-                    AutoGenerateColumns="False"
-                    CanUserAddRows="False"
-                    ItemsSource="{Binding Blacklists}" >
+                          Name="BlackL"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          ItemsSource="{Binding Blacklists}">
                     <DataGrid.Columns>
                         <DataGridTextColumn IsReadOnly="True" Header="平台名称(淘宝, 知乎, b站)" Binding="{Binding PlatformName}" />
                         <DataGridTextColumn IsReadOnly="True" Header="作者" Binding="{Binding Author}" />
@@ -82,8 +80,14 @@
                         <DataGridTextColumn IsReadOnly="True" Header="原因" Binding="{Binding Reason}" />
                         <DataGridTextColumn IsReadOnly="True" Header="类型(电商, 视频网站, 知识网站)" Binding="{Binding WorksType}" />
                         <DataGridTextColumn IsReadOnly="True" Header="备注" Binding="{Binding Remarks}" />
+                        <DataGridTextColumn IsReadOnly="True" Header="创建时间" Binding="{Binding CreateTime}" />
                     </DataGrid.Columns>
                 </DataGrid>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="test">
+            <Grid>
                 <Button Click="SqliteTest" Content="Sqlite Test" />
             </Grid>
         </TabItem>

@@ -18,30 +18,6 @@ public class MyDbContext: DbContext
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // modelBuilder.Entity<TheFile>(entity =>
-        // {
-        //     entity.Property(e => e.FileCreateTime)
-        //         .HasConversion(
-        //             v => v.HasValue ? v.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
-        //             v => v != null ? DateTime.Parse(v) : null);
-        // });
-        
-        // modelBuilder.Entity<Blacklist.Model.Blacklist>(entity =>
-        // {
-        //     entity.Property(e => e.CreateTime)
-        //         .HasConversion(
-        //             v => v.HasValue ? v.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
-        //             v => v != null ? DateTime.Parse(v) : null);
-        // });
-        //
-        // modelBuilder.Entity<Blacklist.Model.Blacklist>(entity =>
-        // {
-        //     entity.Property(e => e.UpdateTime)
-        //         .HasConversion(
-        //             v => v.HasValue ? v.Value.ToString("yyyy-MM-dd HH:mm:ss") : null,
-        //             v => v != null ? DateTime.Parse(v) : null);
-        // });
-        
         // 获取预定义的 DateTime 转换器
         ValueConverter dateTimeConverter = DateTimeConverter.Converter;
 
@@ -59,6 +35,15 @@ public class MyDbContext: DbContext
                 }
             }
         }
+    }
+    
+    // 定义数据变更事件
+    public event EventHandler<DataChangedEventArgs> DataChanged;
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        DataChanged?.Invoke(this, new DataChangedEventArgs { EntityName = "Blacklist" });
+        return result;
     }
 
     public DbSet<TheFile> DuplicateFiles{ get; set; }

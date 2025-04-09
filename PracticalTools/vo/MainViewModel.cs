@@ -1,8 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
+using Microsoft.EntityFrameworkCore;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.Sqlite;
+using PracticalTools.util;
 
 namespace PracticalTools.vo;
 
@@ -23,11 +26,13 @@ public class MainViewModel : INotifyPropertyChanged
         return true;
     }
 
+    /**************************************************************************************************************/
+    MyDbContext myDbContext = new MyDbContext();
+
     public MainViewModel()
     {
-        MyDbContext myDbContext = new MyDbContext();
-        FileList = new ObservableCollection<TheFile>(myDbContext.DuplicateFiles);
-        _blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(myDbContext.Blacklist);
+        FileList = new ObservableCollection<TheFile>(myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList());
+        _blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
     }
 
     private ObservableCollection<TheFile>? _fileList;
@@ -52,5 +57,20 @@ public class MainViewModel : INotifyPropertyChanged
             _blacklists = value;
             OnPropertyChanged();
         }
+    }
+
+    private async void OnDataChanged(object sender, DataChangedEventArgs e)
+    {
+        if (e.EntityName == "Blacklist")
+        {
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        var data = await myDbContext.Blacklist.ToListAsync();
+        // 通过 Dispatcher 确保 UI 线程更新
+        Application.Current.Dispatcher.Invoke(() => { Blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(data); });
     }
 }

@@ -25,8 +25,8 @@ public partial class MainWindow : Window
         SQLiteDemo demo = new SQLiteDemo();
         // demo.Open();
         // demo.CreateTableBlackList();
-        demo.InsertTheFile(null);
-        // demo.InsertBlackList();
+        // demo.InsertTheFile(null);
+        demo.InsertBlackList();
         //
         // demo.Select();
         // demo.Close();
