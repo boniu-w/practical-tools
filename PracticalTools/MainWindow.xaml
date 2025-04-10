@@ -86,7 +86,8 @@
                 </DataGrid>
                 
                 <Grid Grid.Row="1" Background="White" Margin="10,10,5,0">
-                    <Button Content="刷新" Click="RefreshButton_Click" />
+                    <!-- <Button Content="刷新" Click="RefreshButton_Click" /> -->
+                    <Button Content="刷新" Command="{Binding RefreshCommand}" />
                 </Grid>
             </Grid>
         </TabItem>

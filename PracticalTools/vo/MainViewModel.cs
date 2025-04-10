@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.Sqlite;
@@ -29,15 +30,24 @@ public class MainViewModel : INotifyPropertyChanged
     /**************************************************************************************************************/
     public readonly MyDbContext _myDbContext;
 
-    public MainViewModel()
+    // public MainViewModel()
+    // {
+    //     _myDbContext = new MyDbContext();
+    //     FileList = new ObservableCollection<TheFile>(_myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList());
+    //     _blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
+    // }
+    public MainViewModel() : this(new MyDbContext())
     {
-        _myDbContext = new MyDbContext();
-        FileList = new ObservableCollection<TheFile>(_myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList());
-        _blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
-        // _myDbContext.DataChanged += OnDataChanged;
-        // LoadDataAsync();
     }
 
+    public MainViewModel(MyDbContext myDbContext)
+    {
+        _myDbContext = myDbContext;
+        RefreshCommand = new RelayCommand(RefreshBlackList);
+        RefreshBlackList();
+    }
+
+    public ICommand RefreshCommand { get; }
     private ObservableCollection<TheFile>? _fileList;
 
     public ObservableCollection<TheFile>? FileList
@@ -62,18 +72,41 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    // private async void OnDataChanged(object sender, DataChangedEventArgs e)
-    // {
-    //     if (e.EntityName == "Blacklist")
-    //     {
-    //         await LoadDataAsync();
-    //     }
-    // }
+    private void RefreshBlackList()
+    {
+        LoadBlackLists();
+    }
 
-    // private async Task LoadDataAsync()
-    // {
-    //     var data = await _myDbContext.Blacklist.ToListAsync();
-    //     // 通过 Dispatcher 确保 UI 线程更新
-    //     Application.Current.Dispatcher.Invoke(() => { Blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(data); });
-    // }
+    private void LoadBlackLists()
+    {
+        Blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
+    }
+
+    public class RelayCommand : ICommand
+    {
+        private readonly Action _execute;
+        private readonly Func<bool> _canExecute;
+
+        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return _canExecute == null || _canExecute();
+        }
+
+        public void Execute(object parameter)
+        {
+            _execute();
+        }
+    }
 }
