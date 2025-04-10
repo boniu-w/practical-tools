@@ -1,18 +1,19 @@
-﻿using System.Collections;
-using System.Collections.ObjectModel;
-using System.Windows;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using PracticalTools.DuplicateFiles.Model;
+﻿using Microsoft.Data.Sqlite;
+using PracticalTools.Blacklist.Model;
 using PracticalTools.util;
-using PracticalTools.vo;
 
 namespace PracticalTools.Sqlite;
 
 public class SQLiteDemo
 {
+    public SQLiteDemo(MyDbContext myDbContext)
+    {
+        _myDbContext = myDbContext;
+    }
+    private MyDbContext _myDbContext;
+
+    // private MyDbContext _myDbContext = ((App)Application.Current)._serviceProvider.GetRequiredService<MyDbContext>();
+
     /// <summary>
     /// 原生
     /// </summary>
@@ -99,11 +100,9 @@ public class SQLiteDemo
     //         myDbContext.SaveChanges();
     //     }
     // }
-    MyDbContext _myDbContext = ((App)Application.Current)._serviceProvider.GetRequiredService<MyDbContext>();
-
     public void InsertBlackList()
     {
-        Blacklist.Model.BlacklistEntry blacklist = new Blacklist.Model.BlacklistEntry()
+        BlacklistEntry blacklist = new BlacklistEntry()
         {
             Id = new SnowflakeIdGenerator(1, 1).NextId(),
             PlatformName = "淘宝",

@@ -18,25 +18,30 @@ public partial class MainWindow : Window
     //     InitializeComponent();
     // }
     
-    public MainWindow(MainViewModel mainViewModel)
+    public MainWindow(MainViewModel mainViewModel, SQLiteDemo sqLiteDemo)
     {
         InitializeComponent();
         DataContext = mainViewModel;
+        _sqLiteDemo = sqLiteDemo;
     }
+
+    private SQLiteDemo _sqLiteDemo;
     
     /*****************************************************************************************************************************/
 
     public void SqliteTest(Object sender, EventArgs args)
     {
-        SQLiteDemo demo = new SQLiteDemo();
+        // SQLiteDemo demo = new SQLiteDemo();
         // demo.Open();
         // demo.CreateTableBlackList();
         // demo.InsertTheFile(null);
-        demo.InsertBlackList();
+        // demo.InsertBlackList();
         //
         // demo.Select();
         // demo.Close();
 
         // demo.List();
+        
+        _sqLiteDemo.InsertBlackList();
     }
 }
