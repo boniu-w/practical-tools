@@ -3,6 +3,7 @@ using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PracticalTools.DuplicateFiles.service;
 using PracticalTools.Sqlite;
 using PracticalTools.vo;
 
@@ -49,9 +50,11 @@ public partial class App : Application
         services.AddDbContext<MyDbContext>(options =>
             options.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
 
+        services.AddTransient<SQLiteDemo>();
+        services.AddTransient<DuplicateFilesService>();
+        
         // 注册 ViewModel
         services.AddTransient<MainViewModel>();
-        services.AddTransient<SQLiteDemo>();
         // 注册主窗口
         services.AddTransient<MainWindow>();
     }

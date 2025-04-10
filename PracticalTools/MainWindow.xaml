@@ -73,6 +73,7 @@
         <TabItem Header="test">
             <Grid>
                 <Button Click="SqliteTest" Content="Sqlite Test" />
+                <!-- <Button Click="List" Content="List" /> -->
             </Grid>
         </TabItem>
     </TabControl>

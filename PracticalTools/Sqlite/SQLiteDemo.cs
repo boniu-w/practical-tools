@@ -127,7 +127,7 @@ public class SQLiteDemo
 
         _myDbContext.Database.EnsureCreated(); // 确保数据库存在
         _myDbContext.Blacklist.Add(blacklist);
-        _myDbContext.SaveChangesAsync();
+        _myDbContext.SaveChanges();
     }
 
     /// <summary>

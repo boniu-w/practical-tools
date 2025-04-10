@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Microsoft.Extensions.Configuration;
+using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.util;
 
@@ -10,21 +10,12 @@ public class MyDbContext : DbContext
 {
     public DbSet<DuplicateFilesEntry> DuplicateFiles { get; set; }
 
-    public DbSet<Blacklist.Model.BlacklistEntry> Blacklist { get; set; }
+    public DbSet<BlacklistEntry> Blacklist { get; set; }
 
     public MyDbContext(DbContextOptions<MyDbContext> options)
         : base(options)
     {
     }
-
-    // /// <summary>
-    // /// sqlite
-    // /// </summary>
-    // /// <param name="optionsBuilder"></param>
-    // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    // {
-    //     optionsBuilder.UseSqlite("Data Source=sqlite-PracticalTools.db");
-    // }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

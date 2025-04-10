@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using PracticalTools.Blacklist.Model;
 using PracticalTools.Sqlite;
 using PracticalTools.vo;
 
@@ -17,16 +18,18 @@ public partial class MainWindow : Window
     //     DataContext = viewModel;
     //     InitializeComponent();
     // }
-    
+
+    private readonly SQLiteDemo _sqLiteDemo;
+    private readonly MainViewModel _mainViewModel;
+
     public MainWindow(MainViewModel mainViewModel, SQLiteDemo sqLiteDemo)
     {
         InitializeComponent();
         DataContext = mainViewModel;
+        _mainViewModel = mainViewModel;
         _sqLiteDemo = sqLiteDemo;
     }
 
-    private SQLiteDemo _sqLiteDemo;
-    
     /*****************************************************************************************************************************/
 
     public void SqliteTest(Object sender, EventArgs args)
@@ -41,7 +44,13 @@ public partial class MainWindow : Window
         // demo.Close();
 
         // demo.List();
-        
+
         _sqLiteDemo.InsertBlackList();
+    }
+
+    public void List(Object sender, EventArgs args)
+    {
+        List<BlacklistEntry> list = _mainViewModel.Blacklists.ToList();
+        Console.WriteLine(list.Count);
     }
 }
