@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.Extensions.Configuration;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.util;
 
@@ -7,18 +8,23 @@ namespace PracticalTools.Sqlite;
 
 public class MyDbContext : DbContext
 {
-    public DbSet<TheFile> DuplicateFiles { get; set; }
+    public DbSet<DuplicateFilesEntry> DuplicateFiles { get; set; }
 
-    public DbSet<Blacklist.Model.Blacklist> Blacklist { get; set; }
+    public DbSet<Blacklist.Model.BlacklistEntry> Blacklist { get; set; }
 
-    /// <summary>
-    /// sqlite
-    /// </summary>
-    /// <param name="optionsBuilder"></param>
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public MyDbContext(DbContextOptions<MyDbContext> options)
+        : base(options)
     {
-        optionsBuilder.UseSqlite("Data Source=sqlite-PracticalTools.db");
     }
+
+    // /// <summary>
+    // /// sqlite
+    // /// </summary>
+    // /// <param name="optionsBuilder"></param>
+    // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    // {
+    //     optionsBuilder.UseSqlite("Data Source=sqlite-PracticalTools.db");
+    // }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,13 +46,4 @@ public class MyDbContext : DbContext
             }
         }
     }
-
-    // 定义数据变更事件
-    // public event EventHandler<DataChangedEventArgs> DataChanged;
-    // public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-    // {
-    //     var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-    //     DataChanged?.Invoke(this, new DataChangedEventArgs { EntityName = "Blacklist" });
-    //     return result;
-    // }
 }

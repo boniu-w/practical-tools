@@ -3,10 +3,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
-using Microsoft.EntityFrameworkCore;
+using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.Sqlite;
-using PracticalTools.util;
 
 namespace PracticalTools.vo;
 
@@ -30,16 +29,6 @@ public class MainViewModel : INotifyPropertyChanged
     /**************************************************************************************************************/
     public readonly MyDbContext _myDbContext;
 
-    // public MainViewModel()
-    // {
-    //     _myDbContext = new MyDbContext();
-    //     FileList = new ObservableCollection<TheFile>(_myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList());
-    //     _blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
-    // }
-    public MainViewModel() : this(new MyDbContext())
-    {
-    }
-
     public MainViewModel(MyDbContext myDbContext)
     {
         _myDbContext = myDbContext;
@@ -48,9 +37,9 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     public ICommand RefreshCommand { get; }
-    private ObservableCollection<TheFile>? _fileList;
+    private ObservableCollection<DuplicateFilesEntry>? _fileList;
 
-    public ObservableCollection<TheFile>? FileList
+    public ObservableCollection<DuplicateFilesEntry>? FileList
     {
         get => _fileList;
         set
@@ -60,9 +49,9 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private ObservableCollection<Blacklist.Model.Blacklist> _blacklists;
+    private ObservableCollection<BlacklistEntry> _blacklists;
 
-    public ObservableCollection<Blacklist.Model.Blacklist> Blacklists
+    public ObservableCollection<BlacklistEntry> Blacklists
     {
         get => _blacklists;
         set
@@ -79,7 +68,16 @@ public class MainViewModel : INotifyPropertyChanged
 
     private void LoadBlackLists()
     {
-        Blacklists = new ObservableCollection<Blacklist.Model.Blacklist>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
+        try
+        {
+            FileList = new ObservableCollection<DuplicateFilesEntry>(_myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList());
+            Blacklists = new ObservableCollection<BlacklistEntry>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.Message);
+            throw;
+        }
     }
 
     public class RelayCommand : ICommand

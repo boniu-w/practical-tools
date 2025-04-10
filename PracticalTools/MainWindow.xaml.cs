@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using PracticalTools.Sqlite;
 using PracticalTools.vo;
 
@@ -10,13 +11,17 @@ namespace PracticalTools;
 /// </summary>
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    // public MainWindow()
+    // {
+    //     var viewModel = ((App)Application.Current)._serviceProvider.GetRequiredService<MainViewModel>();
+    //     DataContext = viewModel;
+    //     InitializeComponent();
+    // }
+    
+    public MainWindow(MainViewModel mainViewModel)
     {
         InitializeComponent();
-    }
-
-    private void Window_Loaded(object sender, RoutedEventArgs e)
-    {
+        DataContext = mainViewModel;
     }
     
     /*****************************************************************************************************************************/

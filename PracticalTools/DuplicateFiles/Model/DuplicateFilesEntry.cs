@@ -1,6 +1,6 @@
 ﻿namespace PracticalTools.DuplicateFiles.Model;
 
-public class TheFile
+public class DuplicateFilesEntry
 {
     public string Id { get; set; }
     public string FileName { get; set; }

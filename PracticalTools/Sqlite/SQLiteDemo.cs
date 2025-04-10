@@ -1,7 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
+using System.Windows;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.util;
 using PracticalTools.vo;
@@ -80,28 +83,29 @@ public class SQLiteDemo
     /// <summary>
     /// Microsoft.EntityFrameworkCore 框架
     /// </summary>
-    public void InsertTheFile(TheFile theFile)
-    {
-        theFile = new TheFile();
-        theFile.Id = Guid.NewGuid().ToString();
-        theFile.FileName = "filename";
-        theFile.FilePath = "filepath";
-        theFile.FileSize = 11;
-        theFile.FileCreateTime = DateTime.Now;
-
-        using (var myDbContext = new MyDbContext())
-        {
-            myDbContext.Database.EnsureCreated(); // 确保数据库存在
-            myDbContext.DuplicateFiles.Add(theFile);
-            myDbContext.SaveChanges();
-        }
-    }
+    // public void InsertTheFile(TheFile theFile)
+    // {
+    //     theFile = new TheFile();
+    //     theFile.Id = Guid.NewGuid().ToString();
+    //     theFile.FileName = "filename";
+    //     theFile.FilePath = "filepath";
+    //     theFile.FileSize = 11;
+    //     theFile.FileCreateTime = DateTime.Now;
+    //
+    //     using (var myDbContext = new MyDbContext())
+    //     {
+    //         myDbContext.Database.EnsureCreated(); // 确保数据库存在
+    //         myDbContext.DuplicateFiles.Add(theFile);
+    //         myDbContext.SaveChanges();
+    //     }
+    // }
+    MyDbContext _myDbContext = ((App)Application.Current)._serviceProvider.GetRequiredService<MyDbContext>();
 
     public void InsertBlackList()
     {
-        Blacklist.Model.Blacklist blacklist = new Blacklist.Model.Blacklist()
+        Blacklist.Model.BlacklistEntry blacklist = new Blacklist.Model.BlacklistEntry()
         {
-            Id = new SnowflakeIdGenerator(1,1).NextId(),
+            Id = new SnowflakeIdGenerator(1, 1).NextId(),
             PlatformName = "淘宝",
             Author = "张三",
             Product = "茶杯",
@@ -113,13 +117,18 @@ public class SQLiteDemo
             UpdateUser = "王刚"
         };
 
-        using (var myDbContext = new MyDbContext())
-        {
-            myDbContext.Database.EnsureCreated(); // 确保数据库存在
-            myDbContext.Blacklist.Add(blacklist);
-            myDbContext.SaveChangesAsync();
-            // myDbContext.SaveChanges();
-        }
+        // using (var myDbContext = new MyDbContext(options => 
+        //            options.UseSqlite(_configuration.GetConnectionString("DefaultConnection"))))
+        // {
+        // myDbContext.Database.EnsureCreated(); // 确保数据库存在
+        // myDbContext.Blacklist.Add(blacklist);
+        // myDbContext.SaveChangesAsync();
+        // myDbContext.SaveChanges();
+        // }
+
+        _myDbContext.Database.EnsureCreated(); // 确保数据库存在
+        _myDbContext.Blacklist.Add(blacklist);
+        _myDbContext.SaveChangesAsync();
     }
 
     /// <summary>
@@ -143,20 +152,20 @@ public class SQLiteDemo
     /// <summary>
     /// Microsoft.EntityFrameworkCore 框架
     /// </summary>
-    public List<TheFile> List()
-    {
-        MyDbContext myDbContext = new MyDbContext();
-        DbSet<TheFile> duplicateFiles = myDbContext.DuplicateFiles;
-        if (duplicateFiles.Any())
-        {
-            foreach (TheFile theFile in duplicateFiles)
-            {
-                Console.WriteLine(theFile);
-            }
-
-            return duplicateFiles.ToList();
-        }
-
-        return null;
-    }
+    // public List<TheFile> List()
+    // {
+    //     MyDbContext myDbContext = new MyDbContext();
+    //     DbSet<TheFile> duplicateFiles = myDbContext.DuplicateFiles;
+    //     if (duplicateFiles.Any())
+    //     {
+    //         foreach (TheFile theFile in duplicateFiles)
+    //         {
+    //             Console.WriteLine(theFile);
+    //         }
+    //
+    //         return duplicateFiles.ToList();
+    //     }
+    //
+    //     return null;
+    // }
 }

@@ -1,6 +1,6 @@
 ﻿namespace PracticalTools.Blacklist.Model;
 
-public class Blacklist
+public class BlacklistEntry
 {
     /**
      * id
