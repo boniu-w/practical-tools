@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Windows;
+using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.Sqlite;
 using PracticalTools.vo;
+using Window = System.Windows.Window;
 
 namespace PracticalTools;
 
@@ -52,5 +52,26 @@ public partial class MainWindow : Window
     {
         List<BlacklistEntry> list = _mainViewModel.Blacklists.ToList();
         Console.WriteLine(list.Count);
+    }
+
+    private void PickFile(object sender, RoutedEventArgs e)
+    {
+        var folderDialog = new OpenFolderDialog();
+        if (folderDialog.ShowDialog() == true)
+        {
+            string selectedFolder = folderDialog.FolderName;
+            TheFilePath.Text = selectedFolder;
+            TheFilePath.IsReadOnly = true;
+        }
+    }
+
+    private void ScanTheFolder(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void UnPickFile(object sender, RoutedEventArgs e)
+    {
+        TheFilePath.Text = "";
+        TheFilePath.IsReadOnly = false;
     }
 }

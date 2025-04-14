@@ -5,8 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1090"
-        >
+        Title="MainWindow" Height="600" Width="1090">
     <!-- <Window.DataContext> -->
     <!--     <vo:MainViewModel /> -->
     <!-- </Window.DataContext> -->
@@ -22,11 +21,39 @@
         <TabItem Header="重复文件">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
-                    <RowDefinition></RowDefinition>
-                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="90*"></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <DataGrid Grid.Row="0" Background="White" Margin="10,10,5,0"
+                <Grid Grid.Row="0" Background="White" Margin="10,10,5,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*" />
+                        <ColumnDefinition Width="50*" />
+                        <ColumnDefinition Width="50*" />
+                        <ColumnDefinition Width="50*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Row="0" Grid.Column="0"
+                             x:Name="TheFilePath"
+                             Margin="5,0,0,0" Padding="0"
+                             materialDesign:HintAssist.Hint="文件路径">
+                    </TextBox>
+                    <Button Grid.Row="0" Grid.Column="1"
+                            Content="选择文件夹" Click="PickFile"
+                            Margin="5,0,0,0"  Padding="0" />
+                    <Button Grid.Row="0" Grid.Column="2"
+                            Content="不选择文件夹" Click="UnPickFile"
+                            Margin="5,0,0,0"  Padding="0" />
+                    <Button Grid.Row="0" Grid.Column="3"
+                            Margin="5,0,0,0" Padding="0"
+                            Content="开始扫描" Click="ScanTheFolder">
+                    </Button>
+                </Grid>
+
+                <DataGrid Grid.Row="1" Background="White" Margin="10,10,5,0"
                           Name="DuplicateFiles"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
@@ -63,7 +90,7 @@
                         <DataGridTextColumn IsReadOnly="True" Header="创建时间" Binding="{Binding CreateTime}" />
                     </DataGrid.Columns>
                 </DataGrid>
-                
+
                 <Grid Grid.Row="1" Background="White" Margin="10,10,5,0">
                     <Button Content="刷新" Command="{Binding RefreshCommand}" />
                 </Grid>
