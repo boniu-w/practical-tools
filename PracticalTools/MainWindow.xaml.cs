@@ -45,7 +45,7 @@ public partial class MainWindow : Window
 
         // demo.List();
 
-        _sqLiteDemo.InsertBlackList();
+        // _sqLiteDemo.InsertBlackList();
     }
 
     public void List(Object sender, EventArgs args)
@@ -67,11 +67,33 @@ public partial class MainWindow : Window
 
     private void ScanTheFolder(object sender, RoutedEventArgs e)
     {
+        string theFilePath = "";
+        if (TheFilePath.Text.Length == 0)
+        {
+            MessageBoxResult messageBoxResult = MessageBox.Show("没有选择任何文件夹, 将扫描整个电脑",
+                "提示",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Question);
+            if (messageBoxResult == MessageBoxResult.OK)
+            {
+                Scan(theFilePath);
+            }
+        }
+        else
+        {
+            theFilePath = TheFilePath.Text;
+            Scan(theFilePath);
+        }
     }
 
     private void UnPickFile(object sender, RoutedEventArgs e)
     {
         TheFilePath.Text = "";
         TheFilePath.IsReadOnly = false;
+    }
+
+    private void Scan(string theFilePath)
+    {
+        Console.WriteLine(theFilePath);
     }
 }

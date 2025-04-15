@@ -10,6 +10,7 @@
     <!--     <vo:MainViewModel /> -->
     <!-- </Window.DataContext> -->
 
+
     <!-- HorizontalAlignment="Stretch" 水平方向拉伸填充 -->
     <!-- VerticalAlignment="Stretch"   垂直方向拉伸填充 -->
     <TabControl
@@ -46,11 +47,11 @@
                     <Button Grid.Row="0" Grid.Column="1"
                             Background="#F8F8FF"
                             Content="选择文件夹" Click="PickFile"
-                            Margin="5,0,0,0"  Padding="0" />
+                            Margin="5,0,0,0" Padding="0" />
                     <Button Grid.Row="0" Grid.Column="2"
                             Background="#F8F8FF"
                             Content="不选择文件夹" Click="UnPickFile"
-                            Margin="5,0,0,0"  Padding="0" />
+                            Margin="5,0,0,0" Padding="0" />
                     <Button Grid.Row="0" Grid.Column="3"
                             Background="#F8F8FF"
                             Margin="5,0,0,0" Padding="0"
@@ -58,16 +59,52 @@
                     </Button>
                 </Grid>
 
-                <DataGrid Grid.Row="1" Background="White" Margin="10,10,5,0"
+                <DataGrid Grid.Row="1"
+                          Background="White" Margin="10,10,5,0"
+                          ItemsSource="{Binding FileList}"
                           Name="DuplicateFiles"
+                          BorderBrush="#FFFAF0" BorderThickness="1"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
-                          ItemsSource="{Binding FileList}">
+                          HeadersVisibility="Column"
+                          IsReadOnly="True">
+                    <DataGrid.Resources>
+                        <!-- 自定义列标题样式 -->
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="BorderBrush" Value="#CCCCCC" />                <!-- 边框颜色 -->
+                            <Setter Property="BorderThickness" Value="0,1,1,1" />    <!-- 仅右侧边框 -->
+                            <Setter Property="Padding" Value="8,12" />                   <!-- 标题内边距 -->
+                            <Setter Property="Background" Value="Transparent" />             <!-- 背景透明 -->
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                            <Setter Property="Margin" Value="5,0,0,0" />
+                        </Style>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderBrush" Value="Transparent" />     <!-- 边框透明 -->
+                            <Setter Property="BorderThickness" Value="0" />         <!-- 无边框 -->
+                            <Setter Property="Margin" Value="5,5,0,5" />
+                            <!-- 一开始, padding没生效, 用了 <Setter Property="Template"> 生效了 -->
+                            <Setter Property="Padding" Value="4,4" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}">
+                                            <!-- 确保 ContentPresenter 使用模板绑定的 Padding -->
+                                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                              VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </DataGrid.Resources>
+
                     <DataGrid.Columns>
-                        <DataGridTextColumn IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="文件大小" Binding="{Binding FileSize}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="时间" Binding="{Binding FileCreateTime}" />
+                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
+                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
+                        <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小" Binding="{Binding FileSize}" />
+                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="时间" Binding="{Binding FileCreateTime}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -79,7 +116,8 @@
                     <RowDefinition Height="0.5*"></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <DataGrid Grid.Row="0" Background="White" Margin="10,10,5,0"
+                <DataGrid Grid.Row="0"
+                          Background="White" Margin="10,10,5,0"
                           Name="BlackL"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
