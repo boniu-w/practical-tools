@@ -14,15 +14,15 @@ namespace PracticalTools;
 /// </summary>
 public partial class App : Application
 {
-    public readonly IServiceProvider _serviceProvider;
-    private readonly IConfiguration _configuration;
+    private readonly IServiceProvider _serviceProvider;
+    // private readonly IConfiguration _configuration;
 
     public App()
     {
-        _configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .Build();
+        // _configuration = new ConfigurationBuilder()
+        //     .SetBasePath(Directory.GetCurrentDirectory())
+        //     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        //     .Build();
         // 配置服务
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
@@ -44,11 +44,11 @@ public partial class App : Application
     private void ConfigureServices(IServiceCollection services)
     {
         // 注册配置服务
-        services.AddSingleton<IConfiguration>(_configuration);
+        // services.AddSingleton<IConfiguration>(_configuration);
 
         // 注册数据库上下文（根据实际情况修改）
         services.AddDbContext<MyDbContext>(options =>
-            options.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlite("Data Source=sqlite-PracticalTools.db"));
 
         services.AddTransient<SQLiteDemo>();
         services.AddTransient<DuplicateFilesService>();
