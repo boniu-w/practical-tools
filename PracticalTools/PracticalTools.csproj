@@ -21,4 +21,10 @@
       <Folder Include="json\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Sqlite\sqlite-PracticalTools.db">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

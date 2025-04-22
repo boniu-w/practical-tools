@@ -47,8 +47,9 @@ public partial class App : Application
         // services.AddSingleton<IConfiguration>(_configuration);
 
         // 注册数据库上下文（根据实际情况修改）
+        string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sqlite", "sqlite-PracticalTools.db");
         services.AddDbContext<MyDbContext>(options =>
-            options.UseSqlite("Data Source=sqlite-PracticalTools.db"));
+            options.UseSqlite($"Data Source={dbPath}"));
 
         services.AddTransient<SQLiteDemo>();
         services.AddTransient<DuplicateFilesService>();
