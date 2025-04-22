@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
+        <ApplicationIcon>d01373f082025aaf46ee4fc4f1edab64024f1ae4.jfif</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>

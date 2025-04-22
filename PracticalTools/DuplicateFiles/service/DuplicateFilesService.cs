@@ -35,4 +35,13 @@ public class DuplicateFilesService
         _myDbContext.SaveChanges();
         return 1;
     }
+    
+    /// <summary>
+    /// 扫描重复文件, 只扫描文件名, 不比较sha256
+    /// </summary>
+    /// <param name="path">要扫描的路径</param>
+    public void ScanRepetitiveFile(string path)
+    {
+        
+    }
 }

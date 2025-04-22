@@ -27,6 +27,7 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /**************************************************************************************************************/
+    
     private readonly MyDbContext _myDbContext;
 
     public MainViewModel(MyDbContext myDbContext)
@@ -49,9 +50,9 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private ObservableCollection<BlacklistEntry> _blacklists;
+    private ObservableCollection<BlacklistEntry>? _blacklists;
 
-    public ObservableCollection<BlacklistEntry> Blacklists
+    public ObservableCollection<BlacklistEntry>? Blacklists
     {
         get => _blacklists;
         set
