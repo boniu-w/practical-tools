@@ -302,4 +302,55 @@ public class FileUtil
 
         return false;
     }
+
+    /// <summary>
+    /// 获取文件夹下所有文件类型(后缀), 忽略系统文件(attr.HasFlag(FileAttributes.Hidden))
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public static List<string> GetAllFileExtensions(string path)
+    {
+        var extensions = new HashSet<string>(); // 使用 HashSet 去重
+
+        if (!Directory.Exists(path))
+            return new List<string>(); // 如果目录不存在，返回空列表
+
+        try
+        {
+            // 遍历目录下所有文件
+            foreach (var entry in Directory.EnumerateFileSystemEntries(path))
+            {
+                var attr = File.GetAttributes(entry);
+
+                // 如果是系统文件，跳过
+                if (attr.HasFlag(FileAttributes.System))
+                    continue;
+
+                if (File.Exists(entry))
+                {
+                    // 获取文件的扩展名
+                    string extension = Path.GetExtension(entry).ToLowerInvariant();
+                    if (!string.IsNullOrEmpty(extension)) // 如果有扩展名，加入列表
+                    {
+                        extensions.Add(extension);
+                    }
+                }
+                else if (Directory.Exists(entry))
+                {
+                    // 递归遍历子目录
+                    var subDirectoryExtensions = GetAllFileExtensions(entry);
+                    foreach (var ext in subDirectoryExtensions)
+                    {
+                        extensions.Add(ext);
+                    }
+                }
+            }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Console.WriteLine($"Access denied to: {path} - {ex.Message}");
+        }
+
+        return new List<string>(extensions); // 返回一个不重复的扩展名列表
+    }
 }

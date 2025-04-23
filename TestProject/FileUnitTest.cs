@@ -3,7 +3,7 @@ using PracticalTools.util;
 namespace TestProject1;
 
 [TestClass]
-public class UnitTest1
+public class FileUnitTest
 {
     // 26秒, 文件大小 3G
     [TestMethod]
@@ -52,6 +52,12 @@ public class UnitTest1
     public void TestGetAllFileSome()
     {
         string filePath = "H:\\git使用";
+
+        List<string> extensions = FileUtil.GetAllFileExtensions(filePath);
+        foreach (string extension in extensions)
+        {
+            Console.WriteLine(extension);
+        }
 
         List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: new[] { ".txt", ".jpg", ".md" });
         foreach (string file in allFiles)
