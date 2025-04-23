@@ -4,14 +4,6 @@
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=3124adbd_002De91b_002D4c77_002D988f_002Db7a855b144f9/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TestMethod1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.TestMethod1&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.test&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.TestFileUtil1&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.TestFileUtil&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.TestFileUtil2&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.TestGetAllFile&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.TestFileUtilHash&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.TestFileUtilHash2&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.UnitTest1.TestGetAllFileSome&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;MSTest::5816346A-6D12-4EA5-B99C-9FF49782334A::net8.0-windows::TestProject1.FileUnitTest.TestGetAllFileSome&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

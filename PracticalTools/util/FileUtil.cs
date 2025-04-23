@@ -1,10 +1,21 @@
 ﻿using System.IO;
 using System.Security.Cryptography;
+using Serilog;
 
 namespace PracticalTools.util;
 
 public class FileUtil
 {
+    // 初始化日志（仅在 FileUtil 类中使用）
+    static FileUtil()
+    {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()  // 控制台输出
+            .WriteTo.File("logs/fileutil-log-.txt", rollingInterval: RollingInterval.Day) // 文件日志，按天归档
+            .CreateLogger();
+    }
+    
     /// <summary>
     /// md5 较快
     /// </summary>
@@ -223,7 +234,7 @@ public class FileUtil
         }
         catch (UnauthorizedAccessException ex)
         {
-            Console.WriteLine($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"Access denied to: {path} - {ex.Message}");
         }
 
         return fileList;
@@ -232,16 +243,15 @@ public class FileUtil
     /// <summary>
     /// 忽略系统文件, 不忽略隐藏
     /// 筛选特定后缀（如 .txt, .jpg）
+    /// 如果 allowedExtensions==null, 则 获取所有类型文件
     /// </summary>
     /// <param name="path"></param>
     /// <param name="fileList"></param>
-    /// <param name="boolIgnore">是否忽略系统文件</param>
     /// <param name="allowedExtensions"></param>
     /// <returns></returns>
     public static List<string> GetAllFiles(
         string path,
         List<string>? fileList = null,
-        bool boolIgnore = true,
         string[]? allowedExtensions = null)
     {
         fileList ??= new List<string>();
@@ -259,10 +269,7 @@ public class FileUtil
                 // 忽略系统文件或目录 
                 // 不忽略隐藏 attr.HasFlag(FileAttributes.Hidden)
                 if (attr.HasFlag(FileAttributes.System))
-                    if (boolIgnore)
-                    {
-                        continue;
-                    }
+                    continue;
 
                 if (File.Exists(entry))
                 {
@@ -273,13 +280,13 @@ public class FileUtil
                 }
                 else if (Directory.Exists(entry))
                 {
-                    GetAllFiles(entry, fileList, boolIgnore, allowedExtensions); // 递归
+                    GetAllFiles(entry, fileList, allowedExtensions); // 递归
                 }
             }
         }
         catch (UnauthorizedAccessException ex)
         {
-            Console.WriteLine($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"Access denied to: {path} - {ex.Message}");
         }
 
         return fileList;
@@ -293,6 +300,7 @@ public class FileUtil
     /// <returns></returns>
     private static bool HasAllowedExtension(string filePath, string[] allowedExtensions)
     {
+        allowedExtensions ??= Array.Empty<string>();
         string ext = Path.GetExtension(filePath).ToLowerInvariant();
         foreach (var allowed in allowedExtensions)
         {
@@ -310,6 +318,7 @@ public class FileUtil
     /// <returns></returns>
     public static List<string> GetAllFileExtensions(string path)
     {
+        // Log.Debug("11");  哪个程序调用, 出现在哪个程序用
         var extensions = new HashSet<string>(); // 使用 HashSet 去重
 
         if (!Directory.Exists(path))
@@ -348,7 +357,7 @@ public class FileUtil
         }
         catch (UnauthorizedAccessException ex)
         {
-            Console.WriteLine($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"Access denied to: {path} - {ex.Message}");
         }
 
         return new List<string>(extensions); // 返回一个不重复的扩展名列表

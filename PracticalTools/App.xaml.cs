@@ -1,11 +1,11 @@
 ﻿using System.IO;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PracticalTools.DuplicateFiles.service;
 using PracticalTools.Sqlite;
 using PracticalTools.vo;
+using Serilog;
 
 namespace PracticalTools;
 
@@ -23,8 +23,10 @@ public partial class App : Application
         //     .SetBasePath(Directory.GetCurrentDirectory())
         //     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
         //     .Build();
+        
         // 配置服务
         var serviceCollection = new ServiceCollection();
+        
         ConfigureServices(serviceCollection);
         _serviceProvider = serviceCollection.BuildServiceProvider();
     }
@@ -62,8 +64,24 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        // 初始化日志
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+
+        Log.Information("应用启动");
+        
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         mainWindow.Show();
         base.OnStartup(e);
+    }
+    
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Log.Information("应用退出");
+        Log.CloseAndFlush();
+        base.OnExit(e);
     }
 }

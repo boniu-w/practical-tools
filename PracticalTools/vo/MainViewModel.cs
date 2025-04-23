@@ -25,7 +25,7 @@ public class MainViewModel : INotifyPropertyChanged
         OnPropertyChanged(propertyName);
         return true;
     }
-
+    
     /**************************************************************************************************************/
     
     private readonly MyDbContext _myDbContext;

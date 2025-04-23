@@ -59,7 +59,8 @@ public class FileUnitTest
             Console.WriteLine(extension);
         }
 
-        List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: new[] { ".txt", ".jpg", ".md" });
+        // List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: new[] { ".txt", ".jpg", ".md" });
+        List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: null);
         foreach (string file in allFiles)
         {
             Console.WriteLine(file);
