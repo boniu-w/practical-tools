@@ -73,6 +73,8 @@ public class DuplicateFilesService
                 entry.FileSize = MathUtil.ByteToKb(file.FileSize, 3);
                 entry.FileCreateTime = file.createTime;
                 entry.FileLastedModifiedTime = file.LastModifed;
+                entry.ScanDirectory = path;
+                entry.ScanTime = DateTime.Now;
 
                 entries.Add(entry);
                 // Console.WriteLine(entry.FileCreateTime);

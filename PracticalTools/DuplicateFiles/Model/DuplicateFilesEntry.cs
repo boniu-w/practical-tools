@@ -8,4 +8,6 @@ public class DuplicateFilesEntry
     public DateTime? FileCreateTime { get; set; }
     public double? FileSize { get; set; }
     public DateTime? FileLastedModifiedTime { get; set; }
+    public string? ScanDirectory { get; set; }
+    public DateTime? ScanTime { get; set; }
 }

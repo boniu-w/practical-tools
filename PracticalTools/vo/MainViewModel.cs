@@ -25,9 +25,9 @@ public class MainViewModel : INotifyPropertyChanged
         OnPropertyChanged(propertyName);
         return true;
     }
-    
+
     /**************************************************************************************************************/
-    
+
     private readonly MyDbContext _myDbContext;
 
     public MainViewModel(MyDbContext myDbContext)
@@ -37,6 +37,7 @@ public class MainViewModel : INotifyPropertyChanged
         RefreshBlackList();
     }
 
+    public List<DuplicateFilesEntry> DuplicateFilesEntries { get; set; }
     public ICommand RefreshCommand { get; }
     private ObservableCollection<DuplicateFilesEntry>? _fileList;
 
@@ -71,7 +72,8 @@ public class MainViewModel : INotifyPropertyChanged
     {
         try
         {
-            FileList = new ObservableCollection<DuplicateFilesEntry>(_myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList());
+            DuplicateFilesEntries = _myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList();
+            FileList = new ObservableCollection<DuplicateFilesEntry>(DuplicateFilesEntries);
             Blacklists = new ObservableCollection<BlacklistEntry>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
         }
         catch (Exception e)

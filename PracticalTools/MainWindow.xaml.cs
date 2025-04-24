@@ -102,4 +102,26 @@ public partial class MainWindow : Window
         List<DuplicateFilesEntry> entries = _duplicateFilesService.GetAllFile(theFilePath);
         _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(entries);
     }
+
+    private void SearchDuplicateFile(object sender, RoutedEventArgs e)
+    {
+        SearchText.IsReadOnly = true;
+        string searchTextText = SearchText.Text?.Trim();
+        if (string.IsNullOrEmpty(searchTextText))
+        {
+            return;
+        }
+
+        List<DuplicateFilesEntry> list = _mainViewModel.FileList
+            .Where(e => e.FileName.Contains(searchTextText, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(list);
+    }
+
+    private void NoSearchDuplicateFile(object sender, RoutedEventArgs e)
+    {
+        SearchText.Text = "";
+        SearchText.IsReadOnly = false;
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(_mainViewModel.DuplicateFilesEntries);
+    }
 }

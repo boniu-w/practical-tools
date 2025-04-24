@@ -63,7 +63,37 @@
                     <TabControl>
                         <TabItem Header="扫描结果">
                             <Grid>
-                                <DataGrid Grid.Row="0"
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="10*" />
+                                    <RowDefinition Height="90*" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100*" />
+                                        <ColumnDefinition Width="50*" />
+                                        <ColumnDefinition Width="50*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Row="0" Grid.Column="0"
+                                             x:Name="SearchText"
+                                             BorderBrush="Red"
+                                             Background="#FFFAFA"
+                                             Margin="5" Padding="0"
+                                             materialDesign:HintAssist.Hint="搜索">
+                                    </TextBox>
+                                    <Button Grid.Row="0" Grid.Column="1"
+                                            Background="#F8F8FF"
+                                            Content="搜索" Click="SearchDuplicateFile"
+                                            Margin="5,0,0,0" Padding="0" />
+                                    <Button Grid.Row="0" Grid.Column="2"
+                                            Background="#F8F8FF"
+                                            Content="不搜索" Click="NoSearchDuplicateFile"
+                                            Margin="5,0,0,0" Padding="0" />
+                                </Grid>
+
+                                <DataGrid Grid.Row="1"
                                           Background="White" Margin="10,10,5,0"
                                           ItemsSource="{Binding FileList}"
                                           Name="DuplicateFiles"
@@ -110,6 +140,8 @@
                                         <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间" Binding="{Binding FileLastedModifiedTime}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描的文件夹" Binding="{Binding ScanDirectory}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描时间" Binding="{Binding ScanTime}" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </Grid>
@@ -164,6 +196,8 @@
                                         <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间" Binding="{Binding FileLastedModifiedTime}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描的文件夹" Binding="{Binding ScanDirectory}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描时间" Binding="{Binding ScanTime}" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </Grid>
