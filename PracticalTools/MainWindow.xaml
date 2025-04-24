@@ -59,54 +59,117 @@
                     </Button>
                 </Grid>
 
-                <DataGrid Grid.Row="1"
-                          Background="White" Margin="10,10,5,0"
-                          ItemsSource="{Binding FileList}"
-                          Name="DuplicateFiles"
-                          BorderBrush="#FFFAF0" BorderThickness="1"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          HeadersVisibility="Column"
-                          IsReadOnly="True">
-                    <DataGrid.Resources>
-                        <!-- 自定义列标题样式 -->
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="BorderBrush" Value="#CCCCCC" />                <!-- 边框颜色 -->
-                            <Setter Property="BorderThickness" Value="0,1,1,1" />    <!-- 仅右侧边框 -->
-                            <Setter Property="Padding" Value="8,12" />                   <!-- 标题内边距 -->
-                            <Setter Property="Background" Value="Transparent" />             <!-- 背景透明 -->
-                            <Setter Property="HorizontalContentAlignment" Value="Left" />
-                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                            <Setter Property="Margin" Value="5,0,0,0" />
-                        </Style>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderBrush" Value="Transparent" />     <!-- 边框透明 -->
-                            <Setter Property="BorderThickness" Value="0" />         <!-- 无边框 -->
-                            <Setter Property="Margin" Value="5,5,0,5" />
-                            <!-- 一开始, padding没生效, 用了 <Setter Property="Template"> 生效了 -->
-                            <Setter Property="Padding" Value="4,4" />
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="DataGridCell">
-                                        <Border BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{TemplateBinding BorderThickness}">
-                                            <!-- 确保 ContentPresenter 使用模板绑定的 Padding -->
-                                            <ContentPresenter Margin="{TemplateBinding Padding}"
-                                                              VerticalAlignment="Center" />
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </DataGrid.Resources>
+                <Grid Grid.Row="1">
+                    <TabControl>
+                        <TabItem Header="扫描结果">
+                            <Grid>
+                                <DataGrid Grid.Row="0"
+                                          Background="White" Margin="10,10,5,0"
+                                          ItemsSource="{Binding FileList}"
+                                          Name="DuplicateFiles"
+                                          BorderBrush="#FFFAF0" BorderThickness="1"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          HeadersVisibility="Column"
+                                          IsReadOnly="True">
+                                    <DataGrid.Resources>
+                                        <!-- 自定义列标题样式 -->
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="BorderBrush" Value="#CCCCCC" />                <!-- 边框颜色 -->
+                                            <Setter Property="BorderThickness" Value="0,1,1,1" />    <!-- 仅右侧边框 -->
+                                            <Setter Property="Padding" Value="8,12" />                   <!-- 标题内边距 -->
+                                            <Setter Property="Background" Value="Transparent" />             <!-- 背景透明 -->
+                                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                                            <Setter Property="Margin" Value="5,0,0,0" />
+                                        </Style>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="BorderBrush" Value="Transparent" />     <!-- 边框透明 -->
+                                            <Setter Property="BorderThickness" Value="0" />         <!-- 无边框 -->
+                                            <Setter Property="Margin" Value="5,5,0,5" />
+                                            <!-- 一开始, padding没生效, 用了 <Setter Property="Template"> 生效了 -->
+                                            <Setter Property="Padding" Value="4,4" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="DataGridCell">
+                                                        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}">
+                                                            <!-- 确保 ContentPresenter 使用模板绑定的 Padding -->
+                                                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                                              VerticalAlignment="Center" />
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </DataGrid.Resources>
 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
-                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
-                        <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
-                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="时间" Binding="{Binding FileCreateTime}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
+                                        <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间" Binding="{Binding FileLastedModifiedTime}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="扫描历史">
+                            <Grid>
+                                <DataGrid Grid.Row="0"
+                                          Background="White" Margin="10,10,5,0"
+                                          ItemsSource="{Binding FileList}"
+                                          Name="DuplicateFilesHistory"
+                                          BorderBrush="#FFFAF0" BorderThickness="1"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          HeadersVisibility="Column"
+                                          IsReadOnly="True">
+                                    <DataGrid.Resources>
+                                        <!-- 自定义列标题样式 -->
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="BorderBrush" Value="#CCCCCC" />                <!-- 边框颜色 -->
+                                            <Setter Property="BorderThickness" Value="0,1,1,1" />    <!-- 仅右侧边框 -->
+                                            <Setter Property="Padding" Value="8,12" />                   <!-- 标题内边距 -->
+                                            <Setter Property="Background" Value="Transparent" />             <!-- 背景透明 -->
+                                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                                            <Setter Property="Margin" Value="5,0,0,0" />
+                                        </Style>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="BorderBrush" Value="Transparent" />     <!-- 边框透明 -->
+                                            <Setter Property="BorderThickness" Value="0" />         <!-- 无边框 -->
+                                            <Setter Property="Margin" Value="5,5,0,5" />
+                                            <!-- 一开始, padding没生效, 用了 <Setter Property="Template"> 生效了 -->
+                                            <Setter Property="Padding" Value="4,4" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="DataGridCell">
+                                                        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}">
+                                                            <!-- 确保 ContentPresenter 使用模板绑定的 Padding -->
+                                                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                                              VerticalAlignment="Center" />
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </DataGrid.Resources>
+
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描过的文件夹" Binding="{Binding FileName}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="这个文件夹下重复的文件名" Binding="{Binding FileName}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
+                                        <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间" Binding="{Binding FileLastedModifiedTime}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
             </Grid>
         </TabItem>
         <TabItem Header="黑名单">

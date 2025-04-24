@@ -60,18 +60,19 @@ public class DuplicateFilesService
     public List<DuplicateFilesEntry> GetAllFile(string path)
     {
         List<DuplicateFilesEntry> entries = new List<DuplicateFilesEntry>();
-        List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)> allFiles = FileUtil.GetAllFiles(path,
-            new List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)>());
+        List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)> allFiles = FileUtil.GetAllFiles(path,
+            new List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)>());
         if (allFiles?.Count > 0)
         {
             DuplicateFilesEntry entry = null;
-            foreach ((string FileName, string FilePath, long FileSize, DateTime LastModifed) file in allFiles)
+            foreach ((string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed) file in allFiles)
             {
                 entry = new DuplicateFilesEntry();
                 entry.FileName = file.FileName;
                 entry.FilePath = file.FilePath;
                 entry.FileSize = MathUtil.ByteToKb(file.FileSize, 3);
-                entry.FileCreateTime = file.Item4;
+                entry.FileCreateTime = file.createTime;
+                entry.FileLastedModifiedTime = file.LastModifed;
 
                 entries.Add(entry);
                 // Console.WriteLine(entry.FileCreateTime);

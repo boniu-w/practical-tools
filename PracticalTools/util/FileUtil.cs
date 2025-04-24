@@ -279,11 +279,11 @@ public class FileUtil
     /// <param name="path"></param>
     /// <param name="fileList"></param>
     /// <returns></returns>
-    public static List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)> GetAllFiles(
+    public static List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)> GetAllFiles(
         string path,
-        List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)>? fileList = null)
+        List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)>? fileList = null)
     {
-        fileList ??= new List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)>();
+        fileList ??= new List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)>();
 
         if (!Directory.Exists(path))
             return fileList;
@@ -295,7 +295,8 @@ public class FileUtil
                 if (File.Exists(entry))
                 {
                     FileInfo fileInfo = new FileInfo(entry);
-                    fileList.Add((Path.GetFileName(entry), entry, fileInfo.Length, fileInfo.LastWriteTime));
+
+                    fileList.Add((Path.GetFileName(entry), entry, fileInfo.Length, fileInfo.CreationTime, fileInfo.LastWriteTime));
                 }
                 else if (Directory.Exists(entry))
                 {
@@ -311,6 +312,11 @@ public class FileUtil
         return fileList;
     }
 
+    /// <summary>
+    /// ValueTuple 形式
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public static List<ValueTuple<string, long, DateTime>> GetAllFiles(string path)
     {
         List<ValueTuple<string, long, DateTime>> fileList = new List<ValueTuple<string, long, DateTime>>();
@@ -399,7 +405,7 @@ public class FileUtil
     /// <param name="filePath"></param>
     /// <param name="allowedExtensions"></param>
     /// <returns></returns>
-    private static bool HasAllowedExtension(string filePath, string[] allowedExtensions)
+    public static bool HasAllowedExtension(string filePath, string[] allowedExtensions)
     {
         allowedExtensions ??= Array.Empty<string>();
         string ext = Path.GetExtension(filePath).ToLowerInvariant();
@@ -407,6 +413,22 @@ public class FileUtil
         {
             if (ext == allowed.ToLowerInvariant())
                 return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 是否没有扩展名
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    public static bool IsEmptyExtension(string filePath)
+    {
+        string ext = Path.GetExtension(filePath).ToLowerInvariant();
+        if (ext?.Length == 0)
+        {
+            return true;
         }
 
         return false;

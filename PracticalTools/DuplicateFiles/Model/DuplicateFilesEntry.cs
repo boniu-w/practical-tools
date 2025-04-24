@@ -7,6 +7,5 @@ public class DuplicateFilesEntry
     public string? FilePath { get; set; }
     public DateTime? FileCreateTime { get; set; }
     public double? FileSize { get; set; }
-    
-    
+    public DateTime? FileLastedModifiedTime { get; set; }
 }

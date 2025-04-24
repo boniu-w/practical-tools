@@ -59,21 +59,21 @@ public class FileUnitTest
         //     Console.WriteLine(extension);
         // }
         //
-        // // List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: new[] { ".txt", ".jpg", ".md" });
+        List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: new[] { ".txt", ".jpg", ".md" });
         // List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: null);
-        // foreach (string file in allFiles)
-        // {
-        //     Console.WriteLine(file);
-        // }
-
-        List<(string, long, DateTime)> tuples = FileUtil.GetAllFiles(filePath);
-        foreach ((string, long, DateTime) tuple in tuples)
+        foreach (string file in allFiles)
         {
-            var file = tuple.Item1;
-            long fileSize = tuple.Item2;
-            DateTime lastWriteTime = tuple.Item3;
-            Console.WriteLine(fileSize);
+            Console.WriteLine(file);
         }
+
+        // List<(string, long, DateTime)> tuples = FileUtil.GetAllFiles(filePath);
+        // foreach ((string, long, DateTime) tuple in tuples)
+        // {
+        //     var file = tuple.Item1;
+        //     long fileSize = tuple.Item2;
+        //     DateTime lastWriteTime = tuple.Item3;
+        //     Console.WriteLine(fileSize);
+        // }
     }
 
     [TestMethod]
