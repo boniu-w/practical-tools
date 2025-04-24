@@ -1,6 +1,9 @@
-﻿using System.Windows;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
 using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
+using PracticalTools.DuplicateFiles.Model;
+using PracticalTools.DuplicateFiles.service;
 using PracticalTools.Sqlite;
 using PracticalTools.vo;
 using Window = System.Windows.Window;
@@ -21,13 +24,15 @@ public partial class MainWindow : Window
 
     private readonly SQLiteDemo _sqLiteDemo;
     private readonly MainViewModel _mainViewModel;
+    private DuplicateFilesService _duplicateFilesService;
 
-    public MainWindow(MainViewModel mainViewModel, SQLiteDemo sqLiteDemo)
+    public MainWindow(MainViewModel mainViewModel, SQLiteDemo sqLiteDemo, DuplicateFilesService duplicateFilesService)
     {
         InitializeComponent();
         DataContext = mainViewModel;
         _mainViewModel = mainViewModel;
         _sqLiteDemo = sqLiteDemo;
+        _duplicateFilesService = duplicateFilesService;
     }
 
     /*****************************************************************************************************************************/
@@ -94,6 +99,7 @@ public partial class MainWindow : Window
 
     private void Scan(string theFilePath)
     {
-        Console.WriteLine(theFilePath);
+        List<DuplicateFilesEntry> entries = _duplicateFilesService.GetAllFile(theFilePath);
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(entries);
     }
 }

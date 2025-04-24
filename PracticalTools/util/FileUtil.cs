@@ -6,16 +6,18 @@ namespace PracticalTools.util;
 
 public class FileUtil
 {
+    public ValueTuple<string, string, string> FileValueTuple { get; set; }
+
     // 初始化日志（仅在 FileUtil 类中使用）
     static FileUtil()
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
-            .WriteTo.Console()  // 控制台输出
+            .WriteTo.Console() // 控制台输出
             .WriteTo.File("logs/fileutil-log-.txt", rollingInterval: RollingInterval.Day) // 文件日志，按天归档
             .CreateLogger();
     }
-    
+
     /// <summary>
     /// md5 较快
     /// </summary>
@@ -229,6 +231,105 @@ public class FileUtil
                 else if (Directory.Exists(entry))
                 {
                     GetAllFiles(entry, fileList); // 递归子目录
+                }
+            }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Log.Error($"Access denied to: {path} - {ex.Message}");
+        }
+
+        return fileList;
+    }
+
+    // public static List<(string, long, DateTime)> GetAllFiles(string path, List<(string, long, DateTime)>? fileList = null)
+    // {
+    //     fileList ??= new List<(string, long, DateTime)>();
+    //
+    //     if (!Directory.Exists(path))
+    //         return fileList;
+    //
+    //     try
+    //     {
+    //         foreach (var entry in Directory.EnumerateFileSystemEntries(path))
+    //         {
+    //             if (File.Exists(entry))
+    //             {
+    //                 FileInfo fileInfo = new FileInfo(entry);
+    //                 fileList.Add((entry, fileInfo.Length, fileInfo.LastWriteTime));
+    //             }
+    //             else if (Directory.Exists(entry))
+    //             {
+    //                 GetAllFiles(entry, fileList); // 递归子目录
+    //             }
+    //         }
+    //     }
+    //     catch (UnauthorizedAccessException ex)
+    //     {
+    //         Log.Error($"Access denied to: {path} - {ex.Message}");
+    //     }
+    //
+    //     return fileList;
+    // }
+
+    /// <summary>
+    /// 和上方方法 List<(string, long, DateTime)> GetAllFiles(string path, List<(string, long, DateTime)>? fileList = null) 一样
+    /// 但建议用这个
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="fileList"></param>
+    /// <returns></returns>
+    public static List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)> GetAllFiles(
+        string path,
+        List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)>? fileList = null)
+    {
+        fileList ??= new List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)>();
+
+        if (!Directory.Exists(path))
+            return fileList;
+
+        try
+        {
+            foreach (var entry in Directory.EnumerateFileSystemEntries(path))
+            {
+                if (File.Exists(entry))
+                {
+                    FileInfo fileInfo = new FileInfo(entry);
+                    fileList.Add((Path.GetFileName(entry), entry, fileInfo.Length, fileInfo.LastWriteTime));
+                }
+                else if (Directory.Exists(entry))
+                {
+                    GetAllFiles(entry, fileList); // 递归子目录
+                }
+            }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Log.Error($"Access denied to: {path} - {ex.Message}");
+        }
+
+        return fileList;
+    }
+
+    public static List<ValueTuple<string, long, DateTime>> GetAllFiles(string path)
+    {
+        List<ValueTuple<string, long, DateTime>> fileList = new List<ValueTuple<string, long, DateTime>>();
+
+        if (!Directory.Exists(path))
+            return fileList;
+
+        try
+        {
+            foreach (var entry in Directory.EnumerateFileSystemEntries(path))
+            {
+                if (File.Exists(entry))
+                {
+                    FileInfo fileInfo = new FileInfo(entry);
+                    fileList.Add((entry, fileInfo.Length, fileInfo.LastWriteTime));
+                }
+                else if (Directory.Exists(entry))
+                {
+                    fileList.AddRange(GetAllFiles(entry)); // 递归子目录
                 }
             }
         }

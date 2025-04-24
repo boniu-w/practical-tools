@@ -103,7 +103,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
-                        <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小" Binding="{Binding FileSize}" />
+                        <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="时间" Binding="{Binding FileCreateTime}" />
                     </DataGrid.Columns>
                 </DataGrid>

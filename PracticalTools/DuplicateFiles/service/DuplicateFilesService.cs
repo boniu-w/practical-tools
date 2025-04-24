@@ -1,5 +1,7 @@
-﻿using PracticalTools.DuplicateFiles.Model;
+﻿using System.IO;
+using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.Sqlite;
+using PracticalTools.util;
 
 namespace PracticalTools.DuplicateFiles.service;
 
@@ -35,13 +37,47 @@ public class DuplicateFilesService
         _myDbContext.SaveChanges();
         return 1;
     }
-    
+
     /// <summary>
-    /// 扫描重复文件, 只扫描文件名, 不比较sha256
+    /// 扫描重复文件, 只扫描文件名, 不比较hash
     /// </summary>
     /// <param name="path">要扫描的路径</param>
-    public void ScanRepetitiveFile(string path)
+    public List<string> ScanRepetitiveFile(string path)
     {
-        
+        return null;
+    }
+
+    /// <summary>
+    /// 获取文件夹下的所有文件类型
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public List<string> GetAllFileExtensions(string path)
+    {
+        return FileUtil.GetAllFileExtensions(path);
+    }
+
+    public List<DuplicateFilesEntry> GetAllFile(string path)
+    {
+        List<DuplicateFilesEntry> entries = new List<DuplicateFilesEntry>();
+        List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)> allFiles = FileUtil.GetAllFiles(path,
+            new List<(string FileName, string FilePath, long FileSize, DateTime LastModifed)>());
+        if (allFiles?.Count > 0)
+        {
+            DuplicateFilesEntry entry = null;
+            foreach ((string FileName, string FilePath, long FileSize, DateTime LastModifed) file in allFiles)
+            {
+                entry = new DuplicateFilesEntry();
+                entry.FileName = file.FileName;
+                entry.FilePath = file.FilePath;
+                entry.FileSize = MathUtil.ByteToKb(file.FileSize, 3);
+                entry.FileCreateTime = file.Item4;
+
+                entries.Add(entry);
+                // Console.WriteLine(entry.FileCreateTime);
+            }
+        }
+
+        return entries;
     }
 }
