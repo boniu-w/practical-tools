@@ -8,6 +8,16 @@ public class FileUtil
 {
     public ValueTuple<string, string, string> FileValueTuple { get; set; }
 
+    static string[] skipFolders = new[]
+    {
+        "$Recycle.Bin",
+        "System Volume Information",
+        "Documents and Settings",
+        "Recovery",
+        "Config.Msi",
+        "PerfLogs"
+    };
+
     // 初始化日志（仅在 FileUtil 类中使用）
     static FileUtil()
     {
@@ -292,6 +302,9 @@ public class FileUtil
         {
             foreach (var entry in Directory.EnumerateFileSystemEntries(path))
             {
+                if (skipFolders.Any(f => entry.Contains(f, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
                 if (File.Exists(entry))
                 {
                     FileInfo fileInfo = new FileInfo(entry);
@@ -301,6 +314,51 @@ public class FileUtil
                 else if (Directory.Exists(entry))
                 {
                     GetAllFiles(entry, fileList); // 递归子目录
+                }
+            }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Log.Error($"Access denied to: {path} - {ex.Message}");
+        }
+
+        return fileList;
+    }
+
+    /// <summary>
+    /// 可停止
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="fileList"></param>
+    /// <returns></returns>
+    public static List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)> GetAllFiles(
+        string path,
+        List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)>? fileList = null,
+        CancellationToken token = default)
+    {
+        fileList ??= new List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)>();
+
+        if (!Directory.Exists(path))
+            return fileList;
+
+        try
+        {
+            foreach (var entry in Directory.EnumerateFileSystemEntries(path))
+            {
+                token.ThrowIfCancellationRequested(); // 支持取消
+
+                if (skipFolders.Any(f => entry.Contains(f, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                if (File.Exists(entry))
+                {
+                    FileInfo fileInfo = new FileInfo(entry);
+
+                    fileList.Add((Path.GetFileName(entry), entry, fileInfo.Length, fileInfo.CreationTime, fileInfo.LastWriteTime));
+                }
+                else if (Directory.Exists(entry))
+                {
+                    GetAllFiles(entry, fileList, token); // 递归子目录
                 }
             }
         }
