@@ -103,7 +103,11 @@ public partial class MainWindow : Window
     //     }
     // }
 
-    // 可停止扫描
+    /// <summary>
+    /// 可停止扫描
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private async void ScanTheFolder(object sender, RoutedEventArgs e)
     {
         _cts = new CancellationTokenSource();

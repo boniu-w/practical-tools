@@ -246,7 +246,7 @@ public class FileUtil
         }
         catch (UnauthorizedAccessException ex)
         {
-            Log.Error($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"拒绝访问: {path} - {ex.Message}");
         }
 
         return fileList;
@@ -276,7 +276,7 @@ public class FileUtil
     //     }
     //     catch (UnauthorizedAccessException ex)
     //     {
-    //         Log.Error($"Access denied to: {path} - {ex.Message}");
+    //         Log.Error($"拒绝访问: {path} - {ex.Message}");
     //     }
     //
     //     return fileList;
@@ -319,7 +319,7 @@ public class FileUtil
         }
         catch (UnauthorizedAccessException ex)
         {
-            Log.Error($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"拒绝访问: {path} - {ex.Message}");
         }
 
         return fileList;
@@ -364,7 +364,7 @@ public class FileUtil
         }
         catch (UnauthorizedAccessException ex)
         {
-            Log.Error($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"拒绝访问: {path} - {ex.Message}");
         }
 
         return fileList;
@@ -399,7 +399,7 @@ public class FileUtil
         }
         catch (UnauthorizedAccessException ex)
         {
-            Log.Error($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"拒绝访问: {path} - {ex.Message}");
         }
 
         return fileList;
@@ -451,7 +451,7 @@ public class FileUtil
         }
         catch (UnauthorizedAccessException ex)
         {
-            Log.Error($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"拒绝访问: {path} - {ex.Message}");
         }
 
         return fileList;
@@ -538,7 +538,7 @@ public class FileUtil
         }
         catch (UnauthorizedAccessException ex)
         {
-            Log.Error($"Access denied to: {path} - {ex.Message}");
+            Log.Error($"拒绝访问: {path} - {ex.Message}");
         }
 
         return new List<string>(extensions); // 返回一个不重复的扩展名列表

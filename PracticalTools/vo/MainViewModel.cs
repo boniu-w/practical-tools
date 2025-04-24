@@ -63,6 +63,8 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    /**************************************************************************************************************/
+
     private void RefreshBlackList()
     {
         LoadBlackLists();
