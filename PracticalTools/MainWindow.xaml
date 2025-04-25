@@ -36,6 +36,7 @@
                         <ColumnDefinition Width="50*" />
                         <ColumnDefinition Width="50*" />
                         <ColumnDefinition Width="50*" />
+                        <ColumnDefinition Width="50*" />
                     </Grid.ColumnDefinitions>
 
                     <TextBox Grid.Row="0" Grid.Column="0"
@@ -53,11 +54,33 @@
                             Background="#F8F8FF"
                             Content="不选择文件夹" Click="UnPickFile"
                             Margin="5,0,0,0" Padding="0" />
-                    <Button Grid.Row="0" Grid.Column="3"
+                    <!-- <Button Grid.Row="0" Grid.Column="3" -->
+                    <!--         Background="#F8F8FF" -->
+                    <!--         Content="扫描种类" Click="UnPickFile" -->
+                    <!--         Margin="5,0,0,0" Padding="0" /> -->
+                    <Grid Grid.Row="0" Grid.Column="3">
+                        <ComboBox x:Name="ScanType"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  HorizontalContentAlignment="Center"
+                                  VerticalContentAlignment="Center"
+                                  materialDesign:ComboBoxAssist.MaxLength="2"
+                                  materialDesign:HintAssist.Hint="扫描类型"
+                                  materialDesign:HintAssist.HintOpacity=".26"
+                                  IsEditable="False">
+                            <ComboBoxItem Content="默认" />
+                            <ComboBoxItem Content="图片类" />
+                            <ComboBoxItem Content="视频类" />
+                            <ComboBoxItem Content="音频类" />
+                            <ComboBoxItem Content="文字类" />
+                            <ComboBoxItem Content="无类型" />
+                        </ComboBox>
+                    </Grid>
+                    <Button Grid.Row="0" Grid.Column="4"
                             Background="#F8F8FF"
                             Margin="5,0,0,0" Padding="0"
                             Content="开始扫描" Click="ScanTheFolder" />
-                    <Button Grid.Row="0" Grid.Column="4"
+                    <Button Grid.Row="0" Grid.Column="5"
                             Background="#F8F8FF"
                             Margin="5,0,0,0" Padding="0"
                             Content="停止扫描" Click="StopScanTheFolder" />
@@ -65,6 +88,24 @@
 
                 <Grid Grid.Row="1">
                     <TabControl>
+                        <TabControl.Resources>
+                            <Style TargetType="TabItem" BasedOn="{StaticResource MaterialDesignTabItem}">
+                                <Setter Property="BorderBrush" Value="Aquamarine" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="Padding" Value="10" />
+                                <Setter Property="Background" Value="Aquamarine" />
+                                <Setter Property="FontSize" Value="14" /> <!-- 默认字体大小 -->
+                                <Setter Property="Foreground" Value="Black" /> <!-- 默认字体颜色 -->
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Foreground" Value="DarkBlue" /> <!-- 选中时颜色 -->
+                                        <Setter Property="FontSize" Value="16" /> <!-- 选中时字体大小 -->
+                                        <Setter Property="Background" Value="Red" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TabControl.Resources>
+
                         <TabItem Header="扫描结果">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -140,6 +181,7 @@
 
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值" Binding="{Binding HashValue}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
                                         <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime}" />
@@ -154,7 +196,7 @@
                             <Grid>
                                 <DataGrid Grid.Row="0"
                                           Background="White" Margin="10,10,5,0"
-                                          ItemsSource="{Binding FileList}"
+                                          ItemsSource="{Binding HistoryFileList}"
                                           Name="DuplicateFilesHistory"
                                           BorderBrush="#FFFAF0" BorderThickness="1"
                                           AutoGenerateColumns="False"
@@ -194,8 +236,8 @@
                                     </DataGrid.Resources>
 
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描过的文件夹" Binding="{Binding FileName}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="这个文件夹下重复的文件名" Binding="{Binding FileName}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值" Binding="{Binding HashValue}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
                                         <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime}" />

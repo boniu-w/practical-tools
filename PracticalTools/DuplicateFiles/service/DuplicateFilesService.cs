@@ -84,7 +84,13 @@ public class DuplicateFilesService
         return entries;
     }
 
-    public List<DuplicateFilesEntry> GetAllFile(string path, CancellationToken token = default)
+    /// <summary>
+    /// 可停止
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public List<DuplicateFilesEntry> GetAllFile(string path, CancellationToken token = default, string[]? allowedExtensions = null)
     {
         List<DuplicateFilesEntry> entries = new List<DuplicateFilesEntry>();
         List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed)> allFiles = FileUtil.GetAllFiles(path,
@@ -103,6 +109,36 @@ public class DuplicateFilesService
                 entry.FileLastedModifiedTime = file.LastModifed;
                 entry.ScanDirectory = path;
                 entry.ScanTime = DateTime.Now;
+
+                entries.Add(entry);
+                // Console.WriteLine(entry.FileCreateTime);
+            }
+        }
+
+        return entries;
+    }
+    
+    public List<DuplicateFilesEntry> GetAllFiles(string path, CancellationToken token = default, string[]? allowedExtensions = null)
+    {
+        List<DuplicateFilesEntry> entries = new List<DuplicateFilesEntry>();
+        List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed, string Md5)> allFiles = FileUtil.GetAllFiles(path,
+            new List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed, string Md5)>(),
+            token,
+            allowedExtensions);
+        if (allFiles?.Count > 0)
+        {
+            DuplicateFilesEntry entry = null;
+            foreach ((string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed, string Md5) file in allFiles)
+            {
+                entry = new DuplicateFilesEntry();
+                entry.FileName = file.FileName;
+                entry.FilePath = file.FilePath;
+                entry.FileSize = MathUtil.ByteToKb(file.FileSize, 3);
+                entry.FileCreateTime = file.createTime;
+                entry.FileLastedModifiedTime = file.LastModifed;
+                entry.ScanDirectory = path;
+                entry.ScanTime = DateTime.Now;
+                entry.HashValue = file.Md5;
 
                 entries.Add(entry);
                 // Console.WriteLine(entry.FileCreateTime);

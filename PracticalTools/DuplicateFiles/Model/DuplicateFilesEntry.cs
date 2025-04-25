@@ -10,4 +10,5 @@ public class DuplicateFilesEntry
     public DateTime? FileLastedModifiedTime { get; set; }
     public string? ScanDirectory { get; set; }
     public DateTime? ScanTime { get; set; }
+    public string? HashValue { get; set; }
 }

@@ -8,7 +8,7 @@ public class FileUtil
 {
     public ValueTuple<string, string, string> FileValueTuple { get; set; }
 
-    static string[] skipFolders = new[]
+    public static string[] _skipFolders = new[]
     {
         "$Recycle.Bin",
         "System Volume Information",
@@ -17,6 +17,38 @@ public class FileUtil
         "Config.Msi",
         "PerfLogs"
     };
+
+    public static string[]? _defaultAllowedExtensions =
+    {
+        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".svg", ".psd", ".raw",
+        ".mp3", ".mp4", ".flv", ".mkv", ".mov", ".rmvb", ".ts", ".3gp", ".webm", ".aac", ".wmv", ".avi", ".wma",
+        ".txt", ".doc", ".docx", ".rtf", ".md", ".otd", ".pdf", ".ppt", ".pptx", ".xls", ".xlsx", ".csv", ".xml",
+        ".xaml", ".json", ".html", ".ts", ".vue", ".java", ".cs", "js"
+    };
+
+    public static string[]? _phototExtensions =
+    {
+        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".svg", ".psd", ".raw"
+    };
+
+    public static string[]? _audioExtensions =
+    {
+        ".mp3", ".wav", ".flac", ".aac", ".wma", ".ogg", ".aiff", ".au", ".m4a", ".amr"
+    };
+
+    public static string[]? _videoExtensions =
+    {
+        ".mp4", ".avi", ".wmv", ".mkv", ".flv", ".mov", ".rm", ".rmvb", "m4v", ".mts", "m2ts", ".3gp", ".webm"
+    };
+
+    public static string[]? _wordExtensions =
+    {
+        ".txt", ".doc", ".docx", ".rtf", ".md", ".otd", ".pdf", ".ppt", ".pptx", ".xls", ".xlsx", ".csv", ".xml",
+        ".xaml", ".json", ".html", ".ts", ".vue", ".java", ".cs", "js"
+    };
+
+    public static string[]? _nullExtensions = { };
+
 
     // 初始化日志（仅在 FileUtil 类中使用）
     static FileUtil()
@@ -302,7 +334,7 @@ public class FileUtil
         {
             foreach (var entry in Directory.EnumerateFileSystemEntries(path))
             {
-                if (skipFolders.Any(f => entry.Contains(f, StringComparison.OrdinalIgnoreCase)))
+                if (_skipFolders.Any(f => entry.Contains(f, StringComparison.OrdinalIgnoreCase)))
                     continue;
 
                 if (File.Exists(entry))
@@ -347,7 +379,7 @@ public class FileUtil
             {
                 token.ThrowIfCancellationRequested(); // 支持取消
 
-                if (skipFolders.Any(f => entry.Contains(f, StringComparison.OrdinalIgnoreCase)))
+                if (_skipFolders.Any(f => entry.Contains(f, StringComparison.OrdinalIgnoreCase)))
                     continue;
 
                 if (File.Exists(entry))
@@ -359,6 +391,83 @@ public class FileUtil
                 else if (Directory.Exists(entry))
                 {
                     GetAllFiles(entry, fileList, token); // 递归子目录
+                }
+            }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Log.Error($"拒绝访问: {path} - {ex.Message}");
+        }
+
+        return fileList;
+    }
+
+    /// <summary>
+    /// 扫描并计算 hash值
+    /// skipFolders 跳过一些系统文件夹
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="fileList"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public static List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed, string Md5)> GetAllFiles(
+        string path,
+        List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed, string Md5)>? fileList = null,
+        CancellationToken token = default,
+        string[]? allowedExtensions = null)
+    {
+        allowedExtensions ??= _defaultAllowedExtensions;
+        fileList ??= new List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed, string Md5)>();
+
+        if (!Directory.Exists(path))
+            return fileList;
+
+        try
+        {
+            foreach (var entry in Directory.EnumerateFileSystemEntries(path))
+            {
+                token.ThrowIfCancellationRequested(); // 支持取消
+
+                if (_skipFolders.Any(f => entry.Contains(f, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                if (File.Exists(entry))
+                {
+                    if (allowedExtensions.Length == 0)
+                    {
+                        // 只扫描没有后缀的
+                        if (IsEmptyExtension(entry))
+                        {
+                            byte[] md5 = ComputeFileHashMD5(entry);
+                            string md5String = BitConverter.ToString(md5).Replace("-", "");
+
+                            FileInfo fileInfo = new FileInfo(entry);
+
+                            fileList.Add((Path.GetFileName(entry), entry, fileInfo.Length, fileInfo.CreationTime, fileInfo.LastWriteTime, md5String));
+                        }
+                    }
+                    else
+                    {
+                        // 没有 后缀的 跳过
+                        if (IsEmptyExtension(entry))
+                        {
+                            continue;
+                        }
+
+                        if (HasAllowedExtension(entry, allowedExtensions))
+                        {
+                            byte[] md5 = ComputeFileHashMD5(entry);
+                            string md5String = BitConverter.ToString(md5).Replace("-", "");
+
+                            FileInfo fileInfo = new FileInfo(entry);
+
+                            fileList.Add((Path.GetFileName(entry), entry, fileInfo.Length, fileInfo.CreationTime, fileInfo.LastWriteTime, md5String));
+                        }
+                    }
+                }
+                else if (Directory.Exists(entry))
+                {
+                    GetAllFiles(entry, fileList, token, allowedExtensions); // 递归子目录
                 }
             }
         }

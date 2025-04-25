@@ -63,6 +63,18 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private ObservableCollection<DuplicateFilesEntry>? _historyFileList;
+
+    public ObservableCollection<DuplicateFilesEntry>? HistoryFileList
+    {
+        get => _historyFileList;
+        set
+        {
+            _historyFileList = value;
+            OnPropertyChanged();
+        }
+    }
+
     /**************************************************************************************************************/
 
     private void RefreshBlackList()

@@ -53,18 +53,18 @@ public class FileUnitTest
     {
         string filePath = "H:\\git使用";
 
-        // List<string> extensions = FileUtil.GetAllFileExtensions(filePath);
-        // foreach (string extension in extensions)
-        // {
-        //     Console.WriteLine(extension);
-        // }
-        //
-        List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: new[] { ".txt", ".jpg", ".md" });
-        // List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: null);
-        foreach (string file in allFiles)
+        List<string> extensions = FileUtil.GetAllFileExtensions(filePath);
+        foreach (string extension in extensions)
         {
-            Console.WriteLine(file);
+            Console.WriteLine(extension);
         }
+        //
+        // List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: new[] { ".txt", ".jpg", ".md" });
+        // // List<string> allFiles = FileUtil.GetAllFiles(filePath, fileList: null, allowedExtensions: null);
+        // foreach (string file in allFiles)
+        // {
+        //     Console.WriteLine(file);
+        // }
 
         // List<(string, long, DateTime)> tuples = FileUtil.GetAllFiles(filePath);
         // foreach ((string, long, DateTime) tuple in tuples)

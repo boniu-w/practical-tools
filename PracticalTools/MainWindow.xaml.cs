@@ -1,11 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.service;
 using PracticalTools.Sqlite;
+using PracticalTools.util;
 using PracticalTools.vo;
 using Window = System.Windows.Window;
 
@@ -110,6 +112,10 @@ public partial class MainWindow : Window
     /// <param name="e"></param>
     private async void ScanTheFolder(object sender, RoutedEventArgs e)
     {
+        Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
+        string scanTypeText = ScanType.Text;
+        string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
+
         _cts = new CancellationTokenSource();
         string? theFilePath = TheFilePath.Text?.Trim();
 
@@ -127,14 +133,14 @@ public partial class MainWindow : Window
                     {
                         if (driveInfo.IsReady)
                         {
-                            await Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token));
+                            await Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
                         }
                     }
                 }
             }
             else
             {
-                await Task.Run(() => Scan(theFilePath, _cts.Token));
+                await Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
             }
         }
         catch (Exception exception)
@@ -145,7 +151,46 @@ public partial class MainWindow : Window
         finally
         {
             _cts.Dispose();
+            Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
+    }
+
+    private string[]? InitAllowedExtensions(string scanTypeText)
+    {
+        string[]? allowedExtensions;
+        if (string.IsNullOrEmpty(scanTypeText))
+        {
+            allowedExtensions = FileUtil._defaultAllowedExtensions;
+        }
+        else
+        {
+            switch (scanTypeText)
+            {
+                case "默认":
+                    allowedExtensions = FileUtil._defaultAllowedExtensions;
+                    break;
+                case "图片类":
+                    allowedExtensions = FileUtil._phototExtensions;
+                    break;
+                case "音频类":
+                    allowedExtensions = FileUtil._audioExtensions;
+                    break;
+                case "视频类":
+                    allowedExtensions = FileUtil._videoExtensions;
+                    break;
+                case "文字类":
+                    allowedExtensions = FileUtil._wordExtensions;
+                    break;
+                case "无类型":
+                    allowedExtensions = FileUtil._nullExtensions;
+                    break;
+                default:
+                    allowedExtensions = FileUtil._defaultAllowedExtensions;
+                    break;
+            }
+        }
+
+        return allowedExtensions;
     }
 
     // private void Scan(string theFilePath)
@@ -154,10 +199,25 @@ public partial class MainWindow : Window
     //     _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(entries);
     // }
 
-    private void Scan(string theFilePath, CancellationToken cancellationToken)
+    private void Scan(string theFilePath, CancellationToken cancellationToken, string[]? allowedExtensions = null)
     {
-        List<DuplicateFilesEntry> entries = _duplicateFilesService.GetAllFile(theFilePath, cancellationToken);
-        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(entries);
+        // List<DuplicateFilesEntry> entries = _duplicateFilesService.GetAllFile(theFilePath, cancellationToken, allowedExtensions);
+        // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(entries);
+
+        List<DuplicateFilesEntry> list = GetDuplicateFiles(theFilePath, cancellationToken, allowedExtensions);
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(list);
+    }
+
+    private List<DuplicateFilesEntry> GetDuplicateFiles(string path, CancellationToken token = default, string[]? allowedExtensions = null)
+    {
+        List<DuplicateFilesEntry> files = _duplicateFilesService.GetAllFiles(path, token, allowedExtensions);
+        _mainViewModel.HistoryFileList = new ObservableCollection<DuplicateFilesEntry>(files);
+        
+        List<DuplicateFilesEntry> list = files.GroupBy(f => f.HashValue)
+            .Where(f => f.Count() > 1)
+            .SelectMany(g => g)
+            .ToList();
+        return list;
     }
 
     private void UnPickFile(object sender, RoutedEventArgs e)
