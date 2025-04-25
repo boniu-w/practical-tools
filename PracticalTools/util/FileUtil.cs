@@ -18,13 +18,8 @@ public class FileUtil
         "PerfLogs"
     };
 
-    public static string[]? _defaultAllowedExtensions =
-    {
-        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".svg", ".psd", ".raw",
-        ".mp3", ".mp4", ".flv", ".mkv", ".mov", ".rmvb", ".ts", ".3gp", ".webm", ".aac", ".wmv", ".avi", ".wma",
-        ".txt", ".doc", ".docx", ".rtf", ".md", ".otd", ".pdf", ".ppt", ".pptx", ".xls", ".xlsx", ".csv", ".xml",
-        ".xaml", ".json", ".html", ".ts", ".vue", ".java", ".cs", "js"
-    };
+    public static string[]? _defaultAllowedExtensions = { };
+
 
     public static string[]? _phototExtensions =
     {
@@ -58,6 +53,12 @@ public class FileUtil
             .WriteTo.Console() // 控制台输出
             .WriteTo.File("logs/fileutil-log-.txt", rollingInterval: RollingInterval.Day) // 文件日志，按天归档
             .CreateLogger();
+
+        _defaultAllowedExtensions = _phototExtensions.Concat(_phototExtensions)
+            .Concat(_audioExtensions)
+            .Concat(_videoExtensions)
+            .Concat(_wordExtensions)
+            .ToArray();
     }
 
     /// <summary>
