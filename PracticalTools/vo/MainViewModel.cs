@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
+using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.Sqlite;
 
 namespace PracticalTools.vo;
@@ -38,18 +39,67 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     public List<DuplicateFilesEntry> DuplicateFilesEntries { get; set; }
-    public ICommand RefreshCommand { get; }
-    private ObservableCollection<DuplicateFilesEntry>? _fileList;
 
-    public ObservableCollection<DuplicateFilesEntry>? FileList
+    public ICommand RefreshCommand { get; }
+    // private ObservableCollection<DuplicateFilesEntry>? _fileList;
+    //
+    // public ObservableCollection<DuplicateFilesEntry>? FileList
+    // {
+    //     get => _fileList;
+    //     set
+    //     {
+    //         if (_fileList != value)
+    //         {
+    //             if (_fileList != null)
+    //             {
+    //                 foreach (var item in _fileList)
+    //                     item.PropertyChanged -= Item_PropertyChanged;
+    //             }
+    //
+    //             _fileList = value;
+    //
+    //             if (_fileList != null)
+    //             {
+    //                 foreach (var item in _fileList)
+    //                     item.PropertyChanged += Item_PropertyChanged;
+    //             }
+    //
+    //             OnPropertyChanged(nameof(FileList));
+    //         }
+    //     }
+    // }
+
+    private ObservableCollection<DuplicateFilesEntryWrapper>? _fileList;
+
+    public ObservableCollection<DuplicateFilesEntryWrapper>? FileList
     {
         get => _fileList;
         set
         {
-            _fileList = value;
-            OnPropertyChanged(nameof(FileList));
+            if (_fileList != value)
+            {
+                // 先解绑旧的
+                if (_fileList != null)
+                {
+                    foreach (var item in _fileList)
+                        item.PropertyChanged -= FileItem_PropertyChanged;
+                }
+
+                _fileList = value;
+
+                // 绑定新的
+                if (_fileList != null)
+                {
+                    foreach (var item in _fileList)
+                        item.PropertyChanged += FileItem_PropertyChanged;
+                }
+
+                OnPropertyChanged(nameof(FileList));
+                UpdateIsAllSelected(); // 顺便刷新一下全选状态
+            }
         }
     }
+
 
     private ObservableCollection<BlacklistEntry>? _blacklists;
 
@@ -75,20 +125,91 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _isSelected;
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected != value)
+            {
+                _isSelected = value;
+                OnPropertyChanged(nameof(IsSelected));
+            }
+        }
+    }
+
+    private bool? _isAllSelected = false;
+
+    public bool? IsAllSelected
+    {
+        get => _isAllSelected;
+        set
+        {
+            if (_isAllSelected != value)
+            {
+                _isAllSelected = value;
+                if (FileList != null && value.HasValue)
+                {
+                    foreach (var item in FileList)
+                    {
+                        item.IsSelected = value.Value;
+                    }
+                }
+
+                OnPropertyChanged(nameof(IsAllSelected));
+            }
+        }
+    }
+
     /**************************************************************************************************************/
+    
+    private void FileItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DuplicateFilesEntryWrapper.IsSelected))
+        {
+            UpdateIsAllSelected();
+        }
+    }
+
+    private void UpdateIsAllSelected()
+    {
+        if (FileList == null || FileList.Count == 0)
+        {
+            IsAllSelected = false;
+            return;
+        }
+
+        var selectedCount = FileList.Count(x => x.IsSelected);
+        if (selectedCount == 0)
+            IsAllSelected = false;
+        else if (selectedCount == FileList.Count)
+            IsAllSelected = true;
+        else
+            IsAllSelected = null; // 部分选中
+    }
+
 
     private void RefreshBlackList()
     {
         LoadBlackLists();
     }
-
+    
     private void LoadBlackLists()
     {
         try
         {
             DuplicateFilesEntries = _myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList();
-            FileList = new ObservableCollection<DuplicateFilesEntry>(DuplicateFilesEntries);
-            Blacklists = new ObservableCollection<BlacklistEntry>(_myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime));
+
+            // 直接赋值，不用管 PropertyChanged
+            FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(
+                DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e))
+            );
+
+            Blacklists = new ObservableCollection<BlacklistEntry>(
+                _myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime)
+            );
         }
         catch (Exception e)
         {
@@ -96,7 +217,7 @@ public class MainViewModel : INotifyPropertyChanged
             throw;
         }
     }
-
+    
     public class RelayCommand : ICommand
     {
         private readonly Action _execute;

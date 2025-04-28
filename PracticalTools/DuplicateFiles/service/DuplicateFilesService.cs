@@ -117,7 +117,7 @@ public class DuplicateFilesService
 
         return entries;
     }
-    
+
     public List<DuplicateFilesEntry> GetAllFiles(string path, CancellationToken token = default, string[]? allowedExtensions = null)
     {
         List<DuplicateFilesEntry> entries = new List<DuplicateFilesEntry>();
@@ -146,5 +146,16 @@ public class DuplicateFilesService
         }
 
         return entries;
+    }
+
+    public void DeleteFiles(string[]? filePaths)
+    {
+        if (filePaths?.Length > 0)
+        {
+            foreach (string filePath in filePaths)
+            {
+                FileUtil.DeleteFile(filePath);
+            }
+        }
     }
 }

@@ -653,4 +653,43 @@ public class FileUtil
 
         return new List<string>(extensions); // 返回一个不重复的扩展名列表
     }
+
+
+    /// <summary>
+    /// 删除文件
+    /// </summary>
+    /// <param name="filePath">filePath</param>
+    /// <returns>void</returns>
+    /// <author>wg</author>
+    /// <date>2025年4月28日</date>
+    public static void DeleteFile(string filePath)
+    {
+        try
+        {
+            // 检查文件是否存在
+            if (!File.Exists(filePath))
+            {
+                return;
+            }
+
+            // 尝试删除文件
+            File.Delete(filePath);
+            Log.Information($"文件 {filePath} 已成功删除。");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            // 处理没有权限访问文件的异常
+            Log.Error($"删除文件 {filePath} 时没有足够的权限：{ex.Message}");
+        }
+        catch (IOException ex)
+        {
+            // 处理文件被占用或其他 I/O 异常
+            Log.Error($"删除文件 {filePath} 时发生 I/O 错误：{ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            // 处理其他未知异常
+            Log.Error($"删除文件 {filePath} 时发生未知错误：{ex.Message}");
+        }
+    }
 }
