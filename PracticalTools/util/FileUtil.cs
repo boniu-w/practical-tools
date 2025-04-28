@@ -49,11 +49,11 @@ public class FileUtil
     // 初始化日志（仅在 FileUtil 类中使用）
     static FileUtil()
     {
-        // Log.Logger = new LoggerConfiguration()
-        //     .MinimumLevel.Debug()
-        //     .WriteTo.Console() // 控制台输出
-        //     .WriteTo.File("logs/fileutil-log-.txt", rollingInterval: RollingInterval.Day) // 文件日志，按天归档
-        //     .CreateLogger();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console() // 控制台输出
+            .WriteTo.File("logs/fileutil-log-.txt", rollingInterval: RollingInterval.Day) // 文件日志，按天归档
+            .CreateLogger();
 
         Log.Information("FileUtil 初始化");
         _defaultAllowedExtensions = _phototExtensions.Concat(_phototExtensions)
