@@ -72,7 +72,7 @@
                                   materialDesign:HintAssist.Hint="扫描类型"
                                   materialDesign:HintAssist.HintOpacity=".26"
                                   IsEditable="False">
-                            <ComboBoxItem Content="默认" />
+                            <ComboBoxItem Content="所有类型" />
                             <ComboBoxItem Content="图片类" />
                             <ComboBoxItem Content="视频类" />
                             <ComboBoxItem Content="音频类" />
@@ -121,7 +121,8 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150*" />
+                                        <ColumnDefinition Width="200*" />
+                                        <ColumnDefinition Width="50*" />
                                         <ColumnDefinition Width="50*" />
                                         <ColumnDefinition Width="50*" />
                                         <ColumnDefinition Width="50*" />
@@ -143,7 +144,11 @@
                                             Margin="5,0,0,0" Padding="0" />
                                     <Button Grid.Row="0" Grid.Column="3"
                                             Background="#F8F8FF"
-                                            Content="删除" Click="DeleteFiles"
+                                            Content="彻底删除" Click="DeleteFiles"
+                                            Margin="5,0,0,0" Padding="0" />
+                                    <Button Grid.Row="0" Grid.Column="4"
+                                            Background="#F8F8FF"
+                                            Content="放入回收站" Click="MoveFileToRecycleBin"
                                             Margin="5,0,0,0" Padding="0" />
                                 </Grid>
 

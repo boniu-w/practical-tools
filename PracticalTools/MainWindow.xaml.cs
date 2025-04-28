@@ -45,6 +45,8 @@ public partial class MainWindow : Window
     // 用于停止扫描
     private CancellationTokenSource _cts;
 
+    // 保存扫描结果
+    private List<DuplicateFilesEntryWrapper> _scanResultDuplicateFileList;
     /*****************************************************************************************************************************/
 
     public void SqliteTest(Object sender, EventArgs args)
@@ -229,6 +231,7 @@ public partial class MainWindow : Window
     {
         List<DuplicateFilesEntry> list = GetDuplicateFiles(theFilePath, cancellationToken, allowedExtensions);
         _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list.Select(e => new DuplicateFilesEntryWrapper(e)));
+        _scanResultDuplicateFileList = list.Select(e => new DuplicateFilesEntryWrapper(e)).ToList();
     }
 
     private List<DuplicateFilesEntry> GetDuplicateFiles(string path, CancellationToken token = default, string[]? allowedExtensions = null)
@@ -287,11 +290,12 @@ public partial class MainWindow : Window
     {
         SearchText.Text = "";
         SearchText.IsReadOnly = false;
-        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e)));
+        // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e)));
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_scanResultDuplicateFileList ??= new List<DuplicateFilesEntryWrapper>());
     }
 
     /// <summary>
-    /// 删除文件
+    /// 彻底删除文件
     /// </summary>
     /// <param name="e">e</param>
     /// <returns>RETURN_DESC</returns>
@@ -313,6 +317,31 @@ public partial class MainWindow : Window
 
         _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list);
     }
+
+    /// <summary>
+    /// 放入回收站
+    /// </summary>
+    /// <param name="e">e</param>
+    /// <returns>RETURN_DESC</returns>
+    /// <author>wg</author>
+    /// <date>2025年4月28日</date>
+    private void MoveFileToRecycleBin(object sender, RoutedEventArgs e)
+    {
+        List<DuplicateFilesEntryWrapper> selectedList = _mainViewModel.FileList?.Where(e => e.IsSelected).ToList();
+
+        string[] filePaths = selectedList.Select(e => e.Entry.FilePath).ToArray();
+        _duplicateFilesService.MoveFileToRecycleBin(filePaths);
+
+        HashSet<string> excludePaths = new HashSet<string>(filePaths, StringComparer.OrdinalIgnoreCase);
+
+        // 筛选 FileList 中不包含在 excludePaths 的条目
+        List<DuplicateFilesEntryWrapper> list = _mainViewModel.FileList?
+            .Where(entry => !excludePaths.Contains(entry?.Entry.FilePath))
+            .ToList();
+
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list);
+    }
+
 
     private void GetSelectedAll(object sender, RoutedEventArgs e)
     {

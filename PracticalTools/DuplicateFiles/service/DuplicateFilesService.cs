@@ -153,7 +153,17 @@ public class DuplicateFilesService
         {
             foreach (string filePath in filePaths)
             {
-                // bool b = FileUtil.DeleteFile(filePath);          // 删除
+                bool b = FileUtil.DeleteFile(filePath);          // 删除
+            }
+        }
+    }
+    
+    public void MoveFileToRecycleBin(string[]? filePaths)
+    {
+        if (filePaths?.Length > 0)
+        {
+            foreach (string filePath in filePaths)
+            {
                 bool b = FileUtil.MoveFileToRecycleBin(filePath);   // 放入回收站
             }
         }

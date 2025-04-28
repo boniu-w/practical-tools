@@ -38,6 +38,7 @@ public class MainViewModel : INotifyPropertyChanged
         RefreshBlackList();
     }
 
+    // 保存数据库数据
     public List<DuplicateFilesEntry> DuplicateFilesEntries { get; set; }
 
     public ICommand RefreshCommand { get; }
