@@ -135,14 +135,18 @@ public partial class MainWindow : Window
                     {
                         if (driveInfo.IsReady)
                         {
-                            await Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
+                            Log.Information($"开始全盘扫描");
+                            Task task = Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
+                            await ScanTaskMessage(task);
                         }
                     }
                 }
             }
             else
             {
-                await Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
+                Log.Information($"开始扫描 [{theFilePath}] {scanTypeText}");
+                Task task = Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
+                await ScanTaskMessage(task);
             }
         }
         catch (Exception exception)
@@ -155,6 +159,25 @@ public partial class MainWindow : Window
         {
             _cts.Dispose();
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
+        }
+    }
+
+    private async Task ScanTaskMessage(Task task)
+    {
+        await task;
+        if (task.Status == TaskStatus.RanToCompletion)
+        {
+            Log.Information("扫描完成");
+        }
+        else if (task.Status == TaskStatus.Faulted)
+        {
+            // 任务执行失败，可以通过 task.Exception 获取异常
+            Log.Error($"扫描失败 {task.Exception}");
+        }
+        else if (task.Status == TaskStatus.Canceled)
+        {
+            // 任务被取消
+            Log.Information("扫描取消");
         }
     }
 
