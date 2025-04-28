@@ -10,6 +10,7 @@ using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.vo;
+using Serilog;
 using Window = System.Windows.Window;
 
 namespace PracticalTools;
@@ -113,6 +114,7 @@ public partial class MainWindow : Window
     /// <param name="e"></param>
     private async void ScanTheFolder(object sender, RoutedEventArgs e)
     {
+        Log.Information("开始扫描");
         Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
         string scanTypeText = ScanType.Text;
         string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
@@ -142,12 +144,14 @@ public partial class MainWindow : Window
             else
             {
                 await Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
+                Log.Information("扫描完成");
             }
         }
         catch (Exception exception)
         {
             _mainViewModel.FileList?.Clear();
             MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            Log.Error("扫描已取消");
         }
         finally
         {

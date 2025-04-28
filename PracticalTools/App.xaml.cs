@@ -15,15 +15,16 @@ namespace PracticalTools;
 public partial class App : Application
 {
     private readonly IServiceProvider _serviceProvider;
-    // private readonly IConfiguration _configuration;
 
     public App()
     {
-        // _configuration = new ConfigurationBuilder()
-        //     .SetBasePath(Directory.GetCurrentDirectory())
-        //     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-        //     .Build();
-        
+        // 初始化日志
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.Console()
+            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+
         // 配置服务
         var serviceCollection = new ServiceCollection();
         
@@ -45,9 +46,6 @@ public partial class App : Application
     /// <param name="services"></param>
     private void ConfigureServices(IServiceCollection services)
     {
-        // 注册配置服务
-        // services.AddSingleton<IConfiguration>(_configuration);
-
         // 注册数据库上下文（根据实际情况修改）
         string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sqlite", "sqlite-PracticalTools.db");
         services.AddDbContext<MyDbContext>(options =>
@@ -64,13 +62,6 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        // 初始化日志
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Console()
-            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
-            .CreateLogger();
-
         Log.Information("应用启动");
         
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();

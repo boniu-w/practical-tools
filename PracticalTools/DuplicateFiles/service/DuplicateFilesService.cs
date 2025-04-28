@@ -1,6 +1,7 @@
 ﻿using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
+using Serilog;
 
 namespace PracticalTools.DuplicateFiles.service;
 
@@ -119,6 +120,7 @@ public class DuplicateFilesService
 
     public List<DuplicateFilesEntry> GetAllFiles(string path, CancellationToken token = default, string[]? allowedExtensions = null)
     {
+        Log.Information("获取所有重复文件");
         List<DuplicateFilesEntry> entries = new List<DuplicateFilesEntry>();
         List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed, string Md5)> allFiles = FileUtil.GetAllFiles(path,
             new List<(string FileName, string FilePath, long FileSize, DateTime createTime, DateTime LastModifed, string Md5)>(),

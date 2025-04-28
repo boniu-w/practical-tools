@@ -49,12 +49,13 @@ public class FileUtil
     // 初始化日志（仅在 FileUtil 类中使用）
     static FileUtil()
     {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Console() // 控制台输出
-            .WriteTo.File("logs/fileutil-log-.txt", rollingInterval: RollingInterval.Day) // 文件日志，按天归档
-            .CreateLogger();
+        // Log.Logger = new LoggerConfiguration()
+        //     .MinimumLevel.Debug()
+        //     .WriteTo.Console() // 控制台输出
+        //     .WriteTo.File("logs/fileutil-log-.txt", rollingInterval: RollingInterval.Day) // 文件日志，按天归档
+        //     .CreateLogger();
 
+        Log.Information("FileUtil 初始化");
         _defaultAllowedExtensions = _phototExtensions.Concat(_phototExtensions)
             .Concat(_audioExtensions)
             .Concat(_videoExtensions)
@@ -242,7 +243,7 @@ public class FileUtil
 
             // 可选：显示进度
             double progress = (double)totalRead / totalLength * 100;
-            Console.WriteLine($"Progress: {progress:F2}%");
+            Log.Information($"Progress: {progress:F2}%");
         }
 
         // 最后调用 TransformFinalBlock 来结束哈希计算
@@ -711,7 +712,7 @@ public class FileUtil
         {
             // 将文件移至回收站
             FileSystem.DeleteFile(filePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
-            Console.WriteLine($"文件 {filePath} 已成功移至回收站。");
+            Log.Information($"文件 {filePath} 已成功移至回收站。");
             return true;
         }
         catch (Exception ex)
