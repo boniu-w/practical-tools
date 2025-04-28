@@ -12,6 +12,24 @@
     <!-- </Window.DataContext> -->
     <Window.Resources>
         <FrameworkElement x:Key="DataContextProxy" DataContext="{Binding}" />
+
+        <!-- 2. 全局 DataGridColumnHeader 样式（表头区） -->
+        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+            <Setter Property="BorderBrush" Value="LightGray" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" /> <!-- 右边和底部都有线 -->
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Background" Value="#FFF8F8F8" /> <!-- 表头浅灰背景 -->
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- 全局DataGridCell样式 -->
+        <Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+            <Setter Property="BorderBrush" Value="LightGray" />
+            <Setter Property="BorderThickness" Value="0,0,1,0" /> <!-- 只画右边线 -->
+            <Setter Property="Padding" Value="5,2" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
     </Window.Resources>
 
 
@@ -50,19 +68,7 @@
                              Margin="5" Padding="0"
                              materialDesign:HintAssist.Hint="文件路径">
                     </TextBox>
-                    <Button Grid.Row="0" Grid.Column="1"
-                            Background="#F8F8FF"
-                            Content="选择文件夹" Click="PickFile"
-                            Margin="5,0,0,0" Padding="0" />
-                    <Button Grid.Row="0" Grid.Column="2"
-                            Background="#F8F8FF"
-                            Content="不选择文件夹" Click="UnPickFile"
-                            Margin="5,0,0,0" Padding="0" />
-                    <!-- <Button Grid.Row="0" Grid.Column="3" -->
-                    <!--         Background="#F8F8FF" -->
-                    <!--         Content="扫描种类" Click="UnPickFile" -->
-                    <!--         Margin="5,0,0,0" Padding="0" /> -->
-                    <Grid Grid.Row="0" Grid.Column="3">
+                    <Grid Grid.Row="0" Grid.Column="1">
                         <ComboBox x:Name="ScanType"
                                   HorizontalAlignment="Stretch"
                                   VerticalAlignment="Stretch"
@@ -77,9 +83,19 @@
                             <ComboBoxItem Content="视频类" />
                             <ComboBoxItem Content="音频类" />
                             <ComboBoxItem Content="文字类" />
+                            <ComboBoxItem Content="压缩类" />
+                            <ComboBoxItem Content="程序类" />
                             <ComboBoxItem Content="无类型" />
                         </ComboBox>
                     </Grid>
+                    <Button Grid.Row="0" Grid.Column="2"
+                            Background="#F8F8FF"
+                            Content="选择文件夹" Click="PickFile"
+                            Margin="5,0,0,0" Padding="0" />
+                    <Button Grid.Row="0" Grid.Column="3"
+                            Background="#F8F8FF"
+                            Content="不选择文件夹" Click="UnPickFile"
+                            Margin="5,0,0,0" Padding="0" />
                     <Button Grid.Row="0" Grid.Column="4"
                             Background="#F8F8FF"
                             Margin="5,0,0,0" Padding="0"
@@ -165,19 +181,37 @@
                                     <DataGrid.Columns>
                                         <DataGridCheckBoxColumn IsReadOnly="False"
                                                                 Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                            <DataGridCheckBoxColumn.ElementStyle>
+                                                <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="HorizontalAlignment" Value="Center" />
+                                                </Style>
+                                            </DataGridCheckBoxColumn.ElementStyle>
+                                            <DataGridCheckBoxColumn.EditingElementStyle>
+                                                <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="HorizontalAlignment" Value="Center" />
+                                                </Style>
+                                            </DataGridCheckBoxColumn.EditingElementStyle>
+
                                             <DataGridCheckBoxColumn.Header>
-                                                <Border Background="Transparent">
-                                                    <CheckBox IsThreeState="True"
-                                                              IsChecked="{Binding DataContext.IsAllSelected, Source={StaticResource DataContextProxy} ,Mode=TwoWay}" />
-                                                </Border>
+                                                <CheckBox IsThreeState="True"
+                                                          Style="{StaticResource MaterialDesignCheckBox}"
+                                                          IsChecked="{Binding DataContext.IsAllSelected, Source={StaticResource DataContextProxy}, Mode=TwoWay}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
                                             </DataGridCheckBoxColumn.Header>
+
                                             <DataGridCheckBoxColumn.HeaderStyle>
-                                                <Style TargetType="{x:Type DataGridColumnHeader}"
-                                                       BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
                                                     <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                                                    <Setter Property="BorderBrush" Value="LightGray" />
+                                                    <Setter Property="BorderThickness" Value="0,0,1,1" /> <!-- 右边和底部都有线 -->
                                                 </Style>
                                             </DataGridCheckBoxColumn.HeaderStyle>
                                         </DataGridCheckBoxColumn>
+
                                         <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名" Binding="{Binding Entry.FileName}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值" Binding="{Binding Entry.HashValue}" />
                                         <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址" Binding="{Binding Entry.FilePath}" />

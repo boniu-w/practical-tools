@@ -40,7 +40,21 @@ public class FileUtil
     public static string[]? _wordExtensions =
     {
         ".txt", ".doc", ".docx", ".rtf", ".md", ".otd", ".pdf", ".ppt", ".pptx", ".xls", ".xlsx", ".csv", ".xml",
-        ".xaml", ".json", ".html", ".ts", ".vue", ".java", ".cs", "js"
+        ".xaml", ".json", ".html", ".ts",
+        ".srt", ".ass", ".ssa", ".sub", ".idx", ".vtt", ".ttml", ".sami", ".rt"
+    };
+
+    // 压缩文件
+    public static string[]? _compressedFileExtensions =
+    {
+        ".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".cab", ".iso", ".apk", ".jar", ".rpm"
+    };
+
+    public static string[]? _programExtensions =
+    {
+        ".c", ".cpp", ".java", ".py", ".js", ".ts", ".php", ".rb", ".go", ".swift", ".kt", ".cs", ".vb",
+        ".scala", ".clj", ".erl", ".hs", ".lua", ".pl", ".tcl", ".vue",
+        ".html", ".xhtml", ".css", ".scss", ".sass", ".less", "jsx", ".pug", ".hbs"
     };
 
     public static string[]? _nullExtensions = { };
@@ -60,6 +74,8 @@ public class FileUtil
             .Concat(_audioExtensions)
             .Concat(_videoExtensions)
             .Concat(_wordExtensions)
+            .Concat(_compressedFileExtensions)
+            .Concat(_programExtensions)
             .ToArray();
     }
 

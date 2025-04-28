@@ -194,7 +194,7 @@ public partial class MainWindow : Window
         {
             switch (scanTypeText)
             {
-                case "默认":
+                case "所有类型":
                     allowedExtensions = FileUtil._defaultAllowedExtensions;
                     break;
                 case "图片类":
@@ -208,6 +208,12 @@ public partial class MainWindow : Window
                     break;
                 case "文字类":
                     allowedExtensions = FileUtil._wordExtensions;
+                    break;
+                case "压缩类":
+                    allowedExtensions = FileUtil._compressedFileExtensions;
+                    break;
+                case "程序类":
+                    allowedExtensions = FileUtil._programExtensions;
                     break;
                 case "无类型":
                     allowedExtensions = FileUtil._nullExtensions;

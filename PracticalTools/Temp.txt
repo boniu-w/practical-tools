@@ -142,33 +142,50 @@
  <!-- 20250428 -->
 
 <DataGrid.Resources>
-                                        <!-- 自定义列标题样式 -->
-                                        <Style TargetType="DataGridColumnHeader">
-                                            <Setter Property="BorderBrush" Value="#CCCCCC" />                <!-- 边框颜色 -->
-                                            <Setter Property="BorderThickness" Value="0,1,1,1" />    <!-- 仅右侧边框 -->
-                                            <Setter Property="Padding" Value="8,12" />                   <!-- 标题内边距 -->
-                                            <Setter Property="Background" Value="Transparent" />             <!-- 背景透明 -->
-                                            <Setter Property="HorizontalContentAlignment" Value="Left" />
-                                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                                            <Setter Property="Margin" Value="5,0,0,0" />
-                                        </Style>
-                                        <Style TargetType="DataGridCell">
-                                            <Setter Property="BorderBrush" Value="Transparent" />     <!-- 边框透明 -->
-                                            <Setter Property="BorderThickness" Value="0" />         <!-- 无边框 -->
-                                            <Setter Property="Margin" Value="5,5,0,5" />
-                                            <!-- 一开始, padding没生效, 用了 <Setter Property="Template"> 生效了 -->
-                                            <Setter Property="Padding" Value="4,4" />
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="DataGridCell">
-                                                        <Border BorderBrush="{TemplateBinding BorderBrush}"
-                                                                BorderThickness="{TemplateBinding BorderThickness}">
-                                                            <!-- 确保 ContentPresenter 使用模板绑定的 Padding -->
-                                                            <ContentPresenter Margin="{TemplateBinding Padding}"
-                                                                              VerticalAlignment="Center" />
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </DataGrid.Resources>
+    <!-- 自定义列标题样式 -->
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="BorderBrush" Value="#CCCCCC" />                <!-- 边框颜色 -->
+        <Setter Property="BorderThickness" Value="0,1,1,1" />    <!-- 仅右侧边框 -->
+        <Setter Property="Padding" Value="8,12" />                   <!-- 标题内边距 -->
+        <Setter Property="Background" Value="Transparent" />             <!-- 背景透明 -->
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Margin" Value="5,0,0,0" />
+    </Style>
+    <Style TargetType="DataGridCell">
+        <Setter Property="BorderBrush" Value="Transparent" />     <!-- 边框透明 -->
+        <Setter Property="BorderThickness" Value="0" />         <!-- 无边框 -->
+        <Setter Property="Margin" Value="5,5,0,5" />
+        <!-- 一开始, padding没生效, 用了 <Setter Property="Template"> 生效了 -->
+        <Setter Property="Padding" Value="4,4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <!-- 确保 ContentPresenter 使用模板绑定的 Padding -->
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</DataGrid.Resources>
+
+
+ <DataGridCheckBoxColumn IsReadOnly="False"
+                        Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+    <DataGridCheckBoxColumn.Header>
+        <Border Background="Transparent">
+            <CheckBox IsThreeState="True"
+                      IsChecked="{Binding DataContext.IsAllSelected, Source={StaticResource DataContextProxy} ,Mode=TwoWay}" />
+        </Border>
+    </DataGridCheckBoxColumn.Header>
+    <DataGridCheckBoxColumn.HeaderStyle>
+        <Style TargetType="{x:Type DataGridColumnHeader}"
+               BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+    </DataGridCheckBoxColumn.HeaderStyle>
+</DataGridCheckBoxColumn>
