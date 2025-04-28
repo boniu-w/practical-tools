@@ -202,12 +202,8 @@ public partial class MainWindow : Window
 
     private void Scan(string theFilePath, CancellationToken cancellationToken, string[]? allowedExtensions = null)
     {
-        // List<DuplicateFilesEntry> entries = _duplicateFilesService.GetAllFile(theFilePath, cancellationToken, allowedExtensions);
-        // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(entries);
-
         List<DuplicateFilesEntry> list = GetDuplicateFiles(theFilePath, cancellationToken, allowedExtensions);
-        // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(list);
-        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list.Select(e=>new DuplicateFilesEntryWrapper(e)));
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list.Select(e => new DuplicateFilesEntryWrapper(e)));
     }
 
     private List<DuplicateFilesEntry> GetDuplicateFiles(string path, CancellationToken token = default, string[]? allowedExtensions = null)
@@ -233,6 +229,13 @@ public partial class MainWindow : Window
         _cts?.Cancel();
     }
 
+    /// <summary>
+    /// 开始扫描文件夹, 找出重复文件
+    /// </summary>
+    /// <param name="e">e</param>
+    /// <returns>RETURN_DESC</returns>
+    /// <author>wg</author>
+    /// <date>2025年4月28日</date>
     private void SearchDuplicateFile(object sender, RoutedEventArgs e)
     {
         SearchText.IsReadOnly = true;
@@ -242,23 +245,24 @@ public partial class MainWindow : Window
             return;
         }
 
-        // List<DuplicateFilesEntry> list = _mainViewModel.FileList
-        //     .Where(e => e.FileName.Contains(searchTextText, StringComparison.OrdinalIgnoreCase))
-        //     .ToList();
-        // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(list);
-        
         List<DuplicateFilesEntryWrapper> list = _mainViewModel.FileList
             .Where(e => e.Entry.FileName.Contains(searchTextText, StringComparison.OrdinalIgnoreCase))
             .ToList();
         _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list);
     }
 
+    /// <summary>
+    /// 不搜索
+    /// </summary>
+    /// <param name="e">e</param>
+    /// <returns>RETURN_DESC</returns>
+    /// <author>wg</author>
+    /// <date>2025年4月28日</date>
     private void NoSearchDuplicateFile(object sender, RoutedEventArgs e)
     {
         SearchText.Text = "";
         SearchText.IsReadOnly = false;
-        // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(_mainViewModel.DuplicateFilesEntries);
-        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e=>new DuplicateFilesEntryWrapper(e)));
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e)));
     }
 
     /// <summary>
@@ -270,7 +274,9 @@ public partial class MainWindow : Window
     /// <date>2025年4月28日</date>
     private void DeleteFiles(object sender, RoutedEventArgs e)
     {
-        string[] filePaths = new string[] { };
+        List<DuplicateFilesEntryWrapper> selectedList = _mainViewModel.FileList?.Where(e => e.IsSelected).ToList();
+
+        string[] filePaths = selectedList.Select(e => e.Entry.FilePath).ToArray();
         _duplicateFilesService.DeleteFiles(filePaths);
 
         HashSet<string> excludePaths = new HashSet<string>(filePaths, StringComparer.OrdinalIgnoreCase);

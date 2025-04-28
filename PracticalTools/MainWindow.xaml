@@ -121,7 +121,8 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="100*" />
+                                        <ColumnDefinition Width="150*" />
+                                        <ColumnDefinition Width="50*" />
                                         <ColumnDefinition Width="50*" />
                                         <ColumnDefinition Width="50*" />
                                     </Grid.ColumnDefinitions>
@@ -139,6 +140,10 @@
                                     <Button Grid.Row="0" Grid.Column="2"
                                             Background="#F8F8FF"
                                             Content="不搜索" Click="NoSearchDuplicateFile"
+                                            Margin="5,0,0,0" Padding="0" />
+                                    <Button Grid.Row="0" Grid.Column="3"
+                                            Background="#F8F8FF"
+                                            Content="删除" Click="DeleteFiles"
                                             Margin="5,0,0,0" Padding="0" />
                                 </Grid>
 
@@ -168,14 +173,14 @@
                                                 </Style>
                                             </DataGridCheckBoxColumn.HeaderStyle>
                                         </DataGridCheckBoxColumn>
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding Entry.FileName}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值" Binding="{Binding Entry.HashValue}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding Entry.FilePath}" />
-                                        <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding Entry.FileSize}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间" Binding="{Binding Entry.FileLastedModifiedTime}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描的文件夹" Binding="{Binding Entry.ScanDirectory}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描时间" Binding="{Binding Entry.ScanTime}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名" Binding="{Binding Entry.FileName}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值" Binding="{Binding Entry.HashValue}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址" Binding="{Binding Entry.FilePath}" />
+                                        <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]" Binding="{Binding Entry.FileSize}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="最后修改时间" Binding="{Binding Entry.FileLastedModifiedTime}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹" Binding="{Binding Entry.ScanDirectory}" />
+                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间" Binding="{Binding Entry.ScanTime}" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </Grid>

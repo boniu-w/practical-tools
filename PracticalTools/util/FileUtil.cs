@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Security.Cryptography;
+using Microsoft.VisualBasic.FileIO;
 using Serilog;
 
 namespace PracticalTools.util;
@@ -662,34 +663,61 @@ public class FileUtil
     /// <returns>void</returns>
     /// <author>wg</author>
     /// <date>2025年4月28日</date>
-    public static void DeleteFile(string filePath)
+    public static bool DeleteFile(string filePath)
     {
         try
         {
             // 检查文件是否存在
             if (!File.Exists(filePath))
             {
-                return;
+                return true;
             }
 
             // 尝试删除文件
             File.Delete(filePath);
             Log.Information($"文件 {filePath} 已成功删除。");
+            return true;
         }
         catch (UnauthorizedAccessException ex)
         {
             // 处理没有权限访问文件的异常
             Log.Error($"删除文件 {filePath} 时没有足够的权限：{ex.Message}");
+            return false;
         }
         catch (IOException ex)
         {
             // 处理文件被占用或其他 I/O 异常
             Log.Error($"删除文件 {filePath} 时发生 I/O 错误：{ex.Message}");
+            return false;
         }
         catch (Exception ex)
         {
             // 处理其他未知异常
             Log.Error($"删除文件 {filePath} 时发生未知错误：{ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 放入回收站
+    /// </summary>
+    /// <param name="filePath">filePath</param>
+    /// <returns>RETURN_DESC</returns>
+    /// <author>wg</author>
+    /// <date>2025年4月28日</date>
+    public static bool MoveFileToRecycleBin(string filePath)
+    {
+        try
+        {
+            // 将文件移至回收站
+            FileSystem.DeleteFile(filePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+            Console.WriteLine($"文件 {filePath} 已成功移至回收站。");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"错误: {ex.Message}");
+            return false;
         }
     }
 }

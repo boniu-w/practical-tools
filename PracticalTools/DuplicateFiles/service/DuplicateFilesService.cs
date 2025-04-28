@@ -1,5 +1,4 @@
-﻿using System.IO;
-using PracticalTools.DuplicateFiles.Model;
+﻿using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 
@@ -154,7 +153,8 @@ public class DuplicateFilesService
         {
             foreach (string filePath in filePaths)
             {
-                FileUtil.DeleteFile(filePath);
+                // bool b = FileUtil.DeleteFile(filePath);          // 删除
+                bool b = FileUtil.MoveFileToRecycleBin(filePath);   // 放入回收站
             }
         }
     }

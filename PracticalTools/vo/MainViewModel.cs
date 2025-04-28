@@ -41,33 +41,6 @@ public class MainViewModel : INotifyPropertyChanged
     public List<DuplicateFilesEntry> DuplicateFilesEntries { get; set; }
 
     public ICommand RefreshCommand { get; }
-    // private ObservableCollection<DuplicateFilesEntry>? _fileList;
-    //
-    // public ObservableCollection<DuplicateFilesEntry>? FileList
-    // {
-    //     get => _fileList;
-    //     set
-    //     {
-    //         if (_fileList != value)
-    //         {
-    //             if (_fileList != null)
-    //             {
-    //                 foreach (var item in _fileList)
-    //                     item.PropertyChanged -= Item_PropertyChanged;
-    //             }
-    //
-    //             _fileList = value;
-    //
-    //             if (_fileList != null)
-    //             {
-    //                 foreach (var item in _fileList)
-    //                     item.PropertyChanged += Item_PropertyChanged;
-    //             }
-    //
-    //             OnPropertyChanged(nameof(FileList));
-    //         }
-    //     }
-    // }
 
     private ObservableCollection<DuplicateFilesEntryWrapper>? _fileList;
 
