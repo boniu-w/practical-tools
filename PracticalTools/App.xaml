@@ -10,17 +10,27 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- #修改 PrimaryColor和SecondaryColor值为自定义RGB颜色 -->
                 <!-- <materialDesign:CustomColorTheme BaseTheme="Light" PrimaryColor="#494949" SecondaryColor="#408400" /> -->
+                <materialDesign:CustomColorTheme BaseTheme="Light" PrimaryColor="#0073b9" SecondaryColor="#3a7e00" />
+                <!-- <materialDesign:CustomColorTheme BaseTheme="Light" PrimaryColor="#0073b9" SecondaryColor="#3a7e00" /> -->
                 
-                <materialDesign:CustomColorTheme BaseTheme="Light" PrimaryColor="Aqua" SecondaryColor="DarkGreen" />
                 <!-- 1. 主题 (亮色/暗色) -->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+                
                 <!-- 2. 控件默认样式 -->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+                
                 <!-- 深紫色主色 -->
                 <!-- <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.DeepPurple.xaml"/> -->
                 
-                <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="DeepPurple" SecondaryColor="Lime" />
+                <!-- <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Secondary/MaterialDesignColor.Lime.xaml" /> -->
             </ResourceDictionary.MergedDictionaries>
+            
+            <!-- 主色调中间色 -->
+            <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#FF0073B9" />
+
+            <!-- 卡片背景色 -->
+            <SolidColorBrush x:Key="MaterialDesignCardBackground" Color="#FFFBECD9" />
+            <!-- <SolidColorBrush x:Key="MaterialDesignCardBackground" Color="#ffebee" /> -->
         </ResourceDictionary>
     </Application.Resources>
 </Application>
