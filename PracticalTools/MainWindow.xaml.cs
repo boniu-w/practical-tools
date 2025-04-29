@@ -1,7 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
@@ -119,10 +121,10 @@ public partial class MainWindow : Window
         Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
         string scanTypeText = ScanType.Text;
         string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
-    
+
         _cts = new CancellationTokenSource();
         string? theFilePath = TheFilePath.Text?.Trim();
-    
+
         try
         {
             if (string.IsNullOrEmpty(theFilePath))
@@ -212,7 +214,7 @@ public partial class MainWindow : Window
                 case "压缩类":
                     allowedExtensions = FileUtil._compressedFileExtensions;
                     break;
-                case "程序类":
+                case "编程语言类":
                     allowedExtensions = FileUtil._programExtensions;
                     break;
                 case "无类型":
@@ -278,7 +280,7 @@ public partial class MainWindow : Window
         {
             return;
         }
-    
+
         List<DuplicateFilesEntryWrapper> list = _mainViewModel.FileList
             .Where(e => e.Entry.FileName.Contains(searchTextText, StringComparison.OrdinalIgnoreCase))
             .ToList();
@@ -355,6 +357,26 @@ public partial class MainWindow : Window
         foreach (var item in list)
         {
             Console.WriteLine(item);
+        }
+    }
+
+    /// <summary>
+    /// 测试变色
+    /// </summary>
+    /// <author>wg</author>
+    /// <created>2025年4月29日</created>
+    /// <modified>2025年4月29日</modified>
+    private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (MyTabControl.SelectedItem is TabItem selectedItem && MyTabControl.SelectedItem == ScanResult)
+        {
+            // 走到这了, 但背景色没变
+            // Console.WriteLine(222222);
+            // MyTabControl.Background = Brushes.Red;
+        }
+        else
+        {
+            // MyTabControl.ClearValue(Control.BackgroundProperty);
         }
     }
 }

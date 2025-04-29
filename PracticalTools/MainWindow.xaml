@@ -46,12 +46,30 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="TheTextBoxStyle"
-               TargetType="TextBox"
-               BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
+        <Style x:Key="TheTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
             <Setter Property="Margin" Value="5"></Setter>
             <Setter Property="Padding" Value="0"></Setter>
         </Style>
+
+        <!-- 管用, 但破环了 materialdesign  -->
+        <!-- Background="{TemplateBinding Background}" -->
+        <!-- Padding="8,4" -->
+        <!-- <Style TargetType="TabItem" BasedOn="{StaticResource MaterialDesignTabItem}"> -->
+        <!--     <Setter Property="Template"> -->
+        <!--         <Setter.Value> -->
+        <!--             <ControlTemplate TargetType="TabItem"> -->
+        <!--                 <Border BorderBrush="Brown" -->
+        <!--                         BorderThickness="0,0,1,0" -->
+        <!--                         > -->
+        <!--                     <ContentPresenter ContentSource="Header" -->
+        <!--                                       VerticalAlignment="Center" -->
+        <!--                                       HorizontalAlignment="Center" -->
+        <!--                     /> -->
+        <!--                 </Border> -->
+        <!--             </ControlTemplate> -->
+        <!--         </Setter.Value> -->
+        <!--     </Setter> -->
+        <!-- </Style> -->
 
     </Window.Resources>
 
@@ -90,166 +108,184 @@
                              Style="{StaticResource TheTextBoxStyle}"
                              materialDesign:HintAssist.Hint="文件路径">
                     </TextBox>
-                    <Grid Grid.Row="0" Grid.Column="1">
-                        <ComboBox x:Name="ScanType"
-                                  materialDesign:HintAssist.Hint="扫描类型"
-                                  IsEditable="False">
-                            <ComboBoxItem Content="所有类型" />
-                            <ComboBoxItem Content="图片类" />
-                            <ComboBoxItem Content="视频类" />
-                            <ComboBoxItem Content="音频类" />
-                            <ComboBoxItem Content="文字类" />
-                            <ComboBoxItem Content="压缩类" />
-                            <ComboBoxItem Content="程序类" />
-                            <ComboBoxItem Content="无类型" />
-                        </ComboBox>
-                    </Grid>
+                    <Button Grid.Row="0" Grid.Column="1"
+                            Content="选择文件夹"
+                            Click="PickFile"
+                            Margin="5,0,0,0"
+                            Padding="0" />
                     <Button Grid.Row="0" Grid.Column="2"
-                            Content="选择文件夹" Click="PickFile"
-                            Margin="5,0,0,0" Padding="0" />
-                    <Button Grid.Row="0" Grid.Column="3"
-                            Content="不选择文件夹" Click="UnPickFile"
-                            Margin="5,0,0,0" Padding="0" />
+                            Content="不选择文件夹"
+                            Click="UnPickFile"
+                            Margin="5,0,0,0"
+                            Padding="0" />
+                    <ComboBox Grid.Row="0" Grid.Column="3"
+                              x:Name="ScanType"
+                              materialDesign:HintAssist.Hint="扫描类型"
+                              Margin="5,0,0,0"
+                              IsEditable="False">
+                        <ComboBoxItem Content="所有类型" />
+                        <ComboBoxItem Content="图片类" />
+                        <ComboBoxItem Content="视频类" />
+                        <ComboBoxItem Content="音频类" />
+                        <ComboBoxItem Content="文字类" />
+                        <ComboBoxItem Content="压缩类" />
+                        <ComboBoxItem Content="编程语言类" />
+                        <ComboBoxItem Content="无类型" />
+                    </ComboBox>
                     <Button Grid.Row="0" Grid.Column="4"
-                            Margin="5,0,0,0" Padding="0"
+                            Margin="5,0,0,0"
+                            Padding="0"
                             Content="开始扫描" Click="ScanTheFolder" />
                     <Button Grid.Row="0" Grid.Column="5"
-                            Margin="5,0,0,0" Padding="0"
+                            Margin="5,0,0,0"
+                            Padding="0"
                             Content="停止扫描" Click="StopScanTheFolder" />
                 </Grid>
 
                 <!-- 扫描结果 和 扫描历史 row1 -->
-                <Grid Grid.Row="1" Margin="10,10,5,0" Background="White">
-                    <TabControl>
-                        <TabItem Header="扫描结果" Style="{StaticResource HengTabItem}">
-                            <Grid>
+                <TabControl Grid.Row="1"
+                            Name="MyTabControl"
+                            Margin="10,10,5,0"
+                            Background="White"
+                            SelectionChanged="TabControl_SelectionChanged">
+
+                    <TabItem Name="ScanResult">
+                        <TabItem.Header>
+                            <TextBlock Text="扫描结果" />
+                        </TabItem.Header>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="10*" />
+                                <RowDefinition Height="90*" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="10*" />
-                                    <RowDefinition Height="90*" />
+                                    <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
-                                <Grid Grid.Row="0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200*" />
-                                        <ColumnDefinition Width="50*" />
-                                        <ColumnDefinition Width="50*" />
-                                        <ColumnDefinition Width="50*" />
-                                        <ColumnDefinition Width="50*" />
-                                    </Grid.ColumnDefinitions>
-                                    <!-- BorderBrush="Red" -->
-                                    <!-- Margin="5" -->
-                                    <TextBox Grid.Row="0" Grid.Column="0"
-                                             x:Name="SearchText"
-                                             Style="{StaticResource TheTextBoxStyle}"
-                                             Padding="0"
-                                             materialDesign:HintAssist.Hint="搜索">
-                                    </TextBox>
-                                    <Button Grid.Row="0" Grid.Column="1"
-                                            Content="搜索"
-                                            Click="SearchDuplicateFile"
-                                            Margin="5,0,0,0"
-                                            Padding="0" />
-                                    <Button Grid.Row="0" Grid.Column="2"
-                                            Content="不搜索"
-                                            Click="NoSearchDuplicateFile"
-                                            Margin="5,0,0,0"
-                                            Padding="0" />
-                                    <Button Grid.Row="0" Grid.Column="3"
-                                            Content="彻底删除"
-                                            Click="DeleteFiles"
-                                            Margin="5,0,0,0"
-                                            Padding="0" />
-                                    <Button Grid.Row="0" Grid.Column="4"
-                                            Content="放入回收站"
-                                            Click="MoveFileToRecycleBin"
-                                            Margin="5,0,0,0"
-                                            Padding="0" />
-                                </Grid>
-
-                                <DataGrid Grid.Row="1"
-                                          Name="DuplicateFiles"
-                                          ItemsSource="{Binding FileList}"
-                                          Background="White"
-                                          BorderBrush="#FFFAF0"
-                                          BorderThickness="1"
-                                          AutoGenerateColumns="False"
-                                          CanUserAddRows="False"
-                                          HeadersVisibility="Column">
-                                    <DataGrid.Columns>
-                                        <DataGridCheckBoxColumn IsReadOnly="False"
-                                                                Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                            <DataGridCheckBoxColumn.ElementStyle>
-                                                <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
-                                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                                    <Setter Property="HorizontalAlignment" Value="Center" />
-                                                </Style>
-                                            </DataGridCheckBoxColumn.ElementStyle>
-                                            <DataGridCheckBoxColumn.EditingElementStyle>
-                                                <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
-                                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                                    <Setter Property="HorizontalAlignment" Value="Center" />
-                                                </Style>
-                                            </DataGridCheckBoxColumn.EditingElementStyle>
-
-                                            <DataGridCheckBoxColumn.Header>
-                                                <CheckBox IsThreeState="True"
-                                                          Style="{StaticResource MaterialDesignCheckBox}"
-                                                          IsChecked="{Binding DataContext.IsAllSelected, Source={StaticResource DataContextProxy}, Mode=TwoWay}"
-                                                          HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center" />
-                                            </DataGridCheckBoxColumn.Header>
-
-                                            <DataGridCheckBoxColumn.HeaderStyle>
-                                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
-                                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                                    <Setter Property="VerticalContentAlignment" Value="Center" />
-                                                    <Setter Property="BorderBrush" Value="LightGray" />
-                                                    <Setter Property="BorderThickness" Value="0,0,1,1" /> <!-- 右边和底部都有线 -->
-                                                </Style>
-                                            </DataGridCheckBoxColumn.HeaderStyle>
-                                        </DataGridCheckBoxColumn>
-
-                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名" Binding="{Binding Entry.FileName}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值" Binding="{Binding Entry.HashValue}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址" Binding="{Binding Entry.FilePath}" />
-                                        <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]" Binding="{Binding Entry.FileSize}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="最后修改时间" Binding="{Binding Entry.FileLastedModifiedTime}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹" Binding="{Binding Entry.ScanDirectory}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间" Binding="{Binding Entry.ScanTime}" />
-                                    </DataGrid.Columns>
-                                </DataGrid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200*" />
+                                    <ColumnDefinition Width="50*" />
+                                    <ColumnDefinition Width="50*" />
+                                    <ColumnDefinition Width="50*" />
+                                    <ColumnDefinition Width="50*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Row="0" Grid.Column="0"
+                                         x:Name="SearchText"
+                                         Style="{StaticResource TheTextBoxStyle}"
+                                         materialDesign:HintAssist.Hint="搜索">
+                                </TextBox>
+                                <Button Grid.Row="0" Grid.Column="1"
+                                        Content="搜索"
+                                        Click="SearchDuplicateFile"
+                                        Margin="5,0,0,0"
+                                        Padding="0" />
+                                <Button Grid.Row="0" Grid.Column="2"
+                                        Content="不搜索"
+                                        Click="NoSearchDuplicateFile"
+                                        Margin="5,0,0,0"
+                                        Padding="0" />
+                                <Button Grid.Row="0" Grid.Column="3"
+                                        Content="彻底删除"
+                                        Click="DeleteFiles"
+                                        Margin="5,0,0,0"
+                                        Padding="0" />
+                                <Button Grid.Row="0" Grid.Column="4"
+                                        Content="放入回收站"
+                                        Click="MoveFileToRecycleBin"
+                                        Margin="5,0,0,0"
+                                        Padding="0" />
                             </Grid>
-                        </TabItem>
-                        <TabItem Header="扫描历史" Style="{StaticResource HengTabItem}">
-                            <Grid>
-                                <DataGrid Grid.Row="0"
-                                          Background="White"
-                                          Margin="10,10,5,0"
-                                          ItemsSource="{Binding HistoryFileList}"
-                                          Name="DuplicateFilesHistory"
-                                          BorderBrush="#FFFAF0"
-                                          BorderThickness="1"
-                                          AutoGenerateColumns="False"
-                                          CanUserAddRows="False"
-                                          HeadersVisibility="Column">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值" Binding="{Binding HashValue}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
-                                        <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间" Binding="{Binding FileLastedModifiedTime}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描的文件夹" Binding="{Binding ScanDirectory}" />
-                                        <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描时间" Binding="{Binding ScanTime}" />
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </Grid>
-                        </TabItem>
-                    </TabControl>
-                </Grid>
+
+                            <DataGrid Grid.Row="1"
+                                      Name="DuplicateFiles"
+                                      ItemsSource="{Binding FileList}"
+                                      Background="White"
+                                      BorderBrush="#FFFAF0"
+                                      BorderThickness="1"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      HeadersVisibility="Column">
+                                <DataGrid.Columns>
+                                    <DataGridCheckBoxColumn IsReadOnly="False"
+                                                            Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <DataGridCheckBoxColumn.ElementStyle>
+                                            <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.ElementStyle>
+                                        <DataGridCheckBoxColumn.EditingElementStyle>
+                                            <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.EditingElementStyle>
+
+                                        <DataGridCheckBoxColumn.Header>
+                                            <CheckBox IsThreeState="True"
+                                                      Style="{StaticResource MaterialDesignCheckBox}"
+                                                      IsChecked="{Binding DataContext.IsAllSelected, Source={StaticResource DataContextProxy}, Mode=TwoWay}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center" />
+                                        </DataGridCheckBoxColumn.Header>
+
+                                        <DataGridCheckBoxColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                                                <Setter Property="BorderBrush" Value="LightGray" />
+                                                <Setter Property="BorderThickness" Value="0,0,1,1" /> <!-- 右边和底部都有线 -->
+                                            </Style>
+                                        </DataGridCheckBoxColumn.HeaderStyle>
+                                    </DataGridCheckBoxColumn>
+
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名" Binding="{Binding Entry.FileName}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值" Binding="{Binding Entry.HashValue}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址" Binding="{Binding Entry.FilePath}" />
+                                    <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]" Binding="{Binding Entry.FileSize}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="最后修改时间" Binding="{Binding Entry.FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹" Binding="{Binding Entry.ScanDirectory}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间" Binding="{Binding Entry.ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Style="{StaticResource HengTabItem}" -->
+                    <!-- Header="扫描历史" -->
+                    <TabItem>
+                        <!-- <Border BorderBrush="Gray" BorderThickness="0,0,1,0" Padding="8,4"> -->
+                        <TabItem.Header>
+                            <TextBlock Text="扫描历史" />
+                        </TabItem.Header>
+                        <!-- </Border> -->
+
+                        <Grid>
+                            <DataGrid Grid.Row="0"
+                                      Background="White"
+                                      Margin="10,10,5,0"
+                                      ItemsSource="{Binding HistoryFileList}"
+                                      Name="DuplicateFilesHistory"
+                                      BorderBrush="#FFFAF0"
+                                      BorderThickness="1"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      HeadersVisibility="Column">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值" Binding="{Binding HashValue}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
+                                    <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间" Binding="{Binding FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描的文件夹" Binding="{Binding ScanDirectory}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描时间" Binding="{Binding ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
             </Grid>
         </TabItem>
         <TabItem Header="黑名单">
@@ -290,6 +326,12 @@
                 <!-- <Button Click="List" Content="List" /> -->
                 <!-- <Button Click="DeleteFiles" Content="DeleteFiles" /> -->
                 <Button Click="GetSelectedAll" Content="GetSelectedAll" />
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="test2">
+            <Grid>
+
             </Grid>
         </TabItem>
     </TabControl>
