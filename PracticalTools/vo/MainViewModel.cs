@@ -2,12 +2,14 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
+using PracticalTools.Views;
 
 namespace PracticalTools.vo;
 
@@ -100,7 +102,7 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-    
+
     // 分页显示扫描历史文件
     private ObservableCollection<DuplicateFilesEntryWrapper> _pageFileList;
 
@@ -152,6 +154,21 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private UserControl _currentPage;
+
+    public UserControl CurrentPage
+    {
+        get => _currentPage;
+        set
+        {
+            if (_currentPage != value)
+            {
+                _currentPage = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     /**************************************************************************************************************/
 
     private void FileItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -178,7 +195,7 @@ public class MainViewModel : INotifyPropertyChanged
         else
             IsAllSelected = null; // 部分选中
     }
-    
+
     private void RefreshBlackList<T>(T obj)
     {
         LoadBlackLists();
@@ -203,6 +220,19 @@ public class MainViewModel : INotifyPropertyChanged
         {
             MessageBox.Show(e.Message);
             throw;
+        }
+    }
+
+    public void Navigate(string? pageName)
+    {
+        switch (pageName)
+        {
+            case "首页":
+                CurrentPage = new HomePage();
+                break;
+            default:
+                CurrentPage = new HomePage();
+                break;
         }
     }
 }

@@ -71,16 +71,16 @@ public partial class MainWindow : Window
         Console.WriteLine(list.Count);
     }
 
-    private void PickFile(object sender, RoutedEventArgs e)
-    {
-        var folderDialog = new OpenFolderDialog();
-        if (folderDialog.ShowDialog() == true)
-        {
-            string selectedFolder = folderDialog.FolderName;
-            TheFilePath.Text = selectedFolder;
-            TheFilePath.IsReadOnly = true;
-        }
-    }
+    // private void PickFile(object sender, RoutedEventArgs e)
+    // {
+    //     var folderDialog = new OpenFolderDialog();
+    //     if (folderDialog.ShowDialog() == true)
+    //     {
+    //         string selectedFolder = folderDialog.FolderName;
+    //         TheFilePath.Text = selectedFolder;
+    //         TheFilePath.IsReadOnly = true;
+    //     }
+    // }
 
     // private void ScanTheFolder(object sender, RoutedEventArgs e)
     // {
@@ -114,55 +114,55 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private async void ScanTheFolder(object sender, RoutedEventArgs e)
-    {
-        Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
-        string scanTypeText = ScanType.Text;
-        string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
-
-        _cts = new CancellationTokenSource();
-        string? theFilePath = TheFilePath.Text?.Trim();
-
-        try
-        {
-            if (string.IsNullOrEmpty(theFilePath))
-            {
-                MessageBoxResult messageBoxResult = MessageBox.Show("没有选择任何文件夹, 将扫描整个电脑",
-                    "提示",
-                    MessageBoxButton.OKCancel,
-                    MessageBoxImage.Question);
-                if (messageBoxResult == MessageBoxResult.OK)
-                {
-                    foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
-                    {
-                        if (driveInfo.IsReady)
-                        {
-                            Log.Information($"开始全盘扫描");
-                            Task task = Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
-                            await ScanTaskMessage(task);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Log.Information($"开始扫描 [{theFilePath}] {scanTypeText}");
-                Task task = Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
-                await ScanTaskMessage(task);
-            }
-        }
-        catch (Exception exception)
-        {
-            _mainViewModel.FileList?.Clear();
-            MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-            Log.Error("扫描已取消");
-        }
-        finally
-        {
-            _cts.Dispose();
-            Mouse.OverrideCursor = null; // 恢复默认鼠标样式
-        }
-    }
+    // private async void ScanTheFolder(object sender, RoutedEventArgs e)
+    // {
+    //     Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
+    //     string scanTypeText = ScanType.Text;
+    //     string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
+    //
+    //     _cts = new CancellationTokenSource();
+    //     string? theFilePath = TheFilePath.Text?.Trim();
+    //
+    //     try
+    //     {
+    //         if (string.IsNullOrEmpty(theFilePath))
+    //         {
+    //             MessageBoxResult messageBoxResult = MessageBox.Show("没有选择任何文件夹, 将扫描整个电脑",
+    //                 "提示",
+    //                 MessageBoxButton.OKCancel,
+    //                 MessageBoxImage.Question);
+    //             if (messageBoxResult == MessageBoxResult.OK)
+    //             {
+    //                 foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
+    //                 {
+    //                     if (driveInfo.IsReady)
+    //                     {
+    //                         Log.Information($"开始全盘扫描");
+    //                         Task task = Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
+    //                         await ScanTaskMessage(task);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         else
+    //         {
+    //             Log.Information($"开始扫描 [{theFilePath}] {scanTypeText}");
+    //             Task task = Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
+    //             await ScanTaskMessage(task);
+    //         }
+    //     }
+    //     catch (Exception exception)
+    //     {
+    //         _mainViewModel.FileList?.Clear();
+    //         MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+    //         Log.Error("扫描已取消");
+    //     }
+    //     finally
+    //     {
+    //         _cts.Dispose();
+    //         Mouse.OverrideCursor = null; // 恢复默认鼠标样式
+    //     }
+    // }
 
     private async Task ScanTaskMessage(Task task)
     {
@@ -252,11 +252,11 @@ public partial class MainWindow : Window
         return list;
     }
 
-    private void UnPickFile(object sender, RoutedEventArgs e)
-    {
-        TheFilePath.Text = "";
-        TheFilePath.IsReadOnly = false;
-    }
+    // private void UnPickFile(object sender, RoutedEventArgs e)
+    // {
+    //     TheFilePath.Text = "";
+    //     TheFilePath.IsReadOnly = false;
+    // }
 
     private void StopScanTheFolder(object sender, RoutedEventArgs e)
     {
@@ -270,20 +270,20 @@ public partial class MainWindow : Window
     /// <returns>RETURN_DESC</returns>
     /// <author>wg</author>
     /// <date>2025年4月28日</date>
-    private void SearchDuplicateFile(object sender, RoutedEventArgs e)
-    {
-        SearchText.IsReadOnly = true;
-        string searchTextText = SearchText.Text?.Trim();
-        if (string.IsNullOrEmpty(searchTextText))
-        {
-            return;
-        }
-
-        List<DuplicateFilesEntryWrapper> list = _mainViewModel.FileList
-            .Where(e => e.Entry.FileName.Contains(searchTextText, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list);
-    }
+    // private void SearchDuplicateFile(object sender, RoutedEventArgs e)
+    // {
+    //     SearchText.IsReadOnly = true;
+    //     string searchTextText = SearchText.Text?.Trim();
+    //     if (string.IsNullOrEmpty(searchTextText))
+    //     {
+    //         return;
+    //     }
+    //
+    //     List<DuplicateFilesEntryWrapper> list = _mainViewModel.FileList
+    //         .Where(e => e.Entry.FileName.Contains(searchTextText, StringComparison.OrdinalIgnoreCase))
+    //         .ToList();
+    //     _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list);
+    // }
 
     /// <summary>
     /// 不搜索
@@ -292,13 +292,13 @@ public partial class MainWindow : Window
     /// <returns>RETURN_DESC</returns>
     /// <author>wg</author>
     /// <date>2025年4月28日</date>
-    private void NoSearchDuplicateFile(object sender, RoutedEventArgs e)
-    {
-        SearchText.Text = "";
-        SearchText.IsReadOnly = false;
-        // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e)));
-        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_scanResultDuplicateFileList ??= new List<DuplicateFilesEntryWrapper>());
-    }
+    // private void NoSearchDuplicateFile(object sender, RoutedEventArgs e)
+    // {
+    //     SearchText.Text = "";
+    //     SearchText.IsReadOnly = false;
+    //     // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e)));
+    //     _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_scanResultDuplicateFileList ??= new List<DuplicateFilesEntryWrapper>());
+    // }
 
     /// <summary>
     /// 彻底删除文件
