@@ -7,6 +7,7 @@ using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.Sqlite;
+using PracticalTools.util;
 
 namespace PracticalTools.vo;
 
@@ -34,8 +35,8 @@ public class MainViewModel : INotifyPropertyChanged
     public MainViewModel(MyDbContext myDbContext)
     {
         _myDbContext = myDbContext;
-        RefreshCommand = new RelayCommand(RefreshBlackList);
-        RefreshBlackList();
+        RefreshCommand = new RelayCommand<Object>(RefreshBlackList);
+        RefreshBlackList<Object>(null);
     }
 
     // 保存数据库数据
@@ -43,6 +44,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     public ICommand RefreshCommand { get; }
 
+    // 重复的文件
     private ObservableCollection<DuplicateFilesEntryWrapper>? _fileList;
 
     public ObservableCollection<DuplicateFilesEntryWrapper>? FileList
@@ -74,7 +76,6 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-
     private ObservableCollection<BlacklistEntry>? _blacklists;
 
     public ObservableCollection<BlacklistEntry>? Blacklists
@@ -87,6 +88,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    // 扫描历史文件
     private ObservableCollection<DuplicateFilesEntry>? _historyFileList;
 
     public ObservableCollection<DuplicateFilesEntry>? HistoryFileList
@@ -96,6 +98,19 @@ public class MainViewModel : INotifyPropertyChanged
         {
             _historyFileList = value;
             OnPropertyChanged();
+        }
+    }
+    
+    // 分页显示扫描历史文件
+    private ObservableCollection<DuplicateFilesEntryWrapper> _pageFileList;
+
+    public ObservableCollection<DuplicateFilesEntryWrapper> PageFileList
+    {
+        get => _pageFileList;
+        set
+        {
+            _pageFileList = value;
+            OnPropertyChanged(nameof(PageFileList));
         }
     }
 
@@ -138,7 +153,7 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /**************************************************************************************************************/
-    
+
     private void FileItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(DuplicateFilesEntryWrapper.IsSelected))
@@ -163,13 +178,12 @@ public class MainViewModel : INotifyPropertyChanged
         else
             IsAllSelected = null; // 部分选中
     }
-
-
-    private void RefreshBlackList()
+    
+    private void RefreshBlackList<T>(T obj)
     {
         LoadBlackLists();
     }
-    
+
     private void LoadBlackLists()
     {
         try
@@ -189,34 +203,6 @@ public class MainViewModel : INotifyPropertyChanged
         {
             MessageBox.Show(e.Message);
             throw;
-        }
-    }
-    
-    public class RelayCommand : ICommand
-    {
-        private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
-
-        public RelayCommand(Action execute, Func<bool> canExecute = null)
-        {
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-
-        public event EventHandler CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
-
-        public bool CanExecute(object parameter)
-        {
-            return _canExecute == null || _canExecute();
-        }
-
-        public void Execute(object parameter)
-        {
-            _execute();
         }
     }
 }
