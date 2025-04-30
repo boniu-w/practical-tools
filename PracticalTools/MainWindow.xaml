@@ -241,7 +241,7 @@
                                     </DataGridCheckBoxColumn>
 
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名" Binding="{Binding Entry.FileName}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值" Binding="{Binding Entry.HashValue}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值[MD5]" Binding="{Binding Entry.Md5Value}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址" Binding="{Binding Entry.FilePath}" />
                                     <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]" Binding="{Binding Entry.FileSize}" />
                                     <!-- <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" /> -->
@@ -275,7 +275,7 @@
                                       HeadersVisibility="Column">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值" Binding="{Binding HashValue}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值[MD5]" Binding="{Binding Md5Value}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
                                     <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />

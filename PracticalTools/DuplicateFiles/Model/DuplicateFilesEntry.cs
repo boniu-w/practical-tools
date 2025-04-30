@@ -8,11 +8,11 @@ public class DuplicateFilesEntry
     [ColumnHeader("文件名")] public string FileName { get; set; }
     [ColumnHeader("文件路径")] public string? FilePath { get; set; }
     public DateTime? FileCreateTime { get; set; }
-    [ColumnHeader("文件大小")]  public double? FileSize { get; set; }
+    [ColumnHeader("文件大小[K]")]  public double? FileSize { get; set; }
     public DateTime? FileLastedModifiedTime { get; set; }
     public string? ScanDirectory { get; set; }
     public DateTime? ScanTime { get; set; }
-    [ColumnHeader("Hash值[MD5]")] public string? HashValue { get; set; }
+    [ColumnHeader("Hash值[MD5]")] public string? Md5Value { get; set; }
 
     // public override string ToString()
     // {
@@ -30,6 +30,6 @@ public class DuplicateFilesEntry
                $"FileLastedModifiedTime: {FileLastedModifiedTime}\n" +
                $"ScanDirectory: {ScanDirectory}\n" +
                $"ScanTime: {ScanTime}\n" +
-               $"HashValue: {HashValue}";
+               $"HashValue: {Md5Value}";
     }
 }

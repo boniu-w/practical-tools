@@ -137,7 +137,7 @@ public class DuplicateFilesService
                 entry.FileLastedModifiedTime = file.LastModifed;
                 entry.ScanDirectory = path;
                 entry.ScanTime = DateTime.Now;
-                entry.HashValue = file.Md5;
+                entry.Md5Value = file.Md5;
 
                 entries.Add(entry);
                 // Console.WriteLine(entry.FileCreateTime);

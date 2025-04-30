@@ -39,7 +39,7 @@ public class DuplicateFilesEntryWrapper : INotifyPropertyChanged
                $"FileLastedModifiedTime: {Entry.FileLastedModifiedTime}" +
                $"ScanDirectory: {Entry.ScanDirectory}" +
                $"ScanTime: {Entry.ScanTime}" +
-               $"HashValue: {Entry.HashValue}";
+               $"HashValue: {Entry.Md5Value}";
     }
     
     /**************************************************************************************************************/

@@ -249,7 +249,7 @@ public partial class MainWindow : Window
         List<DuplicateFilesEntry> files = _duplicateFilesService.GetAllFiles(path, token, allowedExtensions);
         _mainViewModel.HistoryFileList = new ObservableCollection<DuplicateFilesEntry>(files);
 
-        List<DuplicateFilesEntry> list = files.GroupBy(f => f.HashValue)
+        List<DuplicateFilesEntry> list = files.GroupBy(f => f.Md5Value)
             .Where(f => f.Count() > 1)
             .SelectMany(g => g)
             .ToList();
