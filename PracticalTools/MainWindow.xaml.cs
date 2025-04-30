@@ -3,7 +3,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;

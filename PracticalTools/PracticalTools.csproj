@@ -6,28 +6,37 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
+        <ApplicationIcon>Assets\app_icon.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Avalonia" Version="11.2.7" />
-      <PackageReference Include="MaterialDesignColors" Version="3.1.0" />
-      <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
-      <PackageReference Include="Serilog" Version="4.2.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-      <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+        <!--        跨平台 ui 框架 -->
+        <!--      <PackageReference Include="Avalonia" Version="11.2.7" />-->
+        <PackageReference Include="MaterialDesignColors" Version="3.1.0"/>
+        <PackageReference Include="MaterialDesignThemes" Version="5.1.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39"/>
+        <PackageReference Include="Serilog" Version="4.2.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="json\" />
+        <Folder Include="json\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Sqlite\sqlite-PracticalTools.db">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="Sqlite\sqlite-PracticalTools.db">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Assets\icons8-cancer-48.png" />
+      <Content Include="Assets\icons8-cancer-48.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

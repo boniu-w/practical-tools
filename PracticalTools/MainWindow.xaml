@@ -6,7 +6,8 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:util="clr-namespace:PracticalTools.util;assembly=PracticalTools"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1090">
+        Icon="/Assets/icons8-cancer-48.png"
+        Title="实用工具" Height="600" Width="1090">
     <!-- <Window.DataContext> -->
     <!--     <vo:MainViewModel /> -->
     <!-- </Window.DataContext> -->
