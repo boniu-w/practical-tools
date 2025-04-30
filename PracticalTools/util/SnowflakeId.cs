@@ -1,11 +1,11 @@
 ﻿namespace PracticalTools.util;
 
-public class SnowflakeIdGenerator
+public class SnowflakeId
 {
-    private const long Epoch = 1609459200000L; // 自定义起始时间戳（2021-01-01 00:00:00 UTC）
-    private const int WorkerIdBits = 5;
-    private const int DatacenterIdBits = 5;
-    private const int SequenceBits = 12;
+    private const long Epoch = 1609459200000L;  // 自定义起始时间戳（2021-01-01 00:00:00 UTC）
+    private const int WorkerIdBits = 5;         // 工作机器位数
+    private const int DatacenterIdBits = 5;     // 数据中心位数
+    private const int SequenceBits = 12;        // 每毫秒序列号
 
     private const long MaxWorkerId = -1L ^ (-1L << WorkerIdBits);
     private const long MaxDatacenterId = -1L ^ (-1L << DatacenterIdBits);
@@ -20,7 +20,7 @@ public class SnowflakeIdGenerator
     private long _sequence = 0L;
     private long _lastTimestamp = -1L;
 
-    public SnowflakeIdGenerator(long workerId, long datacenterId)
+    public SnowflakeId(long workerId, long datacenterId)
     {
         if (workerId > MaxWorkerId || workerId < 0)
         {

@@ -9,8 +9,9 @@ public class DuplicateFilesEntryWrapper : INotifyPropertyChanged
     public DuplicateFilesEntryWrapper(DuplicateFilesEntry entry)
     {
         Entry = entry;
+        
     }
-
+    
     public DuplicateFilesEntry Entry { get; set; }
 
     private bool _isSelected;
@@ -40,7 +41,7 @@ public class DuplicateFilesEntryWrapper : INotifyPropertyChanged
                $"ScanTime: {Entry.ScanTime}" +
                $"HashValue: {Entry.HashValue}";
     }
-
+    
     /**************************************************************************************************************/
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -58,3 +59,4 @@ public class DuplicateFilesEntryWrapper : INotifyPropertyChanged
         return true;
     }
 }
+

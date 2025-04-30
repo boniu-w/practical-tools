@@ -244,8 +244,8 @@
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值" Binding="{Binding Entry.HashValue}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址" Binding="{Binding Entry.FilePath}" />
                                     <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]" Binding="{Binding Entry.FileSize}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="最后修改时间" Binding="{Binding Entry.FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <!-- <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" /> -->
+                                    <!-- <DataGridTextColumn Width="2*" IsReadOnly="False" Header="最后修改时间" Binding="{Binding Entry.FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" /> -->
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹" Binding="{Binding Entry.ScanDirectory}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间" Binding="{Binding Entry.ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                 </DataGrid.Columns>
@@ -331,9 +331,11 @@
         </TabItem>
 
         <TabItem Header="test2">
-            <Grid>
-
-            </Grid>
+            <DataGrid Name="MyDataGrid"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      ColumnWidth="*">
+            </DataGrid>
         </TabItem>
     </TabControl>
 </Window>

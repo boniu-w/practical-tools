@@ -104,7 +104,7 @@ public class SQLiteDemo
     {
         BlacklistEntry blacklist = new BlacklistEntry()
         {
-            Id = new SnowflakeIdGenerator(1, 1).NextId(),
+            Id = new SnowflakeId(1, 1).NextId(),
             PlatformName = "淘宝",
             Author = "张三",
             Product = "茶杯",

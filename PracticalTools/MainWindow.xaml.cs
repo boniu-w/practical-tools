@@ -1,7 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
@@ -39,6 +41,7 @@ public partial class MainWindow : Window
         _mainViewModel = mainViewModel;
         _sqLiteDemo = sqLiteDemo;
         _duplicateFilesService = duplicateFilesService;
+        SetupDataGridColumns();
     }
 
     /*****************************************************************************************************************************/
@@ -378,4 +381,48 @@ public partial class MainWindow : Window
             // MyTabControl.ClearValue(Control.BackgroundProperty);
         }
     }
+
+    /// <summary>
+    /// 自动添加列, 管用
+    /// </summary>
+    /// <author>wg</author>
+    /// <created>2025年4月30日</created>
+    /// <modified>2025年4月30日</modified>
+    private void SetupDataGridColumns()
+    {
+        var properties = typeof(DuplicateFilesEntry).GetProperties();
+        foreach (var prop in properties)
+        {
+            var attr = prop.GetCustomAttribute<ColumnHeaderAttribute>();
+            if (attr == null)
+                continue; // ❌ 没有注解，不添加这个列
+
+            var column = new DataGridTextColumn
+            {
+                Header = attr.DisplayName,
+                Binding = new Binding(prop.Name),
+                Width = GetColumnWidth(prop.Name)
+            };
+            MyDataGrid.Columns.Add(column);
+        }
+
+        // 设置数据源
+        MyDataGrid.ItemsSource = new ObservableCollection<DuplicateFilesEntry>
+        {
+            new DuplicateFilesEntry { FileName = "test.txt", FileSize = 1 },
+            new DuplicateFilesEntry { FileName = "hello.doc", FileSize = 1 }
+        };
+    }
+    
+    private DataGridLength GetColumnWidth(string propertyName)
+    {
+        return propertyName switch
+        {
+            "FileName" => new DataGridLength(2, DataGridLengthUnitType.Star),
+            "FileSize" => new DataGridLength(1, DataGridLengthUnitType.Star),
+            "Id"       => new DataGridLength(80), // 固定像素宽度
+            _          => new DataGridLength(1, DataGridLengthUnitType.Star),
+        };
+    }
+
 }
