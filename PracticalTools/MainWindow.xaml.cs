@@ -292,8 +292,39 @@ public partial class MainWindow : Window
     /// <date>2025年4月28日</date>
     private void DeleteFiles(object sender, RoutedEventArgs e)
     {
-        List<DuplicateFilesEntryWrapper> selectedList = _mainViewModel.FileList?.Where(e => e.IsSelected).ToList();
+        MessageBoxResult messageBox = MessageBox.Show("删除后将不可恢复, 确定删掉吗",
+            "提示",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Question);
+        if (messageBox == MessageBoxResult.OK)
+        {
+            List<DuplicateFilesEntryWrapper> selectedList = _mainViewModel.FileList?.Where(e => e.IsSelected).ToList();
 
+            List<DuplicateFilesEntryWrapper> wrappers = selectedList.GroupBy(e => e.Entry.Md5Value)
+                .Where(e => e.Count() > 1)
+                .SelectMany(g => g)
+                .ToList();
+
+            if (wrappers.Count > 0)
+            {
+                MessageBoxResult messageBoxResult = MessageBox.Show("文件有相同的hash值, 确定都删掉吗",
+                    "提示",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Question);
+                if (messageBoxResult == MessageBoxResult.OK)
+                {
+                    ExecuteDeleteFiles(selectedList);
+                }
+            }
+            else
+            {
+                ExecuteDeleteFiles(selectedList);
+            }
+        }
+    }
+
+    private void ExecuteDeleteFiles(List<DuplicateFilesEntryWrapper> selectedList)
+    {
         string[] filePaths = selectedList.Select(e => e.Entry.FilePath).ToArray();
         _duplicateFilesService.DeleteFiles(filePaths);
 
@@ -318,6 +349,30 @@ public partial class MainWindow : Window
     {
         List<DuplicateFilesEntryWrapper> selectedList = _mainViewModel.FileList?.Where(e => e.IsSelected).ToList();
 
+        List<DuplicateFilesEntryWrapper> wrappers = selectedList.GroupBy(e => e.Entry.Md5Value)
+            .Where(e => e.Count() > 1)
+            .SelectMany(g => g)
+            .ToList();
+
+        if (wrappers.Count > 0)
+        {
+            MessageBoxResult messageBoxResult = MessageBox.Show("文件有相同的hash值, 确定都删掉吗",
+                "提示",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Question);
+            if (messageBoxResult == MessageBoxResult.OK)
+            {
+                ExecuteMoveFileToRecycleBin(selectedList);
+            }
+        }
+        else
+        {
+            ExecuteMoveFileToRecycleBin(selectedList);
+        }
+    }
+
+    private void ExecuteMoveFileToRecycleBin(List<DuplicateFilesEntryWrapper> selectedList)
+    {
         string[] filePaths = selectedList.Select(e => e.Entry.FilePath).ToArray();
         _duplicateFilesService.MoveFileToRecycleBin(filePaths);
 
