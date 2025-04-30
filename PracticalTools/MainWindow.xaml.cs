@@ -189,46 +189,25 @@ public partial class MainWindow : Window
 
     private string[]? InitAllowedExtensions(string scanTypeText)
     {
-        string[]? allowedExtensions;
         if (string.IsNullOrEmpty(scanTypeText))
         {
-            allowedExtensions = FileUtil._defaultAllowedExtensions;
+            return FileUtil._defaultAllowedExtensions;
         }
         else
         {
-            switch (scanTypeText)
+            return scanTypeText switch
             {
-                case "所有类型":
-                    allowedExtensions = FileUtil._defaultAllowedExtensions;
-                    break;
-                case "图片类":
-                    allowedExtensions = FileUtil._phototExtensions;
-                    break;
-                case "音频类":
-                    allowedExtensions = FileUtil._audioExtensions;
-                    break;
-                case "视频类":
-                    allowedExtensions = FileUtil._videoExtensions;
-                    break;
-                case "文字类":
-                    allowedExtensions = FileUtil._wordExtensions;
-                    break;
-                case "压缩类":
-                    allowedExtensions = FileUtil._compressedFileExtensions;
-                    break;
-                case "编程语言类":
-                    allowedExtensions = FileUtil._programExtensions;
-                    break;
-                case "无类型":
-                    allowedExtensions = FileUtil._nullExtensions;
-                    break;
-                default:
-                    allowedExtensions = FileUtil._defaultAllowedExtensions;
-                    break;
-            }
+                "所有类型" => FileUtil._defaultAllowedExtensions,
+                "图片类" => FileUtil._phototExtensions,
+                "音频类" => FileUtil._audioExtensions,
+                "视频类" => FileUtil._videoExtensions,
+                "文字类" => FileUtil._wordExtensions,
+                "压缩类" => FileUtil._compressedFileExtensions,
+                "编程语言类" => FileUtil._programExtensions,
+                "无类型" => FileUtil._nullExtensions,
+                _ => FileUtil._defaultAllowedExtensions
+            };
         }
-
-        return allowedExtensions;
     }
 
     // private void Scan(string theFilePath)
@@ -352,7 +331,6 @@ public partial class MainWindow : Window
         _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list);
     }
 
-
     private void GetSelectedAll(object sender, RoutedEventArgs e)
     {
         List<DuplicateFilesEntryWrapper> list = _mainViewModel.FileList.Where(e => e.IsSelected).ToList();
@@ -401,7 +379,7 @@ public partial class MainWindow : Window
             {
                 Header = attr.DisplayName,
                 Binding = new Binding(prop.Name),
-                Width = GetColumnWidth(prop.Name)
+                Width = ColumnWidth(prop.Name)
             };
             MyDataGrid.Columns.Add(column);
         }
@@ -413,16 +391,20 @@ public partial class MainWindow : Window
             new DuplicateFilesEntry { FileName = "hello.doc", FileSize = 1 }
         };
     }
-    
-    private DataGridLength GetColumnWidth(string propertyName)
+
+    /// <summary>
+    /// 设置列宽
+    /// </summary>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
+    private DataGridLength ColumnWidth(string propertyName)
     {
         return propertyName switch
         {
             "FileName" => new DataGridLength(2, DataGridLengthUnitType.Star),
             "FileSize" => new DataGridLength(1, DataGridLengthUnitType.Star),
-            "Id"       => new DataGridLength(80), // 固定像素宽度
-            _          => new DataGridLength(1, DataGridLengthUnitType.Star),
+            "Id" => new DataGridLength(80), // 固定像素宽度
+            _ => new DataGridLength(1, DataGridLengthUnitType.Star),
         };
     }
-
 }

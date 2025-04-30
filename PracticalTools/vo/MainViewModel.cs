@@ -59,8 +59,8 @@ public class MainViewModel : INotifyPropertyChanged
                 // 先解绑旧的
                 if (_fileList != null)
                 {
-                    foreach (var item in _fileList)
-                        item.PropertyChanged -= FileItem_PropertyChanged;
+                    // foreach (var item in _fileList)
+                    //     item.PropertyChanged -= FileItem_PropertyChanged;
                 }
 
                 _fileList = value;
@@ -68,12 +68,12 @@ public class MainViewModel : INotifyPropertyChanged
                 // 绑定新的
                 if (_fileList != null)
                 {
-                    foreach (var item in _fileList)
-                        item.PropertyChanged += FileItem_PropertyChanged;
+                    // foreach (var item in _fileList)
+                        // item.PropertyChanged += FileItem_PropertyChanged;
                 }
 
                 OnPropertyChanged(nameof(FileList));
-                UpdateIsAllSelected(); // 顺便刷新一下全选状态
+                // UpdateIsAllSelected(); // 顺便刷新一下全选状态
             }
         }
     }
@@ -116,43 +116,43 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool _isSelected;
+    // private bool _isSelected;
+    //
+    // public bool IsSelected
+    // {
+    //     get => _isSelected;
+    //     set
+    //     {
+    //         if (_isSelected != value)
+    //         {
+    //             _isSelected = value;
+    //             OnPropertyChanged(nameof(IsSelected));
+    //         }
+    //     }
+    // }
 
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set
-        {
-            if (_isSelected != value)
-            {
-                _isSelected = value;
-                OnPropertyChanged(nameof(IsSelected));
-            }
-        }
-    }
-
-    private bool? _isAllSelected = false;
-
-    public bool? IsAllSelected
-    {
-        get => _isAllSelected;
-        set
-        {
-            if (_isAllSelected != value)
-            {
-                _isAllSelected = value;
-                if (FileList != null && value.HasValue)
-                {
-                    foreach (var item in FileList)
-                    {
-                        item.IsSelected = value.Value;
-                    }
-                }
-
-                OnPropertyChanged(nameof(IsAllSelected));
-            }
-        }
-    }
+    // private bool? _isAllSelected = false;
+    //
+    // public bool? IsAllSelected
+    // {
+    //     get => _isAllSelected;
+    //     set
+    //     {
+    //         if (_isAllSelected != value)
+    //         {
+    //             _isAllSelected = value;
+    //             if (FileList != null && value.HasValue)
+    //             {
+    //                 foreach (var item in FileList)
+    //                 {
+    //                     item.IsSelected = value.Value;
+    //                 }
+    //             }
+    //
+    //             OnPropertyChanged(nameof(IsAllSelected));
+    //         }
+    //     }
+    // }
 
     private UserControl _currentPage;
 
@@ -171,30 +171,30 @@ public class MainViewModel : INotifyPropertyChanged
 
     /**************************************************************************************************************/
 
-    private void FileItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(DuplicateFilesEntryWrapper.IsSelected))
-        {
-            UpdateIsAllSelected();
-        }
-    }
+    // private void FileItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    // {
+    //     if (e.PropertyName == nameof(DuplicateFilesEntryWrapper.IsSelected))
+    //     {
+    //         UpdateIsAllSelected();
+    //     }
+    // }
 
-    private void UpdateIsAllSelected()
-    {
-        if (FileList == null || FileList.Count == 0)
-        {
-            IsAllSelected = false;
-            return;
-        }
-
-        var selectedCount = FileList.Count(x => x.IsSelected);
-        if (selectedCount == 0)
-            IsAllSelected = false;
-        else if (selectedCount == FileList.Count)
-            IsAllSelected = true;
-        else
-            IsAllSelected = null; // 部分选中
-    }
+    // private void UpdateIsAllSelected()
+    // {
+    //     if (FileList == null || FileList.Count == 0)
+    //     {
+    //         IsAllSelected = false;
+    //         return;
+    //     }
+    //
+    //     var selectedCount = FileList.Count(x => x.IsSelected);
+    //     if (selectedCount == 0)
+    //         IsAllSelected = false;
+    //     else if (selectedCount == FileList.Count)
+    //         IsAllSelected = true;
+    //     else
+    //         IsAllSelected = null; // 部分选中
+    // }
 
     private void RefreshBlackList<T>(T obj)
     {

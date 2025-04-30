@@ -208,6 +208,8 @@
                                       HeadersVisibility="Column">
                                 <DataGrid.Columns>
                                     <DataGridCheckBoxColumn IsReadOnly="False"
+                                                            Width="0.5*"
+                                                            Header=""
                                                             Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                         <DataGridCheckBoxColumn.ElementStyle>
                                             <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
@@ -221,23 +223,6 @@
                                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                             </Style>
                                         </DataGridCheckBoxColumn.EditingElementStyle>
-
-                                        <DataGridCheckBoxColumn.Header>
-                                            <CheckBox IsThreeState="True"
-                                                      Style="{StaticResource MaterialDesignCheckBox}"
-                                                      IsChecked="{Binding DataContext.IsAllSelected, Source={StaticResource DataContextProxy}, Mode=TwoWay}"
-                                                      HorizontalAlignment="Center"
-                                                      VerticalAlignment="Center" />
-                                        </DataGridCheckBoxColumn.Header>
-
-                                        <DataGridCheckBoxColumn.HeaderStyle>
-                                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
-                                                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                                <Setter Property="VerticalContentAlignment" Value="Center" />
-                                                <Setter Property="BorderBrush" Value="LightGray" />
-                                                <Setter Property="BorderThickness" Value="0,0,1,1" /> <!-- 右边和底部都有线 -->
-                                            </Style>
-                                        </DataGridCheckBoxColumn.HeaderStyle>
                                     </DataGridCheckBoxColumn>
 
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名" Binding="{Binding Entry.FileName}" />
