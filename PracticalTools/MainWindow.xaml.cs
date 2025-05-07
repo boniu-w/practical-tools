@@ -43,18 +43,20 @@ public partial class MainWindow : Window
         _duplicateFilesService = duplicateFilesService;
         SetupDataGridColumns();
         SetMessageText(_message1);
+
+        // ScanButton.Click += ScanTheFolder;   // 测试使用事件绑定 button上没有明写 click
     }
 
     /*****************************************************************************************************************************/
 
     // 用于停止扫描
-    private CancellationTokenSource _cts;
+    public CancellationTokenSource _cts;
 
     // 保存扫描结果
     private List<DuplicateFilesEntryWrapper> _scanResultDuplicateFileList;
 
     private static string _message0 = "";
-    private string _message1 = "只扫描重复文件";
+    private string _message1 = "扫描文件夹下文件, 把重复的文件显示出来";
     private string _message2 = "可管理所有文件";
 
     /*****************************************************************************************************************************/
@@ -126,10 +128,10 @@ public partial class MainWindow : Window
     /// <param name="e"></param>
     private async void ScanTheFolder(object sender, RoutedEventArgs e)
     {
+        ScanButton.IsEnabled = false;
         Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
         string scanTypeText = ScanType.Text;
         string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
-        SetMessageText($"扫描{_message0}开始");
 
         _cts = new CancellationTokenSource();
         string? theFilePath = TheFilePath.Text?.Trim();
@@ -148,6 +150,7 @@ public partial class MainWindow : Window
                     {
                         if (driveInfo.IsReady)
                         {
+                            SetMessageText($"扫描{_message0}开始");
                             Log.Information($"开始全盘扫描");
                             Task task = Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
                             await ScanTaskMessage(task);
@@ -157,6 +160,7 @@ public partial class MainWindow : Window
             }
             else
             {
+                SetMessageText($"扫描{_message0}开始");
                 Log.Information($"开始扫描 [{theFilePath}] {scanTypeText}");
                 Task task = Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
                 await ScanTaskMessage(task);
@@ -167,15 +171,17 @@ public partial class MainWindow : Window
             _mainViewModel.FileList?.Clear();
             MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             Log.Error("扫描已取消");
+            SetMessageText("扫描时发生异常");
         }
         finally
         {
+            ScanButton.IsEnabled = true;
             _cts.Dispose();
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
     }
 
-    private async Task ScanTaskMessage(Task task)
+    public async Task ScanTaskMessage(Task task)
     {
         await task;
         if (task.Status == TaskStatus.RanToCompletion)
@@ -197,7 +203,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private string[]? InitAllowedExtensions(string scanTypeText)
+    public string[]? InitAllowedExtensions(string scanTypeText)
     {
         if (string.IsNullOrEmpty(scanTypeText))
         {
@@ -226,7 +232,7 @@ public partial class MainWindow : Window
     //     _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(entries);
     // }
 
-    private void Scan(string theFilePath, CancellationToken cancellationToken, string[]? allowedExtensions = null)
+    public void Scan(string theFilePath, CancellationToken cancellationToken, string[]? allowedExtensions = null)
     {
         List<DuplicateFilesEntry> list = GetDuplicateFiles(theFilePath, cancellationToken, allowedExtensions);
         _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list.Select(e => new DuplicateFilesEntryWrapper(e)));
@@ -477,7 +483,7 @@ public partial class MainWindow : Window
     /// 消息框
     /// </summary>
     /// <param name="message"></param>
-    private void SetMessageText(string message)
+    public void SetMessageText(string message)
     {
         MessageText.Text = message;
     }

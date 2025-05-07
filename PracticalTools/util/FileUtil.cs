@@ -59,6 +59,13 @@ public class FileUtil
 
     public static string[]? _nullExtensions = { };
 
+    /*****************************************************************************************************************************/
+
+    ~FileUtil()
+    {
+        Log.Information("FileUtil 垃圾回收");
+        Console.WriteLine("FileUtil 垃圾回收");
+    }
 
     // 初始化日志（仅在 FileUtil 类中使用）
     static FileUtil()
@@ -79,6 +86,8 @@ public class FileUtil
             .ToArray();
     }
 
+    /*****************************************************************************************************************************/
+    
     /// <summary>
     /// md5 较快
     /// </summary>

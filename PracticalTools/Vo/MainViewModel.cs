@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +11,7 @@ using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.Views;
+using Serilog;
 
 namespace PracticalTools.vo;
 
@@ -33,13 +35,36 @@ public class MainViewModel : INotifyPropertyChanged
     /**************************************************************************************************************/
 
     private readonly MyDbContext _myDbContext;
+    // private readonly MainWindow _mainWindow;
 
     public MainViewModel(MyDbContext myDbContext)
     {
+        // _mainWindow = mainWindow;
         _myDbContext = myDbContext;
         RefreshCommand = new RelayCommand<Object>(RefreshBlackList);
         RefreshBlackList<Object>(null);
+
+        // 测试 使用command 方式, [必须放这, 不能放到 MainWindow 里]
+        // ScanCommand = new RelayCommand<string>(
+        //     execute: ScanFolder,
+        //     canExecute: path => !string.IsNullOrEmpty(path) && !IsScanning // 只有路径非空才允许执行
+        // );
     }
+
+    // private bool _isScanning;
+    //
+    // public bool IsScanning
+    // {
+    //     get => _isScanning;
+    //     set
+    //     {
+    //         _isScanning = value;
+    //         OnPropertyChanged(nameof(IsScanning));
+    //     }
+    // }
+
+    // 测试 使用command 方式, [必须放这, 不能放到 MainWindow 里]
+    public ICommand ScanCommand { get; }
 
     // 保存数据库数据
     public List<DuplicateFilesEntry> DuplicateFilesEntries { get; set; }
@@ -69,7 +94,7 @@ public class MainViewModel : INotifyPropertyChanged
                 if (_fileList != null)
                 {
                     // foreach (var item in _fileList)
-                        // item.PropertyChanged += FileItem_PropertyChanged;
+                    // item.PropertyChanged += FileItem_PropertyChanged;
                 }
 
                 OnPropertyChanged(nameof(FileList));
@@ -170,6 +195,68 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /**************************************************************************************************************/
+
+    /// <summary>
+    /// 测试 使用command 方式, [循环依赖了, 如果没有的话, 应该是能用的]
+    /// </summary>
+    /// <param name="path"></param>
+    // public async void ScanFolder(string path)
+    // {
+    //     Console.WriteLine(path);
+    //     _isScanning = true;
+    //     _mainWindow.ScanButton.IsEnabled = false;
+    //     Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
+    //     string scanTypeText = _mainWindow.ScanType.Text;
+    //     string[]? allowedExtensions = _mainWindow.InitAllowedExtensions(scanTypeText);
+    //
+    //     _mainWindow._cts = new CancellationTokenSource();
+    //     string? theFilePath = _mainWindow.TheFilePath.Text?.Trim();
+    //
+    //     try
+    //     {
+    //         if (string.IsNullOrEmpty(theFilePath))
+    //         {
+    //             MessageBoxResult messageBoxResult = MessageBox.Show("没有选择任何文件夹, 将扫描整个电脑",
+    //                 "提示",
+    //                 MessageBoxButton.OKCancel,
+    //                 MessageBoxImage.Question);
+    //             if (messageBoxResult == MessageBoxResult.OK)
+    //             {
+    //                 foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
+    //                 {
+    //                     if (driveInfo.IsReady)
+    //                     {
+    //                         _mainWindow.SetMessageText($"扫描开始");
+    //                         Log.Information($"开始全盘扫描");
+    //                         Task task = Task.Run(() => _mainWindow.Scan(driveInfo.RootDirectory.FullName, _mainWindow._cts.Token, allowedExtensions));
+    //                         await _mainWindow.ScanTaskMessage(task);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         else
+    //         {
+    //             _mainWindow.SetMessageText($"扫描开始");
+    //             Log.Information($"开始扫描 [{theFilePath}] {scanTypeText}");
+    //             Task task = Task.Run(() => _mainWindow.Scan(theFilePath, _mainWindow._cts.Token, allowedExtensions));
+    //             await _mainWindow.ScanTaskMessage(task);
+    //         }
+    //     }
+    //     catch (Exception exception)
+    //     {
+    //         FileList?.Clear();
+    //         MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+    //         Log.Error("扫描已取消");
+    //         _mainWindow.SetMessageText("扫描时发生异常");
+    //     }
+    //     finally
+    //     {
+    //         _isScanning = false;
+    //         _mainWindow.ScanButton.IsEnabled = true;
+    //         _mainWindow._cts.Dispose();
+    //         Mouse.OverrideCursor = null; // 恢复默认鼠标样式
+    //     }
+    // }
 
     // private void FileItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     // {

@@ -131,9 +131,27 @@
                         <ComboBoxItem Content="无类型" />
                     </ComboBox>
                     <Button Grid.Row="0" Grid.Column="4"
+                            x:Name="ScanButton"
                             Margin="5,0,0,0"
                             Padding="0"
                             Content="开始扫描" Click="ScanTheFolder" />
+
+                    <!-- 测试使用事件绑定 button上没有明写 click -->
+                    <!-- <Button Grid.Row="0" Grid.Column="4" -->
+                    <!--         x:Name="ScanButton" -->
+                    <!--         Margin="5,0,0,0" -->
+                    <!--         Padding="0" -->
+                    <!--         Content="开始扫描" /> -->
+
+                    <!-- 测试 使用command 方式,  -->
+                    <!-- <Button Grid.Row="0" Grid.Column="4" -->
+                    <!--         x:Name="ScanButton" -->
+                    <!--         Margin="5,0,0,0" -->
+                    <!--         Padding="0" -->
+                    <!--         Content="开始扫描" -->
+                    <!--         Command="{Binding ScanCommand}" -->
+                    <!--         CommandParameter="{Binding Text, ElementName=TheFilePath}" /> -->
+
                     <Button Grid.Row="0" Grid.Column="5"
                             Margin="5,0,0,0"
                             Padding="0"
