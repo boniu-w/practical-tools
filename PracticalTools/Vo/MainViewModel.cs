@@ -205,12 +205,12 @@ public class MainViewModel : INotifyPropertyChanged
     {
         try
         {
-            DuplicateFilesEntries = _myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList();
+            // DuplicateFilesEntries = _myDbContext.DuplicateFiles.OrderByDescending(e => e.FileCreateTime).ToList();
 
             // 直接赋值，不用管 PropertyChanged
-            FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(
-                DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e))
-            );
+            // FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(
+            //     DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e))
+            // );
 
             Blacklists = new ObservableCollection<BlacklistEntry>(
                 _myDbContext.Blacklist.OrderByDescending(e => e.UpdateTime)

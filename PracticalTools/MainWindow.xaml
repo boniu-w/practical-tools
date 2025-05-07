@@ -52,26 +52,10 @@
             <Setter Property="Padding" Value="0"></Setter>
         </Style>
 
-        <!-- 管用, 但破环了 materialdesign  -->
-        <!-- Background="{TemplateBinding Background}" -->
-        <!-- Padding="8,4" -->
-        <!-- <Style TargetType="TabItem" BasedOn="{StaticResource MaterialDesignTabItem}"> -->
-        <!--     <Setter Property="Template"> -->
-        <!--         <Setter.Value> -->
-        <!--             <ControlTemplate TargetType="TabItem"> -->
-        <!--                 <Border BorderBrush="Brown" -->
-        <!--                         BorderThickness="0,0,1,0" -->
-        <!--                         > -->
-        <!--                     <ContentPresenter ContentSource="Header" -->
-        <!--                                       VerticalAlignment="Center" -->
-        <!--                                       HorizontalAlignment="Center" -->
-        <!--                     /> -->
-        <!--                 </Border> -->
-        <!--             </ControlTemplate> -->
-        <!--         </Setter.Value> -->
-        <!--     </Setter> -->
-        <!-- </Style> -->
-
+        <Style x:Key="RightGrid" TargetType="Grid">
+            <Setter Property="Margin" Value="10,10,5,0"></Setter>
+            <Setter Property="Background" Value="White"></Setter>
+        </Style>
     </Window.Resources>
 
 
@@ -87,11 +71,24 @@
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="10*" />
+                    <RowDefinition Height="10*" />
                     <RowDefinition Height="90*" />
                 </Grid.RowDefinitions>
 
+                <Grid Grid.Row="0" Style="{StaticResource RightGrid}">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Message: "
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Foreground="#0073b9" />
+                        <TextBlock x:Name="MessageText"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+
                 <!-- 选择文件夹 row0 -->
-                <Grid Grid.Row="0" Background="White" Margin="10,10,5,0">
+                <Grid Grid.Row="1" Background="White" Margin="10,10,5,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="50*" />
                     </Grid.RowDefinitions>
@@ -144,13 +141,13 @@
                 </Grid>
 
                 <!-- 扫描结果 和 扫描历史 row1 -->
-                <TabControl Grid.Row="1"
-                            Name="MyTabControl"
+                <TabControl Grid.Row="2"
+                            x:Name="MyTabControl"
                             Margin="10,10,5,0"
                             Background="White"
                             SelectionChanged="TabControl_SelectionChanged">
 
-                    <TabItem Name="ScanResult">
+                    <TabItem x:Name="ScanResult">
                         <TabItem.Header>
                             <TextBlock Text="扫描结果" />
                         </TabItem.Header>
@@ -198,7 +195,7 @@
                             </Grid>
 
                             <DataGrid Grid.Row="1"
-                                      Name="DuplicateFiles"
+                                      x:Name="DuplicateFiles"
                                       ItemsSource="{Binding FileList}"
                                       Background="White"
                                       BorderBrush="#FFFAF0"
@@ -252,7 +249,7 @@
                                       Background="White"
                                       Margin="10,10,5,0"
                                       ItemsSource="{Binding HistoryFileList}"
-                                      Name="DuplicateFilesHistory"
+                                      x:Name="DuplicateFilesHistory"
                                       BorderBrush="#FFFAF0"
                                       BorderThickness="1"
                                       AutoGenerateColumns="False"
@@ -274,6 +271,17 @@
                 </TabControl>
             </Grid>
         </TabItem>
+
+        <TabItem Header="文件管理">
+            <Grid Background="#f2f3f8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="90*" />
+                </Grid.RowDefinitions>
+
+            </Grid>
+        </TabItem>
+
         <TabItem Header="黑名单">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
@@ -283,7 +291,7 @@
 
                 <DataGrid Grid.Row="0"
                           Background="White" Margin="10,10,5,0"
-                          Name="BlackL"
+                          x:Name="BlackL"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           ItemsSource="{Binding Blacklists}">
@@ -316,7 +324,7 @@
         </TabItem>
 
         <TabItem Header="test2">
-            <DataGrid Name="MyDataGrid"
+            <DataGrid x:Name="MyDataGrid"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       ColumnWidth="*">

@@ -42,6 +42,7 @@ public partial class MainWindow : Window
         _sqLiteDemo = sqLiteDemo;
         _duplicateFilesService = duplicateFilesService;
         SetupDataGridColumns();
+        SetMessageText(_message1);
     }
 
     /*****************************************************************************************************************************/
@@ -51,6 +52,11 @@ public partial class MainWindow : Window
 
     // 保存扫描结果
     private List<DuplicateFilesEntryWrapper> _scanResultDuplicateFileList;
+
+    private static string _message0 = "";
+    private string _message1 = "只扫描重复文件";
+    private string _message2 = "可管理所有文件";
+
     /*****************************************************************************************************************************/
 
     public void SqliteTest(Object sender, EventArgs args)
@@ -123,6 +129,7 @@ public partial class MainWindow : Window
         Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
         string scanTypeText = ScanType.Text;
         string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
+        SetMessageText($"扫描{_message0}开始");
 
         _cts = new CancellationTokenSource();
         string? theFilePath = TheFilePath.Text?.Trim();
@@ -174,16 +181,19 @@ public partial class MainWindow : Window
         if (task.Status == TaskStatus.RanToCompletion)
         {
             Log.Information("扫描完成");
+            SetMessageText("扫描完成");
         }
         else if (task.Status == TaskStatus.Faulted)
         {
             // 任务执行失败，可以通过 task.Exception 获取异常
             Log.Error($"扫描失败 {task.Exception}");
+            SetMessageText($"扫描失败 {task.Exception}");
         }
         else if (task.Status == TaskStatus.Canceled)
         {
             // 任务被取消
             Log.Information("扫描取消");
+            SetMessageText("扫描取消");
         }
     }
 
@@ -461,5 +471,14 @@ public partial class MainWindow : Window
             "Id" => new DataGridLength(80), // 固定像素宽度
             _ => new DataGridLength(1, DataGridLengthUnitType.Star),
         };
+    }
+
+    /// <summary>
+    /// 消息框
+    /// </summary>
+    /// <param name="message"></param>
+    private void SetMessageText(string message)
+    {
+        MessageText.Text = message;
     }
 }
