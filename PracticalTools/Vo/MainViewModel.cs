@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,7 +10,6 @@ using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.Views;
-using Serilog;
 
 namespace PracticalTools.vo;
 

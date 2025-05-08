@@ -85,6 +85,13 @@
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center" />
                     </StackPanel>
+                    <ProgressBar x:Name="ScanProgress"
+                                 Visibility="Collapsed"
+                                 IsIndeterminate="True"
+                                 Foreground="Green"
+                                 Background="#FFE0E0E0"
+                                 VerticalAlignment="Bottom"
+                                 HorizontalAlignment="Stretch" />
                 </Grid>
 
                 <!-- 选择文件夹 row0 -->
@@ -348,5 +355,10 @@
                       ColumnWidth="*">
             </DataGrid>
         </TabItem>
+
+        <TabItem Header="test3">
+
+        </TabItem>
+
     </TabControl>
 </Window>

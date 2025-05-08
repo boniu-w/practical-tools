@@ -150,20 +150,20 @@ public partial class MainWindow : Window
                     {
                         if (driveInfo.IsReady)
                         {
-                            SetMessageText($"扫描{_message0}开始");
+                            ScanMessageOfStart();
                             Log.Information($"开始全盘扫描");
                             Task task = Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
-                            await ScanTaskMessage(task);
+                            await ScanTaskMessageOfEnd(task);
                         }
                     }
                 }
             }
             else
             {
-                SetMessageText($"扫描{_message0}开始");
+                ScanMessageOfStart();
                 Log.Information($"开始扫描 [{theFilePath}] {scanTypeText}");
                 Task task = Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
-                await ScanTaskMessage(task);
+                await ScanTaskMessageOfEnd(task);
             }
         }
         catch (Exception exception)
@@ -171,17 +171,25 @@ public partial class MainWindow : Window
             _mainViewModel.FileList?.Clear();
             MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             Log.Error("扫描已取消");
-            SetMessageText("扫描时发生异常");
+            SetMessageText("扫描已取消");
         }
         finally
         {
             ScanButton.IsEnabled = true;
+            ScanProgress.Visibility = Visibility.Collapsed;
+            ScanProgress.Value = 0;
             _cts.Dispose();
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
     }
 
-    public async Task ScanTaskMessage(Task task)
+    private void ScanMessageOfStart()
+    {
+        SetMessageText($"扫描{_message0}开始");
+        ScanProgress.Visibility = Visibility.Visible;
+    }
+
+    public async Task ScanTaskMessageOfEnd(Task task)
     {
         await task;
         if (task.Status == TaskStatus.RanToCompletion)
