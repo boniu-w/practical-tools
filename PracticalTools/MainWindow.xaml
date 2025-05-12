@@ -310,32 +310,81 @@
         <TabItem Header="黑名单">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="0.5*"></RowDefinition>
-                    <RowDefinition Height="0.5*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <DataGrid Grid.Row="0"
-                          Background="White" Margin="10,10,5,0"
-                          x:Name="BlackL"
-                          AutoGenerateColumns="False"
-                          CanUserAddRows="False"
-                          ItemsSource="{Binding Blacklists}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn IsReadOnly="True" Header="平台名称(淘宝, 知乎, b站)" Binding="{Binding PlatformName}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="作者" Binding="{Binding Author}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="作品" Binding="{Binding Product}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="作品日期" Binding="{Binding WorksTime}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="原因" Binding="{Binding Reason}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="类型(电商, 视频网站, 知识网站)" Binding="{Binding WorksType}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="统一社会信用代码" Binding="{Binding UnifiedSocialCreditIdentifier}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="备注" Binding="{Binding Remarks}" />
-                        <DataGridTextColumn IsReadOnly="True" Header="创建时间" Binding="{Binding CreateTime}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                <!-- <DataGrid Grid.Row="0" -->
+                <!--           Background="White" Margin="10,10,5,0" -->
+                <!--           x:Name="BlackL" -->
+                <!--           AutoGenerateColumns="False" -->
+                <!--           CanUserAddRows="False" -->
+                <!--           ItemsSource="{Binding Blacklists}"> -->
+                <!--     <DataGrid.Columns> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="平台名称(淘宝, 知乎, b站)" Binding="{Binding PlatformName}" /> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="作者" Binding="{Binding Author}" /> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="作品" Binding="{Binding Product}" /> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="作品日期" Binding="{Binding WorksTime}" /> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="原因" Binding="{Binding Reason}" /> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="类型(电商, 视频网站, 知识网站)" Binding="{Binding WorksType}" /> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="统一社会信用代码" Binding="{Binding UnifiedSocialCreditIdentifier}" /> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="备注" Binding="{Binding Remarks}" /> -->
+                <!--         <DataGridTextColumn IsReadOnly="True" Header="创建时间" Binding="{Binding CreateTime}" /> -->
+                <!--     </DataGrid.Columns> -->
+                <!-- </DataGrid> -->
+                <!-- -->
+                <!-- <Grid Grid.Row="1" Background="White" Margin="10,10,5,0"> -->
+                <!--     <Button Content="刷新" Command="{Binding RefreshCommand}" /> -->
+                <!-- </Grid> -->
 
-                <Grid Grid.Row="1" Background="White" Margin="10,10,5,0">
-                    <Button Content="刷新" Command="{Binding RefreshCommand}" />
+                <Grid Row="0" Style="{StaticResource RightGrid}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid Row="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="AddBlackButton"
+                                    Content="新增"
+                                    Click="AddNewItem" />
+
+                            <Button Content="不新增"
+                                    Click="CancelNewItem" />
+                        </StackPanel>
+                    </Grid>
+
+                    <materialDesign:Card Grid.Row="1"
+                                         x:Name="AddCardFormVisibility"
+                                         Visibility="Collapsed">
+                        <StackPanel>
+                            <TextBlock Text="表单内容"
+                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       Margin="0,0,0,16" />
+
+                            <TextBox materialDesign:HintAssist.Hint="姓名"
+                                     Width="300"
+                                     Margin="0,0,0,8" />
+
+                            <TextBox materialDesign:HintAssist.Hint="邮箱"
+                                     Width="300"
+                                     Margin="0,0,0,8" />
+
+                            <TextBox materialDesign:HintAssist.Hint="电话"
+                                     Width="300"
+                                     Margin="0,0,0,8" />
+
+                            <Button Content="保存"
+                                    Style="{StaticResource MaterialDesignRaisedButton}"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,16,0,0" />
+                        </StackPanel>
+                    </materialDesign:Card>
                 </Grid>
+
+                <Grid Row="1" Style="{StaticResource RightGrid}">
+
+                </Grid>
+
             </Grid>
         </TabItem>
 

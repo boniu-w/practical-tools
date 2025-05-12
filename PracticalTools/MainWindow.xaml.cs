@@ -495,4 +495,14 @@ public partial class MainWindow : Window
     {
         MessageText.Text = message;
     }
+
+    private void AddNewItem(object sender, RoutedEventArgs e)
+    {
+        AddCardFormVisibility.Visibility =  Visibility.Visible ;
+    }
+    
+    private void CancelNewItem(object sender, RoutedEventArgs e)
+    {
+        AddCardFormVisibility.Visibility =  Visibility.Collapsed ;
+    }
 }
