@@ -23,6 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Accounting\Service\" />
+        <Folder Include="Accounting\Wrapper\" />
         <Folder Include="Json\" />
     </ItemGroup>
 

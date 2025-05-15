@@ -297,7 +297,7 @@
             </Grid>
         </TabItem>
 
-        <TabItem Header="文件管理">
+        <TabItem Header="文件管理" x:Name="FileManage">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="10*" />
@@ -342,7 +342,13 @@
                         <RowDefinition Height="Auto"></RowDefinition>
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
+
                     <Grid Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+
                         <StackPanel Orientation="Horizontal">
                             <Button x:Name="AddBlackButton"
                                     Content="新增"
@@ -353,32 +359,47 @@
                         </StackPanel>
                     </Grid>
 
-                    <materialDesign:Card Grid.Row="1"
-                                         x:Name="AddCardFormVisibility"
-                                         Visibility="Collapsed">
-                        <StackPanel>
-                            <TextBlock Text="表单内容"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                       Margin="0,0,0,16" />
+                    <Grid Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:Card Grid.Column="0"
+                                             x:Name="AddCardFormVisibility"
+                                             Visibility="Collapsed">
+                            <Border BorderThickness="10" BorderBrush="Chocolate">
+                                <StackPanel HorizontalAlignment="Center" Width="300">
+                                    <TextBlock Text="新增黑名单"
+                                               Style="{StaticResource MaterialDesignHeadline6TextBlock}" />
 
-                            <TextBox materialDesign:HintAssist.Hint="姓名"
-                                     Width="300"
-                                     Margin="0,0,0,8" />
+                                    <TextBox x:Name="PlatformName"
+                                             materialDesign:HintAssist.Hint="平台名称(淘宝, 知乎, b站)" />
 
-                            <TextBox materialDesign:HintAssist.Hint="邮箱"
-                                     Width="300"
-                                     Margin="0,0,0,8" />
+                                    <TextBox x:Name="Author"
+                                             materialDesign:HintAssist.Hint="作者" />
 
-                            <TextBox materialDesign:HintAssist.Hint="电话"
-                                     Width="300"
-                                     Margin="0,0,0,8" />
+                                    <DatePicker x:Name="WorksTime"
+                                                materialDesign:HintAssist.Hint="作品日期" />
 
-                            <Button Content="保存"
-                                    Style="{StaticResource MaterialDesignRaisedButton}"
-                                    HorizontalAlignment="Left"
-                                    Margin="0,16,0,0" />
-                        </StackPanel>
-                    </materialDesign:Card>
+                                    <TextBox x:Name="Reason"
+                                             materialDesign:HintAssist.Hint="原因" />
+
+                                    <TextBox x:Name="WorksType"
+                                             materialDesign:HintAssist.Hint="类型(电商, 视频网站, 知识网站)" />
+
+                                    <TextBox x:Name="UnifiedSocialCreditIdentifier"
+                                             materialDesign:HintAssist.Hint="统一社会信用代码" />
+
+                                    <TextBox x:Name="Remarks"
+                                             materialDesign:HintAssist.Hint="备注" />
+
+                                    <Button Content="保存" />
+                                </StackPanel>
+                            </Border>
+
+                        </materialDesign:Card>
+                    </Grid>
+
                 </Grid>
 
                 <Grid Row="1" Style="{StaticResource RightGrid}">
@@ -407,6 +428,24 @@
 
         <TabItem Header="test3">
 
+        </TabItem>
+
+        <TabItem Header="记账">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Row="0" Style="{StaticResource RightGrid}">
+
+                </Grid>
+
+                <Grid Row="1" Style="{StaticResource RightGrid}">
+
+                </Grid>
+            </Grid>
         </TabItem>
 
     </TabControl>
