@@ -263,17 +263,9 @@ public partial class MainWindow : Window
     /// <param name="allowedExtensions"></param>
     public void Scan(string[] theFilePaths, CancellationToken cancellationToken, string[]? allowedExtensions = null)
     {
-        List<DuplicateFilesEntry> arrayList = new List<DuplicateFilesEntry>();
-        foreach (string theFilePath in theFilePaths)
-        {
-            List<DuplicateFilesEntry> list = GetDuplicateFiles(theFilePath, cancellationToken, allowedExtensions);
-            arrayList.AddRange(list);
-        }
-
-        _mainViewModel.FileList =
-            new ObservableCollection<DuplicateFilesEntryWrapper>(
-                arrayList.Select(e => new DuplicateFilesEntryWrapper(e)));
-        _scanResultDuplicateFileList = arrayList.Select(e => new DuplicateFilesEntryWrapper(e)).ToList();
+        List<DuplicateFilesEntry> list = GetDuplicateFiles(theFilePaths, cancellationToken, allowedExtensions);
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list.Select(e => new DuplicateFilesEntryWrapper(e)));
+        _scanResultDuplicateFileList = list.Select(e => new DuplicateFilesEntryWrapper(e)).ToList();
     }
 
     private List<DuplicateFilesEntry> GetDuplicateFiles(string path, CancellationToken token = default,
@@ -283,6 +275,31 @@ public partial class MainWindow : Window
         _mainViewModel.HistoryFileList = new ObservableCollection<DuplicateFilesEntry>(files);
 
         List<DuplicateFilesEntry> list = files.GroupBy(f => f.Md5Value)
+            .Where(f => f.Count() > 1)
+            .SelectMany(g => g)
+            .ToList();
+        return list;
+    }
+
+    /// <summary>
+    /// 选择多个文件夹进行扫描
+    /// </summary>
+    /// <param name="paths"></param>
+    /// <param name="token"></param>
+    /// <param name="allowedExtensions"></param>
+    /// <returns></returns>
+    private List<DuplicateFilesEntry> GetDuplicateFiles(string[] paths, CancellationToken token = default,
+        string[]? allowedExtensions = null)
+    {
+        List<DuplicateFilesEntry> all = new List<DuplicateFilesEntry>();
+        foreach (string path in paths)
+        {
+            List<DuplicateFilesEntry> files = _duplicateFilesService.GetAllFiles(path, token, allowedExtensions);
+            all.AddRange(files);
+        }
+
+        _mainViewModel.HistoryFileList = new ObservableCollection<DuplicateFilesEntry>(all);
+        List<DuplicateFilesEntry> list = all.GroupBy(f => f.Md5Value)
             .Where(f => f.Count() > 1)
             .SelectMany(g => g)
             .ToList();
