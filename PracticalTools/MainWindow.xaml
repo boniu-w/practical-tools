@@ -47,7 +47,8 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="TheTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
+        <Style x:Key="TheTextBoxStyle" TargetType="TextBox"
+               BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
             <Setter Property="Margin" Value="5"></Setter>
             <Setter Property="Padding" Value="0"></Setter>
         </Style>
@@ -234,27 +235,35 @@
                                                             Header=""
                                                             Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                         <DataGridCheckBoxColumn.ElementStyle>
-                                            <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                            <Style TargetType="CheckBox"
+                                                   BasedOn="{StaticResource MaterialDesignCheckBox}">
                                                 <Setter Property="VerticalAlignment" Value="Center" />
                                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                             </Style>
                                         </DataGridCheckBoxColumn.ElementStyle>
                                         <DataGridCheckBoxColumn.EditingElementStyle>
-                                            <Style TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                            <Style TargetType="CheckBox"
+                                                   BasedOn="{StaticResource MaterialDesignCheckBox}">
                                                 <Setter Property="VerticalAlignment" Value="Center" />
                                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                             </Style>
                                         </DataGridCheckBoxColumn.EditingElementStyle>
                                     </DataGridCheckBoxColumn>
 
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名" Binding="{Binding Entry.FileName}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值[MD5]" Binding="{Binding Entry.Md5Value}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址" Binding="{Binding Entry.FilePath}" />
-                                    <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]" Binding="{Binding Entry.FileSize}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名"
+                                                        Binding="{Binding Entry.FileName}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值[MD5]"
+                                                        Binding="{Binding Entry.Md5Value}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址"
+                                                        Binding="{Binding Entry.FilePath}" />
+                                    <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]"
+                                                        Binding="{Binding Entry.FileSize}" />
                                     <!-- <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" /> -->
                                     <!-- <DataGridTextColumn Width="2*" IsReadOnly="False" Header="最后修改时间" Binding="{Binding Entry.FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" /> -->
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹" Binding="{Binding Entry.ScanDirectory}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间" Binding="{Binding Entry.ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹"
+                                                        Binding="{Binding Entry.ScanDirectory}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间"
+                                                        Binding="{Binding Entry.ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
@@ -281,14 +290,22 @@
                                       CanUserAddRows="False"
                                       HeadersVisibility="Column">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名" Binding="{Binding FileName}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值[MD5]" Binding="{Binding Md5Value}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址" Binding="{Binding FilePath}" />
-                                    <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]" Binding="{Binding FileSize}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间" Binding="{Binding FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间" Binding="{Binding FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描的文件夹" Binding="{Binding ScanDirectory}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描时间" Binding="{Binding ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名"
+                                                        Binding="{Binding FileName}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值[MD5]"
+                                                        Binding="{Binding Md5Value}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址"
+                                                        Binding="{Binding FilePath}" />
+                                    <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]"
+                                                        Binding="{Binding FileSize}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间"
+                                                        Binding="{Binding FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间"
+                                                        Binding="{Binding FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描的文件夹"
+                                                        Binding="{Binding ScanDirectory}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描时间"
+                                                        Binding="{Binding ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
@@ -414,7 +431,13 @@
                 <!-- <Button Click="SqliteTest" Content="Sqlite Test" /> -->
                 <!-- <Button Click="List" Content="List" /> -->
                 <!-- <Button Click="DeleteFiles" Content="DeleteFiles" /> -->
-                <Button Click="GetSelectedAll" Content="GetSelectedAll" />
+                <Grid>
+                    <Button Click="GetSelectedAll" Content="GetSelectedAll" />
+                </Grid>
+
+                <Grid>
+                    <Button Click="Exit" Content="退出程序" />
+                </Grid>
             </Grid>
         </TabItem>
 
