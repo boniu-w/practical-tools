@@ -1,10 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
@@ -146,16 +148,7 @@ public partial class MainWindow : Window
                     MessageBoxImage.Question);
                 if (messageBoxResult == MessageBoxResult.OK)
                 {
-                    foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
-                    {
-                        if (driveInfo.IsReady)
-                        {
-                            ScanMessageOfStart();
-                            Log.Information($"开始全盘扫描");
-                            Task task = Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
-                            await ScanTaskMessageOfEnd(task);
-                        }
-                    }
+                    await ScanAll(allowedExtensions);
                 }
             }
             else
@@ -170,7 +163,7 @@ public partial class MainWindow : Window
         {
             _mainViewModel.FileList?.Clear();
             MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-            Log.Error("扫描已取消");
+            Log.Error("扫描已取消", exception.StackTrace);
             SetMessageText("扫描已取消");
         }
         finally
@@ -180,6 +173,20 @@ public partial class MainWindow : Window
             ScanProgress.Value = 0;
             _cts.Dispose();
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
+        }
+    }
+
+    private async Task ScanAll(string[]? allowedExtensions)
+    {
+        foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
+        {
+            if (driveInfo.IsReady)
+            {
+                ScanMessageOfStart();
+                Log.Information($"开始全盘扫描");
+                Task task = Task.Run(() => Scan(driveInfo.RootDirectory.FullName, _cts.Token, allowedExtensions));
+                await ScanTaskMessageOfEnd(task);
+            }
         }
     }
 
@@ -243,16 +250,56 @@ public partial class MainWindow : Window
     public void Scan(string theFilePath, CancellationToken cancellationToken, string[]? allowedExtensions = null)
     {
         List<DuplicateFilesEntry> list = GetDuplicateFiles(theFilePath, cancellationToken, allowedExtensions);
+        _mainViewModel.FileList =
+            new ObservableCollection<DuplicateFilesEntryWrapper>(list.Select(e => new DuplicateFilesEntryWrapper(e)));
+        _scanResultDuplicateFileList = list.Select(e => new DuplicateFilesEntryWrapper(e)).ToList();
+    }
+
+    /// <summary>
+    /// 可选择多个文件夹进行扫描
+    /// </summary>
+    /// <param name="theFilePaths"></param>
+    /// <param name="cancellationToken"></param>
+    /// <param name="allowedExtensions"></param>
+    public void Scan(string[] theFilePaths, CancellationToken cancellationToken, string[]? allowedExtensions = null)
+    {
+        List<DuplicateFilesEntry> list = GetDuplicateFiles(theFilePaths, cancellationToken, allowedExtensions);
         _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list.Select(e => new DuplicateFilesEntryWrapper(e)));
         _scanResultDuplicateFileList = list.Select(e => new DuplicateFilesEntryWrapper(e)).ToList();
     }
 
-    private List<DuplicateFilesEntry> GetDuplicateFiles(string path, CancellationToken token = default, string[]? allowedExtensions = null)
+    private List<DuplicateFilesEntry> GetDuplicateFiles(string path, CancellationToken token = default,
+        string[]? allowedExtensions = null)
     {
         List<DuplicateFilesEntry> files = _duplicateFilesService.GetAllFiles(path, token, allowedExtensions);
         _mainViewModel.HistoryFileList = new ObservableCollection<DuplicateFilesEntry>(files);
 
         List<DuplicateFilesEntry> list = files.GroupBy(f => f.Md5Value)
+            .Where(f => f.Count() > 1)
+            .SelectMany(g => g)
+            .ToList();
+        return list;
+    }
+
+    /// <summary>
+    /// 选择多个文件夹进行扫描
+    /// </summary>
+    /// <param name="paths"></param>
+    /// <param name="token"></param>
+    /// <param name="allowedExtensions"></param>
+    /// <returns></returns>
+    private List<DuplicateFilesEntry> GetDuplicateFiles(string[] paths, CancellationToken token = default,
+        string[]? allowedExtensions = null)
+    {
+        List<DuplicateFilesEntry> all = new List<DuplicateFilesEntry>();
+        foreach (string path in paths)
+        {
+            List<DuplicateFilesEntry> files = _duplicateFilesService.GetAllFiles(path, token, allowedExtensions);
+            all.AddRange(files);
+        }
+
+        _mainViewModel.HistoryFileList = new ObservableCollection<DuplicateFilesEntry>(all);
+        List<DuplicateFilesEntry> list = all.GroupBy(f => f.Md5Value)
             .Where(f => f.Count() > 1)
             .SelectMany(g => g)
             .ToList();
@@ -304,7 +351,9 @@ public partial class MainWindow : Window
         SearchText.Text = "";
         SearchText.IsReadOnly = false;
         // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e)));
-        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_scanResultDuplicateFileList ??= new List<DuplicateFilesEntryWrapper>());
+        _mainViewModel.FileList =
+            new ObservableCollection<DuplicateFilesEntryWrapper>(_scanResultDuplicateFileList ??=
+                new List<DuplicateFilesEntryWrapper>());
     }
 
     /// <summary>
@@ -494,5 +543,36 @@ public partial class MainWindow : Window
     public void SetMessageText(string message)
     {
         MessageText.Text = message;
+    }
+
+    private void AddNewItem(object sender, RoutedEventArgs e)
+    {
+        AddCardFormVisibility.Visibility = Visibility.Visible;
+    }
+
+    private void CancelNewItem(object sender, RoutedEventArgs e)
+    {
+        AddCardFormVisibility.Visibility = Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// 程序将在x秒后退出
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void Exit(object sender, RoutedEventArgs e)
+    {
+        Title = "5 秒后关闭";
+
+        // 创建DispatcherTimer（WPF 专用定时器）
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        timer.Tick += (sender, e) =>
+        {
+            timer.Stop();
+            // Close(); // 关闭当前窗口
+            // 退出整个程序
+            Application.Current.Shutdown();
+        };
+        timer.Start();
     }
 }

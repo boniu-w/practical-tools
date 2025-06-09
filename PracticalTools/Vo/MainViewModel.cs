@@ -60,7 +60,7 @@ public class MainViewModel : INotifyPropertyChanged
     //         OnPropertyChanged(nameof(IsScanning));
     //     }
     // }
-
+    
     // 测试 使用command 方式, [必须放这, 不能放到 MainWindow 里]
     public ICommand ScanCommand { get; }
 
@@ -280,7 +280,6 @@ public class MainViewModel : INotifyPropertyChanged
     //     else
     //         IsAllSelected = null; // 部分选中
     // }
-
     private void RefreshBlackList<T>(T obj)
     {
         LoadBlackLists();
@@ -320,4 +319,5 @@ public class MainViewModel : INotifyPropertyChanged
                 break;
         }
     }
+    
 }
