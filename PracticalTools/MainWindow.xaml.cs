@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -12,6 +13,7 @@ using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.service;
 using PracticalTools.DuplicateFiles.Wrapper;
+using PracticalTools.GPG;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.vo;
@@ -572,5 +574,41 @@ public partial class MainWindow : Window
             Application.Current.Shutdown();
         };
         timer.Start();
+    }
+    
+    private async void OnEncryptClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    FileName = Path.GetFileNameWithoutExtension(openFileDialog.FileName) + ".gpg",
+                    Filter = "GPG Files (*.gpg)|*.gpg|All Files (*.*)|*.*"
+                };
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    EncryptButton.IsEnabled = false;
+                    StatusText.Text = "正在加密...";
+
+                    // 显示“处理中”状态，比如禁用按钮
+                    EncryptButton.IsEnabled = false;
+
+                    await Task.Run(() => { GpgHelper.EncryptFile(openFileDialog.FileName, saveFileDialog.FileName, "boniu-w@live.cn"); });
+
+                    StatusText.Text = "加密完成";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"加密失败: {ex.Message}";
+        }
+        finally
+        {
+            EncryptButton.IsEnabled = true;
+        }
     }
 }
