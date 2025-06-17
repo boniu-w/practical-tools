@@ -268,8 +268,7 @@ public partial class MainWindow : Window
         _scanResultDuplicateFileList = list.Select(e => new DuplicateFilesEntryWrapper(e)).ToList();
     }
 
-    private List<DuplicateFilesEntry> GetDuplicateFiles(string path, CancellationToken token = default,
-        string[]? allowedExtensions = null)
+    private List<DuplicateFilesEntry> GetDuplicateFiles(string path, CancellationToken token = default, string[]? allowedExtensions = null)
     {
         List<DuplicateFilesEntry> files = _duplicateFilesService.GetAllFiles(path, token, allowedExtensions);
         _mainViewModel.HistoryFileList = new ObservableCollection<DuplicateFilesEntry>(files);
@@ -288,8 +287,7 @@ public partial class MainWindow : Window
     /// <param name="token"></param>
     /// <param name="allowedExtensions"></param>
     /// <returns></returns>
-    private List<DuplicateFilesEntry> GetDuplicateFiles(string[] paths, CancellationToken token = default,
-        string[]? allowedExtensions = null)
+    private List<DuplicateFilesEntry> GetDuplicateFiles(string[] paths, CancellationToken token = default, string[]? allowedExtensions = null)
     {
         List<DuplicateFilesEntry> all = new List<DuplicateFilesEntry>();
         foreach (string path in paths)
@@ -554,7 +552,7 @@ public partial class MainWindow : Window
     {
         AddCardFormVisibility.Visibility = Visibility.Collapsed;
     }
-
+    
     /// <summary>
     /// 程序将在x秒后退出
     /// </summary>
