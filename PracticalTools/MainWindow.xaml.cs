@@ -102,6 +102,11 @@ public partial class MainWindow : Window
             _selectedFolder += folderDialog.FolderName;
             TheFilePath.Text = _selectedFolder;
             TheFilePath.IsReadOnly = true;
+
+            if (!string.IsNullOrEmpty(TheFilePath.Text))
+            {
+                PickFileButton.Content = "再选择一个文件夹";
+            }
         }
     }
 
@@ -374,6 +379,7 @@ public partial class MainWindow : Window
     {
         _selectedFolder = "";
         TheFilePath.Text = "";
+        PickFileButton.Content = "选择一个文件夹";
         TheFilePath.IsReadOnly = false;
     }
 
