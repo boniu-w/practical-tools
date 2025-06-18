@@ -87,13 +87,20 @@ public partial class MainWindow : Window
         Console.WriteLine(list.Count);
     }
 
+    private string _selectedFolder = "";
+
     private void PickFile(object sender, RoutedEventArgs e)
     {
         var folderDialog = new OpenFolderDialog();
         if (folderDialog.ShowDialog() == true)
         {
-            string selectedFolder = folderDialog.FolderName;
-            TheFilePath.Text = selectedFolder;
+            if (!string.IsNullOrEmpty(_selectedFolder))
+            {
+                _selectedFolder += ";";
+            }
+
+            _selectedFolder += folderDialog.FolderName;
+            TheFilePath.Text = _selectedFolder;
             TheFilePath.IsReadOnly = true;
         }
     }
@@ -127,6 +134,7 @@ public partial class MainWindow : Window
 
     /// <summary>
     /// 可停止扫描
+    /// 扫描单个文件夹
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
@@ -158,6 +166,60 @@ public partial class MainWindow : Window
                 ScanMessageOfStart();
                 Log.Information($"开始扫描 [{theFilePath}] {scanTypeText}");
                 Task task = Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
+                await ScanTaskMessageOfEnd(task);
+            }
+        }
+        catch (Exception exception)
+        {
+            _mainViewModel.FileList?.Clear();
+            MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            Log.Error("扫描已取消", exception.StackTrace);
+            SetMessageText("扫描已取消");
+        }
+        finally
+        {
+            ScanButton.IsEnabled = true;
+            ScanProgress.Visibility = Visibility.Collapsed;
+            ScanProgress.Value = 0;
+            _cts.Dispose();
+            Mouse.OverrideCursor = null; // 恢复默认鼠标样式
+        }
+    }
+
+    /// <summary>
+    /// 扫描多个文件夹
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private async void ScanTheFolders(object sender, RoutedEventArgs e)
+    {
+        ScanButton.IsEnabled = false;
+        Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
+        string scanTypeText = ScanType.Text;
+        string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
+
+        _cts = new CancellationTokenSource();
+        bool isEmpty = string.IsNullOrWhiteSpace(_selectedFolder);
+        string[] filePathes = isEmpty ? Array.Empty<string>() : _selectedFolder.Split(';');
+
+        try
+        {
+            if (filePathes.Length == 0)
+            {
+                MessageBoxResult messageBoxResult = MessageBox.Show("没有选择任何文件夹, 将扫描整个电脑",
+                    "提示",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Question);
+                if (messageBoxResult == MessageBoxResult.OK)
+                {
+                    await ScanAll(allowedExtensions);
+                }
+            }
+            else
+            {
+                ScanMessageOfStart();
+                Log.Information($"开始扫描 [{filePathes}] {scanTypeText}");
+                Task task = Task.Run(() => Scan(filePathes, _cts.Token, allowedExtensions));
                 await ScanTaskMessageOfEnd(task);
             }
         }
@@ -310,6 +372,7 @@ public partial class MainWindow : Window
 
     private void UnPickFile(object sender, RoutedEventArgs e)
     {
+        _selectedFolder = "";
         TheFilePath.Text = "";
         TheFilePath.IsReadOnly = false;
     }
@@ -577,7 +640,7 @@ public partial class MainWindow : Window
         };
         timer.Start();
     }
-    
+
     private async void OnEncryptClick(object sender, RoutedEventArgs e)
     {
         try
