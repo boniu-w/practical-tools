@@ -1,0 +1,33 @@
+﻿<!-- x:Class="PracticalTools.GPG.Test.EncryptedTabControl" -->
+<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:test="clr-namespace:PracticalTools.GPG.Test"
+    Height="450" Width="800">
+    <Grid>
+        <test:EncryptedTabControl x:Name="EncryptedTabControl">
+            <!-- 普通TabItem -->
+            <TabItem Header="普通标签">
+                <TextBlock Text="这是普通内容，不加密" Margin="20" FontSize="16" />
+            </TabItem>
+
+            <!-- 加密TabItem -->
+            <TabItem Header="加密标签"
+                     test:EncryptedTabControl.IsEncrypted="True"
+                     test:EncryptedTabControl.EncryptionKey="MySecretKey123">
+                <StackPanel Margin="20">
+                    <TextBlock Text="这是加密内容" FontSize="16" Margin="0,0,0,10" />
+                    <TextBox Text="敏感信息" Width="200" />
+                    <Button Content="保存" Margin="0,10,0,0" />
+                </StackPanel>
+            </TabItem>
+
+            <!-- 另一个加密TabItem -->
+            <TabItem Header="财务数据"
+                     test:EncryptedTabControl.IsEncrypted="True"
+                     test:EncryptedTabControl.EncryptionKey="FinancialKey456">
+                <DataGrid ItemsSource="{Binding FinancialData}" AutoGenerateColumns="True" Margin="20" />
+            </TabItem>
+        </test:EncryptedTabControl>
+    </Grid>
+</UserControl>
