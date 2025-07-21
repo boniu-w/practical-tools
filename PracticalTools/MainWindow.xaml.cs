@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
+using System.Data;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -11,11 +12,14 @@ using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.service;
 using PracticalTools.DuplicateFiles.Wrapper;
+using PracticalTools.FileManager.Model;
+using PracticalTools.FileManager.Util;
 using PracticalTools.GPG;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.vo;
 using Serilog;
+using ColumnHeaderAttribute = PracticalTools.util.ColumnHeaderAttribute;
 using Window = System.Windows.Window;
 
 namespace PracticalTools;
@@ -677,5 +681,69 @@ public partial class MainWindow : Window
         {
             EncryptButton.IsEnabled = true;
         }
+    }
+
+    /// <summary>
+    /// 解密
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private async void OnDecryptClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    FileName = Path.GetFileNameWithoutExtension(openFileDialog.FileName),
+                    Filter = "All Files (*.*)|*.*"
+                };
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    DecryptButton.IsEnabled = false;
+                    StatusText.Text = "正在解密...";
+
+                    // 显示“处理中”状态，比如禁用按钮
+                    DecryptButton.IsEnabled = false;
+
+                    await Task.Run(() => { GpgHelper.DecryptFile(openFileDialog.FileName, saveFileDialog.FileName); });
+
+                    StatusText.Text = "解密完成";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"解密失败: {ex.Message}";
+        }
+        finally
+        {
+            DecryptButton.IsEnabled = true;
+        }
+    }
+
+    public void TestImport(object sender, RoutedEventArgs e)
+    {
+        DataTable data = FileHelper.ImportExcelFile("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*");
+
+        DataColumnCollection columns = data.Columns;
+        List<MyFile> myFiles = DataTableMapper.MapToMyFileList(data);
+        
+        if (data != null)
+        {
+            // 处理导入的数据，例如显示在 UI 中
+            foreach (DataRow row in data.Rows)
+            {
+                Console.WriteLine(string.Join(", ", row.ItemArray));
+                break;
+            }
+        }
+        else
+        {
+            Console.WriteLine("导入失败或未选择文件");
+        }
+
     }
 }
