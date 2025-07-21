@@ -625,7 +625,7 @@ public partial class MainWindow : Window
     {
         AddCardFormVisibility.Visibility = Visibility.Collapsed;
     }
-    
+
     /// <summary>
     /// 程序将在x秒后退出
     /// </summary>
@@ -724,26 +724,56 @@ public partial class MainWindow : Window
         }
     }
 
-    public void TestImport(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// 进度条真管用
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    public async void TestImport(object sender, RoutedEventArgs e)
     {
         DataTable data = FileHelper.ImportExcelFile("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*");
+        if (data == null || data.Rows.Count == 0)
+        {
+            MessageBox.Show("导入数据为空！");
+            return;
+        }
 
         DataColumnCollection columns = data.Columns;
         List<MyFile> myFiles = DataTableMapper.MapToMyFileList(data);
-        
-        if (data != null)
+        MyFileImport.Text = myFiles.Count.ToString();
+        int total = myFiles.Count;
+        if (total == 0)
         {
-            // 处理导入的数据，例如显示在 UI 中
-            foreach (DataRow row in data.Rows)
-            {
-                Console.WriteLine(string.Join(", ", row.ItemArray));
-                break;
-            }
-        }
-        else
-        {
-            Console.WriteLine("导入失败或未选择文件");
+            MessageBox.Show("未解析到任何有效数据！");
+            return;
         }
 
+        if (myFiles.Count > 0)
+        {
+            Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
+            MyFileImportProgressBar.Minimum = 0;
+            MyFileImportProgressBar.Maximum = total;
+            MyFileImportProgressBar.Value = 0;
+            MyFileImportProgressBar.Visibility = Visibility.Visible;
+            Progress<int> progress = new Progress<int>(value =>
+            {
+                MyFileImportProgressBar.Value = value;
+                // 你可以更新进度条，比如 progressBar.Value = value;
+            });
+
+            await Task.Run(() =>
+            {
+                for (int i = 0; i < myFiles.Count; i++)
+                {
+                    Application.Current.Dispatcher.Invoke(() => { _mainViewModel.AddMyFile(myFiles[i]); });
+
+                    ((IProgress<int>)progress).Report(i + 1);
+                }
+            });
+
+            MyFileImportProgressBar.Visibility = Visibility.Hidden;
+            MessageBox.Show($"导入完成, 共添加 {total} 条数据");
+            Mouse.OverrideCursor = null; // 恢复默认鼠标样式
+        }
     }
 }

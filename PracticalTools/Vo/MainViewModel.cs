@@ -7,6 +7,8 @@ using System.Windows.Input;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
+using PracticalTools.FileManager.Model;
+using PracticalTools.FileManager.Service;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.Views;
@@ -60,7 +62,7 @@ public class MainViewModel : INotifyPropertyChanged
     //         OnPropertyChanged(nameof(IsScanning));
     //     }
     // }
-    
+
     // 测试 使用command 方式, [必须放这, 不能放到 MainWindow 里]
     public ICommand ScanCommand { get; }
 
@@ -319,5 +321,10 @@ public class MainViewModel : INotifyPropertyChanged
                 break;
         }
     }
-    
+
+    public void AddMyFile(MyFile myFile)
+    {
+        MyFileService myFileService = new MyFileService();
+        myFileService.Add(myFile, _myDbContext);
+    }
 }

@@ -325,7 +325,11 @@
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0">
-                    <Button x:Name="ImportButton" Content="导入" Click="TestImport"></Button>
+                    <StackPanel>
+                        <TextBox x:Name="MyFileImport"></TextBox>
+                        <ProgressBar x:Name="MyFileImportProgressBar" Visibility="Hidden"></ProgressBar>
+                        <Button x:Name="ImportButton" Content="导入" Click="TestImport"></Button>
+                    </StackPanel>
                 </Grid>
             </Grid>
         </TabItem>
@@ -461,7 +465,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                
+
                 <Grid Grid.Row="0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -480,7 +484,7 @@
                     <TextBlock x:Name="StatusText" Grid.Row="2" Margin="50,10,0,5" Text="准备就绪" />
 
                 </Grid>
-               
+
                 <Grid Grid.Row="1">
                     <Button x:Name="DecryptButton" Click="OnDecryptClick" Content="解密文件"></Button>
                 </Grid>

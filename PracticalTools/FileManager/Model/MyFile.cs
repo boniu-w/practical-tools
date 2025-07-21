@@ -15,6 +15,12 @@ public class MyFile
 
     [ColumnHeader("Hash值[MD5]")] public string? Md5Value { get; set; }
 
+    public DateTime? CreateTime { get; set; }
+
+    public DateTime? UpdateTime { get; set; }
+    
+    public string? Type { get; set; }
+
     public override string ToString()
     {
         return $"Id: {Id}\n" +
