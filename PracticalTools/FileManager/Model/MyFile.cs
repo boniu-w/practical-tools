@@ -12,15 +12,14 @@ public class MyFile
     [ColumnHeader("文件路径")] public string? FilePath { get; set; }
     [ColumnHeader("文件创建时间")] public DateTime? FileCreateTime { get; set; }
     [ColumnHeader("文件大小[K]")] public double? FileSize { get; set; }
-    public DateTime? FileLastedModifiedTime { get; set; }
-
+    [ColumnHeader("最后修改时间")] public DateTime? FileLastedModifiedTime { get; set; }
     [ColumnHeader("Hash值[MD5]")] public string? Md5Value { get; set; }
 
     public DateTime? CreateTime { get; set; }
 
     public DateTime? UpdateTime { get; set; }
 
-    public string? Type { get; set; }
+    [ColumnHeader("类别")] public string? Type { get; set; }
 
     public override string ToString()
     {

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.EntityFrameworkCore;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
@@ -324,6 +325,14 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void AddMyFile(MyFile myFile)
     {
+        List<MyFile> myFiles = _myDbContext.MyFile.ToList();
+        List<string?> md5List = myFiles.Select(e => e.Md5Value).ToList();
+        string? md5Value = myFile.Md5Value;
+        if (md5List.Contains(md5Value))
+        {
+            return;
+        }
+
         MyFileService myFileService = new MyFileService();
         myFileService.Add(myFile, _myDbContext);
     }

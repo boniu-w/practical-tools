@@ -14,13 +14,8 @@ public class MyFileService
 
     public void Add(MyFile file, MyDbContext dbContext)
     {
-        if (file == null) return;
-        if (file.Id == null)
-        {
-            file.Id = new SnowflakeId(1, 1).NextId().ToString();
-        }
+        file.Id = new SnowflakeId(1, 1).NextId().ToString();
 
-        // file.Type = "图片";
         file.CreateTime = DateTime.Now;
         file.UpdateTime = DateTime.Now;
         EntityEntry<MyFile> entry = dbContext.MyFile.Add(file);

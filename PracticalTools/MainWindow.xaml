@@ -324,7 +324,7 @@
                     <RowDefinition Height="90*" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
+                <Grid Grid.Row="0" Style="{StaticResource RightGrid}">
                     <StackPanel>
                         <TextBox x:Name="MyFileImport"></TextBox>
                         <ProgressBar x:Name="MyFileImportProgressBar" Visibility="Hidden"></ProgressBar>
