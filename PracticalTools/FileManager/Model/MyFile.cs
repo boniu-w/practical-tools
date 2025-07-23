@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Globalization;
 using System.Reflection;
+using Serilog;
 
 namespace PracticalTools.FileManager.Model;
 
@@ -18,7 +19,7 @@ public class MyFile
     public DateTime? CreateTime { get; set; }
 
     public DateTime? UpdateTime { get; set; }
-    
+
     public string? Type { get; set; }
 
     public override string ToString()
@@ -71,70 +72,20 @@ public static class DataTableMapper
                         {
                             if (prop.PropertyType == typeof(DateTime?))
                             {
-                                DateTime parsedDate;
-                                if (value is string strValue)
-                                {
-                                    if (DateTime.TryParseExact(strValue, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                                            out parsedDate))
-                                    {
-                                        prop.SetValue(myFile, parsedDate);
-                                    }
-                                    else if (DateTime.TryParseExact(strValue, "MM/dd/yy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                                                 out parsedDate))
-                                    {
-                                        prop.SetValue(myFile, parsedDate);
-                                    }
-                                    else if (DateTime.TryParseExact(strValue, "yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                                                 out parsedDate))
-                                    {
-                                        prop.SetValue(myFile, parsedDate);
-                                    }
-                                    else if (DateTime.TryParseExact(strValue, "yyyy/MM/d HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                                                 out parsedDate))
-                                    {
-                                        prop.SetValue(myFile, parsedDate);
-                                    }
-                                    else if (DateTime.TryParseExact(strValue, "yyyy/M/dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                                                 out parsedDate))
-                                    {
-                                        prop.SetValue(myFile, parsedDate);
-                                    }
-                                    else if (DateTime.TryParseExact(strValue, "yyyy/M/d HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
-                                                 out parsedDate))
-                                    {
-                                        prop.SetValue(myFile, parsedDate);
-                                    }
-                                    else
-                                    {
-                                        prop.SetValue(myFile, null); // 如果解析失败，则设置为 null
-                                    }
-                                }
-                                else if (DateTime.TryParse(value.ToString(), out parsedDate))
-                                {
-                                    prop.SetValue(myFile, parsedDate);
-                                }
+                                DateDataProcessing(value, prop, myFile);
                             }
-                            // 检查并转换字符串为 double? 类型
                             else if (prop.PropertyType == typeof(double?) && value is string doubleValue)
                             {
-                                double parsedValue;
-                                if (double.TryParse(doubleValue, out parsedValue))
-                                {
-                                    prop.SetValue(myFile, parsedValue);
-                                }
-                                else
-                                {
-                                    prop.SetValue(myFile, null); // 如果解析失败，则设置为 null
-                                }
+                                FloatDataProcessing(doubleValue, prop, myFile);
                             }
                             else
                             {
-                                // 对于其他类型，直接进行转换
                                 prop.SetValue(myFile, Convert.ChangeType(value, prop.PropertyType));
                             }
                         }
                         catch (Exception ex)
                         {
+                            Log.Logger.Error(ex, $"转换失败: {ex.Message}");
                             Console.WriteLine($"转换失败: {ex.Message}");
                             // 设置为 null 或默认值
                             prop.SetValue(myFile, null);
@@ -142,10 +93,73 @@ public static class DataTableMapper
                     }
                 }
             }
-
             fileList.Add(myFile);
         }
-
         return fileList;
+    }
+
+    private static void FloatDataProcessing(string doubleValue, PropertyInfo prop, MyFile myFile)
+    {
+        double parsedValue;
+        if (double.TryParse(doubleValue, out parsedValue))
+        {
+            prop.SetValue(myFile, parsedValue);
+        }
+        else
+        {
+            prop.SetValue(myFile, null); // 如果解析失败，则设置为 null
+        }
+    }
+
+    private static void DateDataProcessing(object value, PropertyInfo prop, MyFile myFile)
+    {
+        DateTime parsedDate;
+        if (value is string strValue)
+        {
+            DateStringProcessing(strValue, prop, myFile);
+        }
+        else if (DateTime.TryParse(value.ToString(), out parsedDate))
+        {
+            prop.SetValue(myFile, parsedDate);
+        }
+    }
+
+    private static void DateStringProcessing(string strValue, PropertyInfo prop, MyFile myFile)
+    {
+        DateTime parsedDate;
+        if (DateTime.TryParseExact(strValue, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out parsedDate))
+        {
+            prop.SetValue(myFile, parsedDate);
+        }
+        else if (DateTime.TryParseExact(strValue, "MM/dd/yy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                     out parsedDate))
+        {
+            prop.SetValue(myFile, parsedDate);
+        }
+        else if (DateTime.TryParseExact(strValue, "yyyy/MM/dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                     out parsedDate))
+        {
+            prop.SetValue(myFile, parsedDate);
+        }
+        else if (DateTime.TryParseExact(strValue, "yyyy/MM/d HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                     out parsedDate))
+        {
+            prop.SetValue(myFile, parsedDate);
+        }
+        else if (DateTime.TryParseExact(strValue, "yyyy/M/dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                     out parsedDate))
+        {
+            prop.SetValue(myFile, parsedDate);
+        }
+        else if (DateTime.TryParseExact(strValue, "yyyy/M/d HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                     out parsedDate))
+        {
+            prop.SetValue(myFile, parsedDate);
+        }
+        else
+        {
+            prop.SetValue(myFile, null); // 如果解析失败，则设置为 null
+        }
     }
 }
