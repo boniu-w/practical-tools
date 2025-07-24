@@ -44,6 +44,29 @@ public class MainViewModel : INotifyPropertyChanged
         _myDbContext = myDbContext;
         RefreshCommand = new RelayCommand<Object>(RefreshBlackList);
         RefreshBlackList<Object>(null);
+        InitMyFileList();
+        InitializePaging();
+
+        NextCommand = new RelayCommand<Object>(_ =>
+        {
+            PagedFileList.NextPage();
+            UpdatePageInfo();
+        });
+        PreviousCommand = new RelayCommand<Object>(_ =>
+        {
+            PagedFileList.PreviousPage();
+            UpdatePageInfo();
+        });
+        FirstCommand = new RelayCommand<Object>(_ =>
+        {
+            PagedFileList.FirstPage();
+            UpdatePageInfo();
+        });
+        LastCommand = new RelayCommand<Object>(_ =>
+        {
+            PagedFileList.LastPage();
+            UpdatePageInfo();
+        });
 
         // 测试 使用command 方式, [必须放这, 不能放到 MainWindow 里]
         // ScanCommand = new RelayCommand<string>(
@@ -335,5 +358,102 @@ public class MainViewModel : INotifyPropertyChanged
 
         MyFileService myFileService = new MyFileService();
         myFileService.Add(myFile, _myDbContext);
+    }
+
+    public void InitMyFileList()
+    {
+        AllMyFiles =
+            new ObservableCollection<MyFile>(_myDbContext.MyFile
+                .OrderByDescending(e => e.UpdateTime)
+                .ToList()
+            );
+    }
+
+    private string _statusMessage;
+
+    public string StatusMessage
+    {
+        get { return _statusMessage; }
+        set
+        {
+            if (_statusMessage != value)
+            {
+                _statusMessage = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public void InitializePaging()
+    {
+        PagedFileList = new PagedList<MyFile>
+        {
+            SourceList = AllMyFiles,
+            PageSize = 100
+        };
+        PagedFileList.Refresh();
+
+        foreach (var f in AllMyFiles)
+            f.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(MyFile.IsSelected))
+                    UpdateIsAllSelected();
+            };
+        
+        UpdatePageInfo();
+    }
+
+    private string _pageInfoText;
+
+    public string PageInfoText
+    {
+        get => _pageInfoText;
+        set
+        {
+            if (_pageInfoText != value)
+            {
+                _pageInfoText = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public void UpdatePageInfo()
+    {
+        PageInfoText = $"第 {PagedFileList.CurrentPage} 页 / 共 {PagedFileList.PageCount} 页";
+    }
+
+    public ObservableCollection<MyFile> AllMyFiles { get; set; } = new();
+    public PagedList<MyFile> PagedFileList { get; set; }
+
+    private bool? _isAllSelected = false;
+
+    public bool? IsAllSelected
+    {
+        get => _isAllSelected;
+        set
+        {
+            if (_isAllSelected != value)
+            {
+                _isAllSelected = value;
+                OnPropertyChanged(nameof(IsAllSelected));
+                if (value.HasValue)
+                    foreach (var f in AllMyFiles)
+                        f.IsSelected = value.Value;
+            }
+        }
+    }
+
+    public ICommand NextCommand { get; }
+    public ICommand PreviousCommand { get; }
+    public ICommand FirstCommand { get; }
+    public ICommand LastCommand { get; }
+
+    private void UpdateIsAllSelected()
+    {
+        int sel = AllMyFiles.Count(f => f.IsSelected);
+        if (sel == 0) IsAllSelected = false;
+        else if (sel == AllMyFiles.Count) IsAllSelected = true;
+        else IsAllSelected = null;
     }
 }

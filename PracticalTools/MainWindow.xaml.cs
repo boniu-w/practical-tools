@@ -776,4 +776,25 @@ public partial class MainWindow : Window
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
     }
+
+    private void PageSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm && PageSizeComboBox.SelectedItem is ComboBoxItem item)
+        {
+            if (int.TryParse(item.Content.ToString(), out int newSize))
+            {
+                vm.PagedFileList.PageSize = newSize;
+                vm.PagedFileList.GoToPage(1);
+                vm.UpdatePageInfo();
+            }
+        }
+    }
+
+    private void FirstPageButton_Click(object sender, RoutedEventArgs e)
+    {
+        bool? isAllSelected = _mainViewModel.IsAllSelected;
+        Console.WriteLine(isAllSelected);
+        bool isSelected = _mainViewModel.AllMyFiles[0].IsSelected;
+        Console.WriteLine(isSelected);
+    }
 }

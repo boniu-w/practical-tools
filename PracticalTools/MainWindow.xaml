@@ -331,6 +331,101 @@
                         <Button x:Name="ImportButton" Content="导入" Click="TestImport"></Button>
                     </StackPanel>
                 </Grid>
+
+                <Grid Grid.Row="1" Style="{StaticResource RightGrid}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- 分页信息和控制区域 -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5" HorizontalAlignment="Left">
+                        <TextBlock Text="每页显示:" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <ComboBox x:Name="PageSizeComboBox" Width="70" VerticalAlignment="Center"
+                                  SelectionChanged="PageSizeComboBox_SelectionChanged"
+                                  SelectedIndex="0">
+                            <ComboBoxItem Content="100" />
+                            <ComboBoxItem Content="200" />
+                            <ComboBoxItem Content="500" />
+                            <ComboBoxItem Content="1000" />
+                        </ComboBox>
+                        <TextBlock Text="条记录" VerticalAlignment="Center" Margin="5,0,20,0" />
+
+                        <Button Content="首页" Margin="0,0,2,0" Width="50" Command="{Binding FirstCommand}" />
+                        <Button Content="上一页" Margin="0,0,2,0" Width="50" Command="{Binding PreviousCommand}" />
+                        <TextBlock x:Name="PageInfoTextBlock" Text="{Binding PageInfoText}" VerticalAlignment="Center" Margin="5" />
+                        <Button Content="下一页" Margin="0,0,2,0" Width="50" Command="{Binding NextCommand}" />
+                        <Button Content="尾页" Width="50" Command="{Binding LastCommand}" />
+                    </StackPanel>
+
+                    <!-- DataGrid区域 -->
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding PagedFileList}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              BorderBrush="#FFFAF0"
+                              BorderThickness="1"
+                              VirtualizingStackPanel.IsVirtualizing="False"
+                              VirtualizingStackPanel.VirtualizationMode="Standard">
+                        <DataGrid.Columns>
+                            <!-- ✅ 添加全选的 CheckBox -->
+                            <DataGridTemplateColumn Width="0.5*">
+                                <DataGridTemplateColumn.Header>
+                                    <CheckBox Content=""
+                                              IsThreeState="True"
+                                              IsChecked="{Binding IsAllSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"
+                                              Style="{StaticResource MaterialDesignCheckBox}" />
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Center"
+                                                  Style="{StaticResource MaterialDesignCheckBox}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <!-- <DataGridCheckBoxColumn IsReadOnly="False" -->
+                            <!--                         Width="0.5*" -->
+                            <!--                         Header="" -->
+                            <!--                         Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"> -->
+                            <!--     <DataGridCheckBoxColumn.ElementStyle> -->
+                            <!--         <Style TargetType="CheckBox" -->
+                            <!--                BasedOn="{StaticResource MaterialDesignCheckBox}"> -->
+                            <!--             <Setter Property="VerticalAlignment" Value="Center" /> -->
+                            <!--             <Setter Property="HorizontalAlignment" Value="Center" /> -->
+                            <!--         </Style> -->
+                            <!--     </DataGridCheckBoxColumn.ElementStyle> -->
+                            <!--     <DataGridCheckBoxColumn.EditingElementStyle> -->
+                            <!--         <Style TargetType="CheckBox" -->
+                            <!--                BasedOn="{StaticResource MaterialDesignCheckBox}"> -->
+                            <!--             <Setter Property="VerticalAlignment" Value="Center" /> -->
+                            <!--             <Setter Property="HorizontalAlignment" Value="Center" /> -->
+                            <!--         </Style> -->
+                            <!--     </DataGridCheckBoxColumn.EditingElementStyle> -->
+                            <!-- </DataGridCheckBoxColumn> -->
+
+                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名"
+                                                Binding="{Binding FileName}" />
+                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址"
+                                                Binding="{Binding FilePath}" />
+                            <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]"
+                                                Binding="{Binding FileSize}" />
+                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值[MD5]"
+                                                Binding="{Binding Md5Value}" />
+                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间"
+                                                Binding="{Binding FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间"
+                                                Binding="{Binding FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- 底部状态栏 -->
+                    <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" Margin="5" VerticalAlignment="Center" />
+                </Grid>
             </Grid>
         </TabItem>
 

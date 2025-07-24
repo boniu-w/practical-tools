@@ -1,14 +1,17 @@
-﻿using System.Data;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Serilog;
 
 namespace PracticalTools.FileManager.Model;
 
-public class MyFile
+public class MyFile : INotifyPropertyChanged
 {
-    public string Id { get; set; }
-    [ColumnHeader("文件名")] public string FileName { get; set; }
+    public string Id { get; set; } = "";
+    [ColumnHeader("文件名")] public string FileName { get; set; } = "";
     [ColumnHeader("文件路径")] public string? FilePath { get; set; }
     [ColumnHeader("文件创建时间")] public DateTime? FileCreateTime { get; set; }
     [ColumnHeader("文件大小[K]")] public double? FileSize { get; set; }
@@ -30,6 +33,29 @@ public class MyFile
                $"FileSize: {FileSize}\n" +
                $"FileLastedModifiedTime: {FileLastedModifiedTime}\n" +
                $"HashValue: {Md5Value}";
+    }
+
+    private bool _isSelected;
+
+    [NotMapped]
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected != value)
+            {
+                _isSelected = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
@@ -92,8 +118,10 @@ public static class DataTableMapper
                     }
                 }
             }
+
             fileList.Add(myFile);
         }
+
         return fileList;
     }
 
