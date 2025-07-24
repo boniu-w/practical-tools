@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace PracticalTools.vo;
 
-public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged
+public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged where T : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged(string name)
@@ -48,11 +48,21 @@ public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged
     public void Refresh()
     {
         this.Clear();
+        foreach (var old in this)
+            old.PropertyChanged -= OnItemPropertyChanged;
+        
         if (SourceList == null) return;
         int start = (CurrentPage - 1) * PageSize;
         int end = Math.Min(start + PageSize, SourceList.Count);
+       
         for (int i = start; i < end; i++)
-            this.Add(SourceList[i]);
+        {
+            var item = SourceList[i];
+            this.Add(item);
+            item.PropertyChanged += OnItemPropertyChanged;
+        }
+        
+        OnPropertyChanged(nameof(IsPageAllSelected));
     }
 
     public void GoToPage(int page)
@@ -66,4 +76,34 @@ public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged
     public void PreviousPage() => GoToPage(CurrentPage - 1);
     public void FirstPage() => GoToPage(1);
     public void LastPage() => GoToPage(PageCount);
+    
+    public bool IsPageAllSelected
+    {
+        get => this.Count > 0 && this.All(IsSelected);
+        set
+        {
+            foreach (var item in this)
+                SetSelected(item, value);
+
+            OnPropertyChanged(nameof(IsPageAllSelected));
+        }
+    }
+
+    private bool IsSelected(T item)
+    {
+        var prop = typeof(T).GetProperty("IsSelected");
+        return prop != null && prop.GetValue(item) is bool b && b;
+    }
+
+    private void SetSelected(T item, bool value)
+    {
+        var prop = typeof(T).GetProperty("IsSelected");
+        prop?.SetValue(item, value);
+    }
+    
+    private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == "IsSelected")
+            OnPropertyChanged(nameof(IsPageAllSelected));
+    }
 }

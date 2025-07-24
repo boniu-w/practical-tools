@@ -790,32 +790,46 @@ public partial class MainWindow : Window
         }
     }
 
-    private void FirstPageButton_Click(object sender, RoutedEventArgs e)
-    {
-        bool? isAllSelected = _mainViewModel.IsAllSelected;
-        Console.WriteLine(isAllSelected);
-        bool isSelected = _mainViewModel.AllMyFiles[0].IsSelected;
-        Console.WriteLine(isSelected);
-    }
-
     private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel vm)
         {
-            var cb = (CheckBox)sender;
-            bool isChecked = cb.IsChecked == true; // 只判断 true/false
-
-            foreach (var file in vm.AllMyFiles)
+            var checkBox = (CheckBox)sender;
+            bool isChecked = checkBox.IsChecked == true;
+    
+            // 只控制当前分页列表（当前页的数据）
+            foreach (var item in vm.PagedFileList)
             {
-                file.IsSelected = isChecked;
+                item.IsSelected = isChecked;
             }
-
-            vm.PagedFileList.Refresh();
-
-            // 同步 ViewModel 里的状态（如果需要）
-            vm.IsAllSelected = isChecked;
+    
+            // 可选：同步更新 IsAllSelected（仅当前页）
+            // vm.UpdateIsAllSelectedForCurrentPageOnly();
         }
     }
+    
+    // private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
+    // {
+    //     if (DataContext is MainViewModel vm)
+    //     {
+    //         if (sender is CheckBox cb)
+    //         {
+    //             bool isChecked = cb.IsChecked == true;
+    //
+    //             foreach (var item in vm.PagedFileList)
+    //             {
+    //                 var prop = item.GetType().GetProperty("IsSelected");
+    //                 if (prop != null && prop.CanWrite)
+    //                 {
+    //                     prop.SetValue(item, isChecked);
+    //                 }
+    //             }
+    //
+    //             // 选完之后更新分页状态（可选）
+    //             vm.PagedFileList.Refresh(); // 如果你希望刷新 UI/状态
+    //         }
+    //     }
+    // }
 
 
 }

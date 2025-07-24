@@ -440,9 +440,13 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand FirstCommand { get; }
     public ICommand LastCommand { get; }
 
-   public void CheckBox_SelectAll_Click()
-   {
-       foreach (var f in AllMyFiles)
-           f.IsSelected = true;
-   }
+    public void UpdateIsAllSelectedForCurrentPageOnly()
+    {
+        if (PagedFileList.All(f => f.IsSelected))
+            IsAllSelected = true;
+        else if (PagedFileList.All(f => !f.IsSelected))
+            IsAllSelected = false;
+        else
+            IsAllSelected = null; // 你可以不处理这项
+    }
 }
