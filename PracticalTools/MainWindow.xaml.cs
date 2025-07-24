@@ -797,4 +797,25 @@ public partial class MainWindow : Window
         bool isSelected = _mainViewModel.AllMyFiles[0].IsSelected;
         Console.WriteLine(isSelected);
     }
+
+    private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+        {
+            var cb = (CheckBox)sender;
+            bool isChecked = cb.IsChecked == true; // 只判断 true/false
+
+            foreach (var file in vm.AllMyFiles)
+            {
+                file.IsSelected = isChecked;
+            }
+
+            vm.PagedFileList.Refresh();
+
+            // 同步 ViewModel 里的状态（如果需要）
+            vm.IsAllSelected = isChecked;
+        }
+    }
+
+
 }

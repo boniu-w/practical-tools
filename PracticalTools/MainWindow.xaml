@@ -4,13 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:util="clr-namespace:PracticalTools.util;assembly=PracticalTools"
         mc:Ignorable="d"
         Icon="/Assets/icons8-cancer-48.png"
         Title="实用工具" Height="600" Width="1090">
-    <!-- <Window.DataContext> -->
-    <!--     <vo:MainViewModel /> -->
-    <!-- </Window.DataContext> -->
     <Window.Resources>
         <FrameworkElement x:Key="DataContextProxy" DataContext="{Binding}" />
 
@@ -359,54 +355,42 @@
                         <Button Content="尾页" Width="50" Command="{Binding LastCommand}" />
                     </StackPanel>
 
-                    <!-- DataGrid区域 -->
+                    <!-- DataGrid区域 
+                    VirtualizingStackPanel.IsVirtualizing="False"
+                    VirtualizingStackPanel.VirtualizationMode="Standard" -->
                     <DataGrid Grid.Row="1"
                               ItemsSource="{Binding PagedFileList}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               BorderBrush="#FFFAF0"
-                              BorderThickness="1"
-                              VirtualizingStackPanel.IsVirtualizing="False"
-                              VirtualizingStackPanel.VirtualizationMode="Standard">
+                              BorderThickness="1">
                         <DataGrid.Columns>
                             <!-- ✅ 添加全选的 CheckBox -->
                             <DataGridTemplateColumn Width="0.5*">
                                 <DataGridTemplateColumn.Header>
-                                    <CheckBox Content=""
-                                              IsThreeState="True"
-                                              IsChecked="{Binding IsAllSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                              VerticalAlignment="Center"
-                                              HorizontalAlignment="Center"
-                                              Style="{StaticResource MaterialDesignCheckBox}" />
+                                    <Grid>
+                                        <CheckBox
+                                            IsChecked="False"
+                                            Click="CheckBox_SelectAll_Click"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource MaterialDesignCheckBox}" />
+                                    </Grid>
                                 </DataGridTemplateColumn.Header>
+
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                  VerticalAlignment="Center"
-                                                  HorizontalAlignment="Center"
-                                                  Style="{StaticResource MaterialDesignCheckBox}" />
+                                        <Grid>
+                                            <CheckBox
+                                                IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource MaterialDesignCheckBox}" />
+                                        </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <!-- <DataGridCheckBoxColumn IsReadOnly="False" -->
-                            <!--                         Width="0.5*" -->
-                            <!--                         Header="" -->
-                            <!--                         Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"> -->
-                            <!--     <DataGridCheckBoxColumn.ElementStyle> -->
-                            <!--         <Style TargetType="CheckBox" -->
-                            <!--                BasedOn="{StaticResource MaterialDesignCheckBox}"> -->
-                            <!--             <Setter Property="VerticalAlignment" Value="Center" /> -->
-                            <!--             <Setter Property="HorizontalAlignment" Value="Center" /> -->
-                            <!--         </Style> -->
-                            <!--     </DataGridCheckBoxColumn.ElementStyle> -->
-                            <!--     <DataGridCheckBoxColumn.EditingElementStyle> -->
-                            <!--         <Style TargetType="CheckBox" -->
-                            <!--                BasedOn="{StaticResource MaterialDesignCheckBox}"> -->
-                            <!--             <Setter Property="VerticalAlignment" Value="Center" /> -->
-                            <!--             <Setter Property="HorizontalAlignment" Value="Center" /> -->
-                            <!--         </Style> -->
-                            <!--     </DataGridCheckBoxColumn.EditingElementStyle> -->
-                            <!-- </DataGridCheckBoxColumn> -->
+
 
                             <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名"
                                                 Binding="{Binding FileName}" />

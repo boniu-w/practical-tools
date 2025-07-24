@@ -68,6 +68,7 @@ public class MainViewModel : INotifyPropertyChanged
             UpdatePageInfo();
         });
 
+
         // 测试 使用command 方式, [必须放这, 不能放到 MainWindow 里]
         // ScanCommand = new RelayCommand<string>(
         //     execute: ScanFolder,
@@ -392,13 +393,6 @@ public class MainViewModel : INotifyPropertyChanged
             PageSize = 100
         };
         PagedFileList.Refresh();
-
-        foreach (var f in AllMyFiles)
-            f.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(MyFile.IsSelected))
-                    UpdateIsAllSelected();
-            };
         
         UpdatePageInfo();
     }
@@ -436,10 +430,7 @@ public class MainViewModel : INotifyPropertyChanged
             if (_isAllSelected != value)
             {
                 _isAllSelected = value;
-                OnPropertyChanged(nameof(IsAllSelected));
-                if (value.HasValue)
-                    foreach (var f in AllMyFiles)
-                        f.IsSelected = value.Value;
+                OnPropertyChanged();
             }
         }
     }
@@ -449,11 +440,9 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand FirstCommand { get; }
     public ICommand LastCommand { get; }
 
-    private void UpdateIsAllSelected()
-    {
-        int sel = AllMyFiles.Count(f => f.IsSelected);
-        if (sel == 0) IsAllSelected = false;
-        else if (sel == AllMyFiles.Count) IsAllSelected = true;
-        else IsAllSelected = null;
-    }
+   public void CheckBox_SelectAll_Click()
+   {
+       foreach (var f in AllMyFiles)
+           f.IsSelected = true;
+   }
 }
