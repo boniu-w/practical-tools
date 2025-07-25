@@ -317,18 +317,44 @@
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="10*" />
+                    <RowDefinition Height="10*" />
                     <RowDefinition Height="90*" />
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" Style="{StaticResource RightGrid}">
-                    <StackPanel>
-                        <TextBox x:Name="MyFileImport"></TextBox>
-                        <ProgressBar x:Name="MyFileImportProgressBar" Visibility="Hidden"></ProgressBar>
-                        <Button x:Name="ImportButton" Content="导入" Click="TestImport"></Button>
+                    <StackPanel Orientation="Horizontal">
+                        <Label x:Name="MyFileImportLabel"
+                               Content="Message: "
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Foreground="#0073b9" />
+                        <TextBlock x:Name="MyFileImportText"
+                                   Text="文件管理, 可导入数据, 管理数据"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center" />
                     </StackPanel>
+                    <ProgressBar x:Name="MyFileImportProgressBar" Visibility="Hidden"></ProgressBar>
                 </Grid>
 
                 <Grid Grid.Row="1" Style="{StaticResource RightGrid}">
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="ImportButton" Content="导入excel" Click="TestImport" Margin="5,0,0,0" Width="100"></Button>
+                        <Button x:Name="ExportButton" Content="导出模板" Click="TestImport" Margin="5,0,5,0" Width="100"></Button>
+                        <Label Content="文件名: "
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Foreground="#0073b9">
+                        </Label>
+                        <TextBox Text=""
+                                 Width="120"
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Center">
+                        </TextBox>
+                        <Button Content="搜索" Margin="10,0,0,0"></Button>
+                    </StackPanel>
+                </Grid>
+
+                <Grid Grid.Row="2" Style="{StaticResource RightGrid}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
@@ -348,11 +374,11 @@
                         </ComboBox>
                         <TextBlock Text="条记录" VerticalAlignment="Center" Margin="5,0,20,0" />
 
-                        <Button Content="首页" Margin="0,0,2,0" Width="50" Command="{Binding FirstCommand}" />
-                        <Button Content="上一页" Margin="0,0,2,0" Width="50" Command="{Binding PreviousCommand}" />
+                        <Button Content="首页" Margin="0,0,2,0" Width="80" Command="{Binding FirstCommand}" />
+                        <Button Content="上一页" Margin="0,0,2,0" Width="80" Command="{Binding PreviousCommand}" />
                         <TextBlock x:Name="PageInfoTextBlock" Text="{Binding PageInfoText}" VerticalAlignment="Center" Margin="5" />
-                        <Button Content="下一页" Margin="0,0,2,0" Width="50" Command="{Binding NextCommand}" />
-                        <Button Content="尾页" Width="50" Command="{Binding LastCommand}" />
+                        <Button Content="下一页" Margin="0,0,2,0" Width="80" Command="{Binding NextCommand}" />
+                        <Button Content="尾页" Width="80" Command="{Binding LastCommand}" />
                     </StackPanel>
 
                     <!-- DataGrid区域 
@@ -394,7 +420,7 @@
 
                             <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名"
                                                 Binding="{Binding FileName}" />
-                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址"
+                            <DataGridTextColumn Width="4*" IsReadOnly="True" Header="文件地址"
                                                 Binding="{Binding FilePath}" />
                             <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]"
                                                 Binding="{Binding FileSize}" />
@@ -402,8 +428,8 @@
                                                 Binding="{Binding Md5Value}" />
                             <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间"
                                                 Binding="{Binding FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
-                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间"
-                                                Binding="{Binding FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                            <DataGridTextColumn Width="1*" IsReadOnly="True" Header="类别"
+                                                Binding="{Binding Type}" />
                         </DataGrid.Columns>
                     </DataGrid>
 

@@ -740,7 +740,7 @@ public partial class MainWindow : Window
 
         DataColumnCollection columns = data.Columns;
         List<MyFile> myFiles = DataTableMapper.MapToMyFileList(data);
-        MyFileImport.Text = myFiles.Count.ToString();
+        MyFileImportText.Text = myFiles.Count.ToString();
         int total = myFiles.Count;
         if (total == 0)
         {
