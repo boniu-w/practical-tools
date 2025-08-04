@@ -51,6 +51,7 @@ public partial class MainWindow : Window
         SetMessageText(_message1);
 
         // ScanButton.Click += ScanTheFolder;   // 测试使用事件绑定 button上没有明写 click
+        ScanButton.Click += SayHello;
     }
 
     /*****************************************************************************************************************************/
@@ -796,18 +797,18 @@ public partial class MainWindow : Window
         {
             var checkBox = (CheckBox)sender;
             bool isChecked = checkBox.IsChecked == true;
-    
+
             // 只控制当前分页列表（当前页的数据）
             foreach (var item in vm.PagedFileList)
             {
                 item.IsSelected = isChecked;
             }
-    
+
             // 可选：同步更新 IsAllSelected（仅当前页）
             // vm.UpdateIsAllSelectedForCurrentPageOnly();
         }
     }
-    
+
     // private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
     // {
     //     if (DataContext is MainViewModel vm)
@@ -832,4 +833,5 @@ public partial class MainWindow : Window
     // }
 
 
+    private void SayHello(object sender, RoutedEventArgs e) => Console.WriteLine("hello");
 }

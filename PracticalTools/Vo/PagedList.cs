@@ -6,11 +6,12 @@ namespace PracticalTools.vo;
 public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged where T : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
+
     protected void OnPropertyChanged(string name)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
-    
+
     public ObservableCollection<T> SourceList { get; set; }
     private int _pageSize = 10;
 
@@ -28,6 +29,7 @@ public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged wher
     }
 
     private int _currentPage = 1;
+
     public int CurrentPage
     {
         get => _currentPage;
@@ -50,18 +52,18 @@ public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged wher
         this.Clear();
         foreach (var old in this)
             old.PropertyChanged -= OnItemPropertyChanged;
-        
+
         if (SourceList == null) return;
         int start = (CurrentPage - 1) * PageSize;
         int end = Math.Min(start + PageSize, SourceList.Count);
-       
+
         for (int i = start; i < end; i++)
         {
             var item = SourceList[i];
             this.Add(item);
             item.PropertyChanged += OnItemPropertyChanged;
         }
-        
+
         OnPropertyChanged(nameof(IsPageAllSelected));
     }
 
@@ -72,11 +74,18 @@ public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged wher
         Refresh();
     }
 
-    public void NextPage() => GoToPage(CurrentPage + 1);
+    private void GoToPage(int page, Action action)
+    {
+        if (page < 1 || page > PageCount) return;
+        CurrentPage = page;
+        action.Invoke();
+    }
+
+    public void NextPage() => GoToPage(CurrentPage + 1, Refresh);
     public void PreviousPage() => GoToPage(CurrentPage - 1);
     public void FirstPage() => GoToPage(1);
     public void LastPage() => GoToPage(PageCount);
-    
+
     public bool IsPageAllSelected
     {
         get => this.Count > 0 && this.All(IsSelected);
@@ -100,7 +109,7 @@ public class PagedList<T> : ObservableCollection<T>, INotifyPropertyChanged wher
         var prop = typeof(T).GetProperty("IsSelected");
         prop?.SetValue(item, value);
     }
-    
+
     private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == "IsSelected")
