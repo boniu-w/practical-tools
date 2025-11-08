@@ -87,7 +87,7 @@ public class FileUtil
     }
 
     /*****************************************************************************************************************************/
-    
+
     /// <summary>
     /// md5 较快
     /// </summary>
@@ -745,5 +745,82 @@ public class FileUtil
             Log.Error($"错误: {ex.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// 将源文件夹下所有 某后缀 文件剪切（移动）到目标文件夹。
+    /// </summary>
+    /// <param name="sourceDir">源文件夹路径，如 "C:\\a"</param>
+    /// <param name="targetDir">目标文件夹路径，如 "C:\\b"</param>
+    /// <param name="suffix">后缀，如 ".nef"</param>
+    /// <param name="recursive">是否递归子目录，默认 false</param>
+    /// <param name="overwrite">是否覆盖同名文件，默认 false</param>
+    public static void MoveDddFiles(string sourceDir, string targetDir, string suffix, bool recursive = false, bool overwrite = false)
+    {
+        if (string.IsNullOrWhiteSpace(sourceDir) || string.IsNullOrWhiteSpace(targetDir))
+        {
+            Log.Error("源路径或目标路径不能为空。");
+            Console.WriteLine("源路径或目标路径不能为空。");
+            return;
+        }
+
+        if (!Directory.Exists(sourceDir))
+        {
+            Log.Error($"源文件夹不存在：{sourceDir}");
+            Console.WriteLine($"源文件夹不存在：{sourceDir}");
+            return;
+        }
+
+        // 创建目标文件夹（若不存在）
+        Directory.CreateDirectory(targetDir);
+
+        // 设置文件枚举选项
+        var enumOptions = new EnumerationOptions
+        {
+            RecurseSubdirectories = recursive,  // 是否递归
+            IgnoreInaccessible = true,          // 忽略无权限文件夹
+            MatchCasing = MatchCasing.CaseInsensitive
+        };
+
+        // 枚举符合条件的文件
+        var files = Directory.EnumerateFiles(sourceDir, suffix, enumOptions);
+
+        int movedCount = 0;
+
+        foreach (string filePath in files)
+        {
+            string fileName = Path.GetFileName(filePath);
+            string destPath = Path.Combine(targetDir, fileName);
+
+            try
+            {
+                // 若目标文件存在
+                if (File.Exists(destPath))
+                {
+                    if (overwrite)
+                    {
+                        File.Delete(destPath);
+                    }
+                    else
+                    {
+                        Log.Information($"目标文件已存在，跳过：{destPath}");
+                        Console.WriteLine($"目标文件已存在，跳过：{destPath}");
+                        continue;
+                    }
+                }
+
+                File.Move(filePath, destPath);
+                Console.WriteLine($"已移动：{fileName}");
+                movedCount++;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"移动失败：{fileName}，原因：{ex.Message}");
+                Console.WriteLine($"移动失败：{fileName}，原因：{ex.Message}");
+            }
+        }
+
+        Log.Information($"操作完成，共移动 {movedCount} 个文件。");
+        Console.WriteLine($"操作完成，共移动 {movedCount} 个文件。");
     }
 }
