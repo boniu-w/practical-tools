@@ -568,28 +568,28 @@ public partial class MainWindow : Window
     /// <modified>2025年4月30日</modified>
     private void SetupDataGridColumns()
     {
-        var properties = typeof(DuplicateFilesEntry).GetProperties();
-        foreach (var prop in properties)
-        {
-            var attr = prop.GetCustomAttribute<ColumnHeaderAttribute>();
-            if (attr == null)
-                continue; // ❌ 没有注解，不添加这个列
-
-            var column = new DataGridTextColumn
-            {
-                Header = attr.DisplayName,
-                Binding = new Binding(prop.Name),
-                Width = ColumnWidth(prop.Name)
-            };
-            MyDataGrid.Columns.Add(column);
-        }
-
-        // 设置数据源
-        MyDataGrid.ItemsSource = new ObservableCollection<DuplicateFilesEntry>
-        {
-            new DuplicateFilesEntry { FileName = "test.txt", FileSize = 1 },
-            new DuplicateFilesEntry { FileName = "hello.doc", FileSize = 1 }
-        };
+        // var properties = typeof(DuplicateFilesEntry).GetProperties();
+        // foreach (var prop in properties)
+        // {
+        //     var attr = prop.GetCustomAttribute<ColumnHeaderAttribute>();
+        //     if (attr == null)
+        //         continue; // ❌ 没有注解，不添加这个列
+        //
+        //     var column = new DataGridTextColumn
+        //     {
+        //         Header = attr.DisplayName,
+        //         Binding = new Binding(prop.Name),
+        //         Width = ColumnWidth(prop.Name)
+        //     };
+        //     MyDataGrid.Columns.Add(column);
+        // }
+        //
+        // // 设置数据源
+        // MyDataGrid.ItemsSource = new ObservableCollection<DuplicateFilesEntry>
+        // {
+        //     new DuplicateFilesEntry { FileName = "test.txt", FileSize = 1 },
+        //     new DuplicateFilesEntry { FileName = "hello.doc", FileSize = 1 }
+        // };
     }
 
     /// <summary>
@@ -617,7 +617,7 @@ public partial class MainWindow : Window
         MessageText.Text = message;
     }
 
-    private void AddNewItem(object sender, RoutedEventArgs e)
+    /*private void AddNewItem(object sender, RoutedEventArgs e)
     {
         AddCardFormVisibility.Visibility = Visibility.Visible;
     }
@@ -625,7 +625,7 @@ public partial class MainWindow : Window
     private void CancelNewItem(object sender, RoutedEventArgs e)
     {
         AddCardFormVisibility.Visibility = Visibility.Collapsed;
-    }
+    }*/
 
     /// <summary>
     /// 程序将在x秒后退出
@@ -730,7 +730,7 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    public async void TestImport(object sender, RoutedEventArgs e)
+    /*public async void TestImport(object sender, RoutedEventArgs e)
     {
         DataTable data = FileHelper.ImportExcelFile("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*");
         if (data == null || data.Rows.Count == 0)
@@ -776,9 +776,9 @@ public partial class MainWindow : Window
             MessageBox.Show($"导入完成, 共添加 {total} 条数据");
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
-    }
+    }*/
 
-    private void PageSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    /*private void PageSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DataContext is MainViewModel vm && PageSizeComboBox.SelectedItem is ComboBoxItem item)
         {
@@ -789,7 +789,7 @@ public partial class MainWindow : Window
                 vm.UpdatePageInfo();
             }
         }
-    }
+    }*/
 
     private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
     {
