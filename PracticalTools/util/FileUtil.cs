@@ -24,7 +24,12 @@ public class FileUtil
 
     public static string[]? _phototExtensions =
     {
-        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".svg", ".psd", ".raw"
+        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".svg",
+        ".raw", ".srf", ".sr2",
+        ".nef",
+        ".cr2", ".cr3",
+        ".raf",
+        ".psd", ".psb", ".bmp", ".webp", ".heif", ".heic", ".avif"
     };
 
     public static string[]? _audioExtensions =
@@ -87,7 +92,7 @@ public class FileUtil
     }
 
     /*****************************************************************************************************************************/
-    
+
     /// <summary>
     /// md5 较快
     /// </summary>
