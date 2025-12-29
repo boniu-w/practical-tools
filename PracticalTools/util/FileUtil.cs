@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using Microsoft.VisualBasic.FileIO;
 using Serilog;
 
@@ -7,6 +8,9 @@ namespace PracticalTools.util;
 
 public class FileUtil
 {
+    // Windows 文件名禁止字符（包括扩展名）
+    private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+
     public ValueTuple<string, string, string> FileValueTuple { get; set; }
 
     public static string[] _skipFolders = new[]
@@ -19,18 +23,17 @@ public class FileUtil
         "PerfLogs"
     };
 
-    public static string[]? _defaultAllowedExtensions = { };
-
+    public static string[]? _defaultAllowedExtensions = [];
 
     public static string[]? _phototExtensions =
-    {
+    [
         ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".svg",
         ".raw", ".srf", ".sr2",
         ".nef",
         ".cr2", ".cr3",
         ".raf",
         ".psd", ".psb", ".bmp", ".webp", ".heif", ".heic", ".avif"
-    };
+    ];
 
     public static string[]? _audioExtensions =
     {
@@ -750,5 +753,45 @@ public class FileUtil
             Log.Error($"错误: {ex.Message}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// 判断字符串是否为有效的文件扩展名格式（如 ".txt", ".json"）
+    /// </summary>
+    /// <param name="extension">待检测的字符串</param>
+    /// <returns>如果是有效扩展名格式，返回 true；否则 false</returns>
+    public static bool IsValidFileExtension(string extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+            return false;
+
+        // 必须以 '.' 开头
+        if (!extension.StartsWith(".", StringComparison.Ordinal))
+            return false;
+
+        // 长度至少为 2（如 ".a"）
+        if (extension.Length < 2)
+            return false;
+
+        // 获取实际扩展部分（去掉开头的 '.'）
+        string extPart = extension.Substring(1);
+
+        // 不能包含任何非法文件名字符
+        foreach (char c in InvalidFileNameChars)
+        {
+            if (extPart.Contains(c))
+                return false;
+        }
+
+        // 可选：使用正则进一步限制（只允许字母、数字、下划线、连字符等）
+        // 根据需求决定是否启用
+        if (!Regex.IsMatch(extPart, @"^[a-zA-Z0-9_\-]+$"))
+            return false;
+
+        // 扩展名长度合理（Windows 最大扩展名长度通常 <= 255，这里宽松处理）
+        if (extPart.Length > 255)
+            return false;
+
+        return true;
     }
 }

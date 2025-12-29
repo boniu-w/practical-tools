@@ -101,6 +101,7 @@
                         <ColumnDefinition Width="50*" />
                         <ColumnDefinition Width="50*" />
                         <ColumnDefinition Width="50*" />
+                        <ColumnDefinition x:Name="CustomColumn" Width="0" />
                         <ColumnDefinition Width="50*" />
                         <ColumnDefinition Width="50*" />
                     </Grid.ColumnDefinitions>
@@ -127,8 +128,10 @@
                               x:Name="ScanType"
                               materialDesign:HintAssist.Hint="扫描类型"
                               Margin="5,0,0,0"
-                              IsEditable="False">
+                              IsEditable="False"
+                              SelectionChanged="ScanType_SelectionChanged">
                         <ComboBoxItem Content="所有类型" />
+                        <ComboBoxItem Content="自定义" />
                         <ComboBoxItem Content="图片类" />
                         <ComboBoxItem Content="视频类" />
                         <ComboBoxItem Content="音频类" />
@@ -137,7 +140,13 @@
                         <ComboBoxItem Content="编程语言类" />
                         <ComboBoxItem Content="无类型" />
                     </ComboBox>
-                    <Button Grid.Row="0" Grid.Column="4"
+                    <TextBox x:Name="Cus"
+                             Grid.Row="0"
+                             Grid.Column="4"
+                             Text="扩展名以 &quot;.&quot; 开始"
+                             VerticalAlignment="Center"
+                             HorizontalAlignment="Center" />
+                    <Button Grid.Row="0" Grid.Column="5"
                             x:Name="ScanButton"
                             Margin="5,0,0,0"
                             Padding="0"
@@ -159,7 +168,7 @@
                     <!--         Command="{Binding ScanCommand}" -->
                     <!--         CommandParameter="{Binding Text, ElementName=TheFilePath}" /> -->
 
-                    <Button Grid.Row="0" Grid.Column="5"
+                    <Button Grid.Row="0" Grid.Column="6"
                             Margin="5,0,0,0"
                             Padding="0"
                             Content="停止扫描" Click="StopScanTheFolder" />
