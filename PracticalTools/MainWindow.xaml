@@ -101,6 +101,7 @@
                         <ColumnDefinition Width="50*" />
                         <ColumnDefinition Width="50*" />
                         <ColumnDefinition Width="50*" />
+                        <ColumnDefinition x:Name="CustomColumn" Width="0" />
                         <ColumnDefinition Width="50*" />
                         <ColumnDefinition Width="50*" />
                     </Grid.ColumnDefinitions>
@@ -127,8 +128,10 @@
                               x:Name="ScanType"
                               materialDesign:HintAssist.Hint="扫描类型"
                               Margin="5,0,0,0"
-                              IsEditable="False">
+                              IsEditable="False"
+                              SelectionChanged="ScanType_SelectionChanged">
                         <ComboBoxItem Content="所有类型" />
+                        <ComboBoxItem Content="自定义" />
                         <ComboBoxItem Content="图片类" />
                         <ComboBoxItem Content="视频类" />
                         <ComboBoxItem Content="音频类" />
@@ -137,7 +140,13 @@
                         <ComboBoxItem Content="编程语言类" />
                         <ComboBoxItem Content="无类型" />
                     </ComboBox>
-                    <Button Grid.Row="0" Grid.Column="4"
+                    <TextBox x:Name="Cus"
+                             Grid.Row="0"
+                             Grid.Column="4"
+                             Text="扩展名以 &quot;.&quot; 开始"
+                             VerticalAlignment="Center"
+                             HorizontalAlignment="Center" />
+                    <Button Grid.Row="0" Grid.Column="5"
                             x:Name="ScanButton"
                             Margin="5,0,0,0"
                             Padding="0"
@@ -159,7 +168,7 @@
                     <!--         Command="{Binding ScanCommand}" -->
                     <!--         CommandParameter="{Binding Text, ElementName=TheFilePath}" /> -->
 
-                    <Button Grid.Row="0" Grid.Column="5"
+                    <Button Grid.Row="0" Grid.Column="6"
                             Margin="5,0,0,0"
                             Padding="0"
                             Content="停止扫描" Click="StopScanTheFolder" />
@@ -313,7 +322,7 @@
             </Grid>
         </TabItem>
 
-        <TabItem Header="文件管理" x:Name="FileManage">
+        <!--<TabItem Header="文件管理" x:Name="FileManage">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="10*" />
@@ -361,7 +370,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!-- 分页信息和控制区域 -->
+                    ~1~ 分页信息和控制区域 @1@
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5" HorizontalAlignment="Left">
                         <TextBlock Text="每页显示:" VerticalAlignment="Center" Margin="0,0,5,0" />
                         <ComboBox x:Name="PageSizeComboBox" Width="70" VerticalAlignment="Center"
@@ -381,9 +390,9 @@
                         <Button Content="尾页" Width="80" Command="{Binding LastCommand}" />
                     </StackPanel>
 
-                    <!-- DataGrid区域 
+                    ~1~ DataGrid区域 
                     VirtualizingStackPanel.IsVirtualizing="False"
-                    VirtualizingStackPanel.VirtualizationMode="Standard" -->
+                    VirtualizingStackPanel.VirtualizationMode="Standard" @1@
                     <DataGrid Grid.Row="1"
                               ItemsSource="{Binding PagedFileList}"
                               AutoGenerateColumns="False"
@@ -391,7 +400,7 @@
                               BorderBrush="#FFFAF0"
                               BorderThickness="1">
                         <DataGrid.Columns>
-                            <!-- ✅ 添加全选的 CheckBox -->
+                            ~1~ ✅ 添加全选的 CheckBox @1@
                             <DataGridTemplateColumn Width="0.5*">
                                 <DataGridTemplateColumn.Header>
                                     <Grid>
@@ -433,41 +442,41 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <!-- 底部状态栏 -->
+                    ~1~ 底部状态栏 @1@
                     <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" Margin="5" VerticalAlignment="Center" />
                 </Grid>
             </Grid>
-        </TabItem>
+        </TabItem>-->
 
-        <TabItem Header="黑名单">
+        <!--<TabItem Header="黑名单">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <!-- <DataGrid Grid.Row="0" -->
-                <!--           Background="White" Margin="10,10,5,0" -->
-                <!--           x:Name="BlackL" -->
-                <!--           AutoGenerateColumns="False" -->
-                <!--           CanUserAddRows="False" -->
-                <!--           ItemsSource="{Binding Blacklists}"> -->
-                <!--     <DataGrid.Columns> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="平台名称(淘宝, 知乎, b站)" Binding="{Binding PlatformName}" /> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="作者" Binding="{Binding Author}" /> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="作品" Binding="{Binding Product}" /> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="作品日期" Binding="{Binding WorksTime}" /> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="原因" Binding="{Binding Reason}" /> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="类型(电商, 视频网站, 知识网站)" Binding="{Binding WorksType}" /> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="统一社会信用代码" Binding="{Binding UnifiedSocialCreditIdentifier}" /> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="备注" Binding="{Binding Remarks}" /> -->
-                <!--         <DataGridTextColumn IsReadOnly="True" Header="创建时间" Binding="{Binding CreateTime}" /> -->
-                <!--     </DataGrid.Columns> -->
-                <!-- </DataGrid> -->
-                <!-- -->
-                <!-- <Grid Grid.Row="1" Background="White" Margin="10,10,5,0"> -->
-                <!--     <Button Content="刷新" Command="{Binding RefreshCommand}" /> -->
-                <!-- </Grid> -->
+                ~1~ <DataGrid Grid.Row="0" @1@
+                ~1~           Background="White" Margin="10,10,5,0" @1@
+                ~1~           x:Name="BlackL" @1@
+                ~1~           AutoGenerateColumns="False" @1@
+                ~1~           CanUserAddRows="False" @1@
+                ~1~           ItemsSource="{Binding Blacklists}"> @1@
+                ~1~     <DataGrid.Columns> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="平台名称(淘宝, 知乎, b站)" Binding="{Binding PlatformName}" /> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="作者" Binding="{Binding Author}" /> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="作品" Binding="{Binding Product}" /> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="作品日期" Binding="{Binding WorksTime}" /> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="原因" Binding="{Binding Reason}" /> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="类型(电商, 视频网站, 知识网站)" Binding="{Binding WorksType}" /> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="统一社会信用代码" Binding="{Binding UnifiedSocialCreditIdentifier}" /> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="备注" Binding="{Binding Remarks}" /> @1@
+                ~1~         <DataGridTextColumn IsReadOnly="True" Header="创建时间" Binding="{Binding CreateTime}" /> @1@
+                ~1~     </DataGrid.Columns> @1@
+                ~1~ </DataGrid> @1@
+                ~1~ @1@
+                ~1~ <Grid Grid.Row="1" Background="White" Margin="10,10,5,0"> @1@
+                ~1~     <Button Content="刷新" Command="{Binding RefreshCommand}" /> @1@
+                ~1~ </Grid> @1@
 
                 <Grid Row="0" Style="{StaticResource RightGrid}">
                     <Grid.RowDefinitions>
@@ -539,13 +548,13 @@
                 </Grid>
 
             </Grid>
-        </TabItem>
+        </TabItem>-->
 
-        <TabItem Header="test">
+        <!--<TabItem Header="test">
             <Grid>
-                <!-- <Button Click="SqliteTest" Content="Sqlite Test" /> -->
-                <!-- <Button Click="List" Content="List" /> -->
-                <!-- <Button Click="DeleteFiles" Content="DeleteFiles" /> -->
+                ~1~ <Button Click="SqliteTest" Content="Sqlite Test" /> @1@
+                ~1~ <Button Click="List" Content="List" /> @1@
+                ~1~ <Button Click="DeleteFiles" Content="DeleteFiles" /> @1@
                 <Grid>
                     <Button Click="GetSelectedAll" Content="GetSelectedAll" />
                 </Grid>
@@ -554,15 +563,15 @@
                     <Button Click="Exit" Content="退出程序" />
                 </Grid>
             </Grid>
-        </TabItem>
+        </TabItem>-->
 
-        <TabItem Header="test2">
+        <!--<TabItem Header="test2">
             <DataGrid x:Name="MyDataGrid"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       ColumnWidth="*">
             </DataGrid>
-        </TabItem>
+        </TabItem>-->
 
         <TabItem Header="加密文件">
             <Grid Margin="10">
@@ -596,7 +605,7 @@
             </Grid>
         </TabItem>
 
-        <TabItem Header="记账">
+        <!--<TabItem Header="记账">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -612,7 +621,7 @@
 
                 </Grid>
             </Grid>
-        </TabItem>
+        </TabItem>-->
 
     </TabControl>
 </Window>

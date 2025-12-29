@@ -51,6 +51,7 @@ public partial class MainWindow : Window
         SetMessageText(_message1);
 
         // ScanButton.Click += ScanTheFolder;   // 测试使用事件绑定 button上没有明写 click
+        ScanButton.Click += SayHello;
     }
 
     /*****************************************************************************************************************************/
@@ -200,17 +201,24 @@ public partial class MainWindow : Window
     /// <param name="e"></param>
     private async void ScanTheFolders(object sender, RoutedEventArgs e)
     {
-        ScanButton.IsEnabled = false;
-        Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
-        string scanTypeText = ScanType.Text;
-        string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
-
         _cts = new CancellationTokenSource();
-        bool isEmpty = string.IsNullOrWhiteSpace(_selectedFolder);
-        string[] filePathes = isEmpty ? Array.Empty<string>() : _selectedFolder.Split(';');
-
         try
         {
+            ScanButton.IsEnabled = false;
+            Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
+            string scanTypeText = ScanType.Text;
+            string[]? allowedExtensions;
+            string errorMes;
+            bool b = TryInitAllowedExtensions(scanTypeText, out allowedExtensions, out errorMes);
+            if (!b)
+            {
+                MessageBox.Show(errorMes, "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            bool isEmpty = string.IsNullOrWhiteSpace(_selectedFolder);
+            string[] filePathes = isEmpty ? Array.Empty<string>() : _selectedFolder.Split(';');
+
             if (filePathes.Length == 0)
             {
                 MessageBoxResult messageBoxResult = MessageBox.Show("没有选择任何文件夹, 将扫描整个电脑",
@@ -235,6 +243,7 @@ public partial class MainWindow : Window
             _mainViewModel.FileList?.Clear();
             MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             Log.Error("扫描已取消", exception.StackTrace);
+            Log.Error(exception.Message);
             SetMessageText("扫描已取消");
         }
         finally
@@ -243,6 +252,8 @@ public partial class MainWindow : Window
             ScanProgress.Visibility = Visibility.Collapsed;
             ScanProgress.Value = 0;
             _cts.Dispose();
+            // _cts.Cancel();
+            _cts = null;
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
     }
@@ -289,9 +300,23 @@ public partial class MainWindow : Window
         }
     }
 
+    // 过时, 改用 TryInitAllowedExtensions
     public string[]? InitAllowedExtensions(string scanTypeText)
     {
-        if (string.IsNullOrEmpty(scanTypeText))
+        string cusText = Cus.Text;
+        if (scanTypeText == "自定义" && !string.IsNullOrWhiteSpace(cusText))
+        {
+            if (FileUtil.IsValidFileExtension(cusText))
+            {
+                return [cusText];
+            }
+            else
+            {
+                return FileUtil._nullExtensions;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(scanTypeText))
         {
             return FileUtil._defaultAllowedExtensions;
         }
@@ -307,6 +332,7 @@ public partial class MainWindow : Window
                 "压缩类" => FileUtil._compressedFileExtensions,
                 "编程语言类" => FileUtil._programExtensions,
                 "无类型" => FileUtil._nullExtensions,
+                "自定义" => FileUtil._nullExtensions,
                 _ => FileUtil._defaultAllowedExtensions
             };
         }
@@ -419,7 +445,7 @@ public partial class MainWindow : Window
     /// <date>2025年4月28日</date>
     private void NoSearchDuplicateFile(object sender, RoutedEventArgs e)
     {
-        SearchText.Text = "";
+        // SearchText.Text = "";
         SearchText.IsReadOnly = false;
         // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e)));
         _mainViewModel.FileList =
@@ -567,28 +593,28 @@ public partial class MainWindow : Window
     /// <modified>2025年4月30日</modified>
     private void SetupDataGridColumns()
     {
-        var properties = typeof(DuplicateFilesEntry).GetProperties();
-        foreach (var prop in properties)
-        {
-            var attr = prop.GetCustomAttribute<ColumnHeaderAttribute>();
-            if (attr == null)
-                continue; // ❌ 没有注解，不添加这个列
-
-            var column = new DataGridTextColumn
-            {
-                Header = attr.DisplayName,
-                Binding = new Binding(prop.Name),
-                Width = ColumnWidth(prop.Name)
-            };
-            MyDataGrid.Columns.Add(column);
-        }
-
-        // 设置数据源
-        MyDataGrid.ItemsSource = new ObservableCollection<DuplicateFilesEntry>
-        {
-            new DuplicateFilesEntry { FileName = "test.txt", FileSize = 1 },
-            new DuplicateFilesEntry { FileName = "hello.doc", FileSize = 1 }
-        };
+        // var properties = typeof(DuplicateFilesEntry).GetProperties();
+        // foreach (var prop in properties)
+        // {
+        //     var attr = prop.GetCustomAttribute<ColumnHeaderAttribute>();
+        //     if (attr == null)
+        //         continue; // ❌ 没有注解，不添加这个列
+        //
+        //     var column = new DataGridTextColumn
+        //     {
+        //         Header = attr.DisplayName,
+        //         Binding = new Binding(prop.Name),
+        //         Width = ColumnWidth(prop.Name)
+        //     };
+        //     MyDataGrid.Columns.Add(column);
+        // }
+        //
+        // // 设置数据源
+        // MyDataGrid.ItemsSource = new ObservableCollection<DuplicateFilesEntry>
+        // {
+        //     new DuplicateFilesEntry { FileName = "test.txt", FileSize = 1 },
+        //     new DuplicateFilesEntry { FileName = "hello.doc", FileSize = 1 }
+        // };
     }
 
     /// <summary>
@@ -616,7 +642,7 @@ public partial class MainWindow : Window
         MessageText.Text = message;
     }
 
-    private void AddNewItem(object sender, RoutedEventArgs e)
+    /*private void AddNewItem(object sender, RoutedEventArgs e)
     {
         AddCardFormVisibility.Visibility = Visibility.Visible;
     }
@@ -624,7 +650,7 @@ public partial class MainWindow : Window
     private void CancelNewItem(object sender, RoutedEventArgs e)
     {
         AddCardFormVisibility.Visibility = Visibility.Collapsed;
-    }
+    }*/
 
     /// <summary>
     /// 程序将在x秒后退出
@@ -729,7 +755,7 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    public async void TestImport(object sender, RoutedEventArgs e)
+    /*public async void TestImport(object sender, RoutedEventArgs e)
     {
         DataTable data = FileHelper.ImportExcelFile("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*");
         if (data == null || data.Rows.Count == 0)
@@ -775,9 +801,8 @@ public partial class MainWindow : Window
             MessageBox.Show($"导入完成, 共添加 {total} 条数据");
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
-    }
-
-    private void PageSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    }*/
+    /*private void PageSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DataContext is MainViewModel vm && PageSizeComboBox.SelectedItem is ComboBoxItem item)
         {
@@ -788,26 +813,25 @@ public partial class MainWindow : Window
                 vm.UpdatePageInfo();
             }
         }
-    }
-
+    }*/
     private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel vm)
         {
             var checkBox = (CheckBox)sender;
             bool isChecked = checkBox.IsChecked == true;
-    
+
             // 只控制当前分页列表（当前页的数据）
             foreach (var item in vm.PagedFileList)
             {
                 item.IsSelected = isChecked;
             }
-    
+
             // 可选：同步更新 IsAllSelected（仅当前页）
             // vm.UpdateIsAllSelectedForCurrentPageOnly();
         }
     }
-    
+
     // private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
     // {
     //     if (DataContext is MainViewModel vm)
@@ -832,4 +856,52 @@ public partial class MainWindow : Window
     // }
 
 
+    private void SayHello(object sender, RoutedEventArgs e) => Console.WriteLine("hello");
+
+    private void ScanType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem item)
+        {
+            bool isCustom = item.Content?.ToString() == "自定义";
+            CustomColumn.Width = isCustom
+                ? new GridLength(50, GridUnitType.Star)
+                : new GridLength(0);
+        }
+    }
+
+    private bool TryInitAllowedExtensions(string scanTypeText, out string[]? extensions, out string error)
+    {
+        error = string.Empty;
+        extensions = null;
+
+        string cusText = Cus.Text;
+
+        if (scanTypeText == "自定义" && !string.IsNullOrWhiteSpace(cusText))
+        {
+            if (!FileUtil.IsValidFileExtension(cusText))
+            {
+                error = "请输入正确的文件名格式（例如：.txt）";
+                return false;
+            }
+
+            extensions = new[] { cusText };
+            return true;
+        }
+
+        extensions = scanTypeText switch
+        {
+            null or "" => FileUtil._defaultAllowedExtensions,
+            "所有类型" => FileUtil._defaultAllowedExtensions,
+            "图片类" => FileUtil._phototExtensions,
+            "音频类" => FileUtil._audioExtensions,
+            "视频类" => FileUtil._videoExtensions,
+            "文字类" => FileUtil._wordExtensions,
+            "压缩类" => FileUtil._compressedFileExtensions,
+            "编程语言类" => FileUtil._programExtensions,
+            "无类型" or "自定义" => FileUtil._nullExtensions,
+            _ => FileUtil._defaultAllowedExtensions
+        };
+
+        return true;
+    }
 }
