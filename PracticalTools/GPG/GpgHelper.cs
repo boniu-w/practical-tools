@@ -455,4 +455,91 @@ public class GpgHelper
     {
         return values.Select(v => Convert.ToInt32(v)).ToArray();
     }
+
+    /// <summary>
+    /// 把文件解析为私钥
+    /// </summary>
+    /// <param name="secretKeyFilePath"></param>
+    /// <returns></returns>
+    public static PgpSecretKeyRing LoadSecretKeyRing(string secretKeyFilePath)
+    {
+        string fileType = GetPgpFileType(secretKeyFilePath);
+        if (!"SecretKey".Equals(fileType))
+        {
+            return new PgpSecretKeyRing(Array.Empty<byte>());
+        }
+
+        using var keyStream = File.OpenRead(secretKeyFilePath);
+
+        // PGP 文件可能是 ASCII-armored，也可能是二进制
+        using var decoderStream = PgpUtilities.GetDecoderStream(keyStream);
+
+        // 生成 KeyRing 对象
+        PgpSecretKeyRing secretKeyRing = new PgpSecretKeyRing(decoderStream);
+
+        return secretKeyRing;
+    }
+
+    /// <summary>
+    /// 把文件解析为公钥
+    /// </summary>
+    /// <param name="secretKeyFilePath"></param>
+    /// <returns></returns>
+    public static PgpPublicKeyRing LoadPublicKeyRing(string secretKeyFilePath)
+    {
+        string fileType = GetPgpFileType(secretKeyFilePath);
+        if (!"PublicKey".Equals(fileType))
+        {
+            return new PgpPublicKeyRing(Array.Empty<byte>());
+        }
+
+        using var keyStream = File.OpenRead(secretKeyFilePath);
+
+        // PGP 文件可能是 ASCII-armored，也可能是二进制
+        using var decoderStream = PgpUtilities.GetDecoderStream(keyStream);
+
+        // 生成 KeyRing 对象
+        PgpPublicKeyRing ring = new PgpPublicKeyRing(decoderStream);
+
+        return ring;
+    }
+
+    public static PgpSignatureList LoadSignatureRing(string signatureFilePath)
+    {
+        string fileType = GetPgpFileType(signatureFilePath);
+        if (!"Signature".Equals(fileType))
+        {
+            return new PgpSignatureList(Array.Empty<PgpSignature>());
+        }
+        using var sigStream = File.OpenRead(signatureFilePath);
+        using var decoderStream = PgpUtilities.GetDecoderStream(sigStream);
+
+        var pgpFactory = new PgpObjectFactory(decoderStream);
+        var obj = pgpFactory.NextPgpObject();
+
+        // 在 2.7+ 中，签名文件应直接返回 PgpSignatureList
+        if (obj is PgpSignatureList signatureList)
+        {
+            return signatureList;
+        }
+
+        return new PgpSignatureList(Array.Empty<PgpSignature>());
+    }
+
+    public static string GetPgpFileType(string filePath)
+    {
+        using var fs = File.OpenRead(filePath);
+        using var decoder = PgpUtilities.GetDecoderStream(fs);
+
+        PgpObjectFactory factory = new PgpObjectFactory(decoder);
+        PgpObject obj = factory.NextPgpObject();
+
+        return obj switch
+        {
+            PgpSecretKeyRing => "SecretKey",
+            PgpPublicKeyRing => "PublicKey",
+            PgpSignatureList => "Signature",
+            _ => "Unknown"
+        };
+    }
 }

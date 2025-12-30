@@ -1,4 +1,5 @@
-﻿using PracticalTools.GPG;
+﻿using Org.BouncyCastle.Bcpg.OpenPgp;
+using PracticalTools.GPG;
 
 namespace TestProject1;
 
@@ -25,11 +26,11 @@ public class PgpTest
 
         // 2. 待签数据
         string message = "Hello, this is a test message.";
-        
+
         // 3. 生成签名
         string signature = GpgHelper.SignData(message, secRing, passphrase);
         Console.WriteLine("签名:\n" + signature);
-        
+
         // 4. 验证签名
         bool isValid = GpgHelper.VerifySignature(message, signature, pubRing);
         Console.WriteLine("签名验证结果: " + isValid);
@@ -40,12 +41,18 @@ public class PgpTest
     [TestMethod]
     public void TestSignPgp()
     {
-        string identity = "boniu-w@live.cn";
-        string passphrase = "Soccer0boy$";
-        int keySize = 2048;
-        var (pubRing, secRing) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
-        
+        // string identity = "boniu-w@live.cn";
+        // string passphrase = "Soccer0boy$";
+        // int keySize = 2048;
+        // var (pubRing, secRing) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
+
         // 文件签名
+        string secFile = "";
+        var secRing = GpgHelper.LoadSecretKeyRing(secFile);
+        string pubFile = "";
+        PgpPublicKeyRing pubRing = GpgHelper.LoadPublicKeyRing(pubFile);
+        
+        string passphrase = "Soccer0boy$";
         string filePath = "H:\\wg\\gpg-key\\alges - bala gaxeh.MP3";
         byte[] sig = GpgHelper.SignFile(filePath, secRing, passphrase);
         File.WriteAllBytes("app.exe.sig", sig);
