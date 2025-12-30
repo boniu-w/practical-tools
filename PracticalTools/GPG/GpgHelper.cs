@@ -1,7 +1,12 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Text;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Bcpg.OpenPgp;
+using Org.BouncyCastle.Bcpg.Sig;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.IO;
 
@@ -182,85 +187,272 @@ public class GpgHelper
     }
 
     /// <summary>
-    /// 签名
+    /// 生成签名
     /// </summary>
-    /// <param name="inputFile"></param>
-    /// <param name="outputSigFile"></param>
-    /// <param name="privateKeyFile"></param>
+    /// <param name="data"></param>
+    /// <param name="secretKeyRing"></param>
     /// <param name="passphrase"></param>
-    public static void SignFile(
-        string inputFile,
-        string outputSigFile,
-        string privateKeyFile,
-        string passphrase)
+    /// <returns></returns>
+    public static string SignData(string data, PgpSecretKeyRing secretKeyRing, string passphrase)
     {
-        using var keyIn = File.OpenRead(privateKeyFile);
-        var privateKey = ReadPrivateKey(keyIn, passphrase);
+        // 1. 获取私钥对象（主密钥或子密钥都可）
+        PgpSecretKey secretKey = secretKeyRing.GetSecretKey();
+        PgpPrivateKey privateKey = secretKey.ExtractPrivateKey(passphrase.ToCharArray());
 
-        var signer = new PgpSignatureGenerator(privateKey.PublicKeyPacket.Algorithm, HashAlgorithmTag.Sha256);
+        // 2. 初始化签名生成器
+        var signatureGenerator = new PgpSignatureGenerator(secretKey.PublicKey.Algorithm, HashAlgorithmTag.Sha256);
+        signatureGenerator.InitSign(PgpSignature.BinaryDocument, privateKey);
 
-        signer.InitSign(PgpSignature.BinaryDocument, privateKey);
+        // 3. 可选：添加签名子包信息
+        var subpacket = new PgpSignatureSubpacketGenerator();
+        subpacket.SetSignerUserId(false, secretKey.PublicKey.GetUserIds().First());
+        signatureGenerator.SetHashedSubpackets(subpacket.Generate());
 
-        using var outStream = File.Create(outputSigFile);
-        using var input = File.OpenRead(inputFile);
+        // 4. 输出到 ASCII-armored
+        using var outputStream = new MemoryStream();
+        using (var armoredStream = new ArmoredOutputStream(outputStream))
+        {
+            var bytes = Encoding.UTF8.GetBytes(data);
+            signatureGenerator.Update(bytes, 0, bytes.Length);
+            signatureGenerator.Generate().Encode(armoredStream);
+        }
 
-        int ch;
-        while ((ch = input.ReadByte()) >= 0)
-            signer.Update((byte)ch);
-
-        signer.Generate().Encode(outStream);
+        return Encoding.UTF8.GetString(outputStream.ToArray());
     }
 
     /// <summary>
     /// 验证签名
     /// </summary>
-    /// <param name="inputFile"></param>
-    /// <param name="sigFile"></param>
-    /// <param name="publicKeyFile"></param>
+    /// <param name="data"></param>
+    /// <param name="signatureAscii"></param>
+    /// <param name="publicKeyRing"></param>
     /// <returns></returns>
-    public static bool VerifySignature(string inputFile, string sigFile, string publicKeyFile)
+    public static bool VerifySignature(string data, string signatureAscii, PgpPublicKeyRing publicKeyRing)
     {
-        // 1. 读取公钥
-        using var pubKeyStream = File.OpenRead(publicKeyFile);
-        var pubKey = ReadPublicKey(pubKeyStream);
+        // 1. 解析签名
+        using var sigStream = new MemoryStream(Encoding.UTF8.GetBytes(signatureAscii));
+        var decoderStream = PgpUtilities.GetDecoderStream(sigStream);
+        PgpObjectFactory pgpObjFactory = new PgpObjectFactory(decoderStream);
+        PgpSignatureList sigList = null;
 
-        // 2. 读取签名文件
-        using var sigInput = PgpUtilities.GetDecoderStream(File.OpenRead(sigFile));
-        var pgpFact = new PgpObjectFactory(sigInput);
-
-        PgpSignature signature = null;
-        PgpObject pgpObj = pgpFact.NextPgpObject();
-
-        // 3. 解压（如果有）
-        if (pgpObj is PgpCompressedData compressed)
-        {
-            using var compStream = compressed.GetDataStream();
-            var compFact = new PgpObjectFactory(compStream);
-            pgpObj = compFact.NextPgpObject();
-        }
-
-        // 4. 取 SignatureList
-        if (pgpObj is PgpSignatureList sigList)
-        {
-            signature = sigList[0];
-        }
+        var obj = pgpObjFactory.NextPgpObject();
+        if (obj is PgpSignatureList sList)
+            sigList = sList;
         else
-        {
-            throw new Exception("签名格式不正确");
-        }
+            throw new Exception("Unexpected PGP object type");
 
-        // 5. 初始化验签
+        var signature = sigList[0];
+
+        // 2. 找到对应公钥
+        PgpPublicKey pubKey = publicKeyRing.GetPublicKey(signature.KeyId);
         signature.InitVerify(pubKey);
 
-        // 6. 读原文件并更新签名
-        using var input = File.OpenRead(inputFile);
-        int ch;
-        while ((ch = input.ReadByte()) >= 0)
-        {
-            signature.Update((byte)ch);
-        }
+        // 3. 更新原始数据
+        var bytes = Encoding.UTF8.GetBytes(data);
+        signature.Update(bytes, 0, bytes.Length);
 
-        // 7. 验证
+        // 4. 验证
         return signature.Verify();
+    }
+
+    /// <summary>
+    /// 生成文件签名
+    /// </summary>
+    /// <param name="exePath"></param>
+    /// <param name="secretKeyRing"></param>
+    /// <param name="passphrase"></param>
+    /// <returns></returns>
+    public static byte[] SignFile(
+        string exePath,
+        PgpSecretKeyRing secretKeyRing,
+        string passphrase)
+    {
+        // 1. 读取文件
+        byte[] fileBytes = File.ReadAllBytes(exePath);
+
+        // 2. 获取私钥
+        PgpSecretKey secretKey = secretKeyRing.GetSecretKey();
+        PgpPrivateKey privateKey = secretKey.ExtractPrivateKey(passphrase.ToCharArray());
+
+        // 3. 初始化签名生成器
+        var sigGen = new PgpSignatureGenerator(
+            secretKey.PublicKey.Algorithm,
+            HashAlgorithmTag.Sha256);
+
+        sigGen.InitSign(PgpSignature.BinaryDocument, privateKey);
+
+        // 4. 更新文件内容
+        sigGen.Update(fileBytes, 0, fileBytes.Length);
+
+        // 5. 生成签名
+        using var output = new MemoryStream();
+        sigGen.Generate().Encode(output);
+
+        return output.ToArray();
+    }
+
+    /// <summary>
+    /// 验证文件签名
+    /// </summary>
+    /// <param name="exePath"></param>
+    /// <param name="sigPath"></param>
+    /// <param name="publicKeyRing"></param>
+    /// <returns></returns>
+    public static bool VerifyFileSignature(
+        string exePath,
+        string sigPath,
+        PgpPublicKeyRing publicKeyRing)
+    {
+        byte[] fileBytes = File.ReadAllBytes(exePath);
+        byte[] sigBytes = File.ReadAllBytes(sigPath);
+
+        using var sigStream = new MemoryStream(sigBytes);
+        PgpObjectFactory factory = new PgpObjectFactory(sigStream);
+        PgpSignatureList sigList = (PgpSignatureList)factory.NextPgpObject();
+        PgpSignature signature = sigList[0];
+
+        PgpPublicKey pubKey = publicKeyRing.GetPublicKey(signature.KeyId);
+        signature.InitVerify(pubKey);
+
+        signature.Update(fileBytes, 0, fileBytes.Length);
+
+        return signature.Verify();
+    }
+
+    /// <summary>
+    /// 在内存中生成密钥对
+    /// </summary>
+    /// <param name="identity">邮箱</param>
+    /// <param name="passphrase">密码</param>
+    /// <param name="keySize"></param>
+    /// <returns></returns>
+    public static (PgpPublicKeyRing pubRing, PgpSecretKeyRing secRing)
+        GeneratePgpKeyPair(
+            string identity,
+            string passphrase,
+            int keySize = 4096)
+    {
+        var random = new SecureRandom();
+
+        // =====================================================
+        // 1. 主密钥（Sign + Certify）
+        // =====================================================
+        var rsaGen = new RsaKeyPairGenerator();
+        rsaGen.Init(new RsaKeyGenerationParameters(
+            BigInteger.ValueOf(0x10001),
+            random,
+            keySize,
+            12));
+
+        var masterKeyPair = rsaGen.GenerateKeyPair();
+        var masterPgpKeyPair = new PgpKeyPair(
+            PublicKeyAlgorithmTag.RsaSign,
+            masterKeyPair,
+            DateTime.UtcNow);
+
+        // =====================================================
+        // 2. 主密钥 Subpacket
+        // =====================================================
+        var masterSubpacket = new PgpSignatureSubpacketGenerator();
+
+        masterSubpacket.SetKeyFlags(
+            true,
+            PgpKeyFlags.CanSign | PgpKeyFlags.CanCertify);
+
+        masterSubpacket.SetPreferredHashAlgorithms(
+            true,
+            ToIntArray(
+                HashAlgorithmTag.Sha512,
+                HashAlgorithmTag.Sha256)
+        );
+
+        masterSubpacket.SetPreferredSymmetricAlgorithms(
+            true,
+            ToIntArray(
+                SymmetricKeyAlgorithmTag.Aes256,
+                SymmetricKeyAlgorithmTag.Aes192,
+                SymmetricKeyAlgorithmTag.Aes128)
+        );
+
+        masterSubpacket.SetFeature(
+            true,
+            Features.FEATURE_MODIFICATION_DETECTION);
+
+        // =====================================================
+        // 3. KeyRingGenerator（核心）
+        // =====================================================
+        var keyRingGen = new PgpKeyRingGenerator(
+            PgpSignature.PositiveCertification,
+            masterPgpKeyPair,
+            identity,
+            SymmetricKeyAlgorithmTag.Aes256,
+            passphrase.ToCharArray(),
+            true,
+            masterSubpacket.Generate(),
+            null,
+            random);
+
+        // =====================================================
+        // 4. 加密子密钥
+        // =====================================================
+        var encKeyPair = rsaGen.GenerateKeyPair();
+        var encPgpKeyPair = new PgpKeyPair(
+            PublicKeyAlgorithmTag.RsaEncrypt,
+            encKeyPair,
+            DateTime.UtcNow);
+
+        var encSubpacket = new PgpSignatureSubpacketGenerator();
+        encSubpacket.SetKeyFlags(
+            true,
+            PgpKeyFlags.CanEncryptCommunications |
+            PgpKeyFlags.CanEncryptStorage);
+
+        // ✅ 2.7.0 的“添加子密钥”方式
+        keyRingGen.AddSubKey(
+            encPgpKeyPair,
+            encSubpacket.Generate(),
+            null);
+
+        // =====================================================
+        // 5. 生成 KeyRing
+        // =====================================================
+        PgpSecretKeyRing secretKeyRing = keyRingGen.GenerateSecretKeyRing();
+        PgpPublicKeyRing publicKeyRing = keyRingGen.GeneratePublicKeyRing();
+
+        return (publicKeyRing, secretKeyRing);
+    }
+
+    /// <summary>
+    /// 导出内存中的公钥
+    /// </summary>
+    /// <param name="publicKeyRing"></param>
+    /// <returns></returns>
+    public static string ExportPublicKey(PgpPublicKeyRing publicKeyRing)
+    {
+        using var output = new MemoryStream();
+        using var armored = new ArmoredOutputStream(output);
+        publicKeyRing.Encode(armored);
+        armored.Close();
+        return Encoding.UTF8.GetString(output.ToArray());
+    }
+
+    /// <summary>
+    /// 导出内存中的私钥
+    /// </summary>
+    /// <param name="secretKeyRing"></param>
+    /// <returns></returns>
+    public static string ExportPrivateKey(PgpSecretKeyRing secretKeyRing)
+    {
+        using var output = new MemoryStream();
+        using var armored = new ArmoredOutputStream(output);
+        secretKeyRing.Encode(armored);
+        armored.Close();
+        return Encoding.UTF8.GetString(output.ToArray());
+    }
+
+    private static int[] ToIntArray<TEnum>(params TEnum[] values)
+        where TEnum : Enum
+    {
+        return values.Select(v => Convert.ToInt32(v)).ToArray();
     }
 }
