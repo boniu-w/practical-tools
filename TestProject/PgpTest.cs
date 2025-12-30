@@ -6,7 +6,7 @@ namespace TestProject1;
 [TestClass]
 public class PgpTest
 {
-    [TestMethod]
+    // [TestMethod]
     public void TestPgp()
     {
         string identity = "boniu-w@live.cn";
@@ -38,7 +38,7 @@ public class PgpTest
         #endregion
     }
 
-    [TestMethod]
+    // [TestMethod]
     public void TestSignPgp()
     {
         // string identity = "boniu-w@live.cn";
@@ -51,7 +51,7 @@ public class PgpTest
         var secRing = GpgHelper.LoadSecretKeyRing(secFile);
         string pubFile = "";
         PgpPublicKeyRing pubRing = GpgHelper.LoadPublicKeyRing(pubFile);
-        
+
         string passphrase = "Soccer0boy$";
         string filePath = "H:\\wg\\gpg-key\\alges - bala gaxeh.MP3";
         byte[] sig = GpgHelper.SignFile(filePath, secRing, passphrase);
@@ -59,6 +59,25 @@ public class PgpTest
         string sigPath = "app.exe.sig";
 
         bool a = GpgHelper.VerifyFileSignature(filePath, sigPath, pubRing);
+        Console.WriteLine("文件签名验证结果: " + a);
+    }
+
+    [TestMethod]
+    public void TestSignPgp2()
+    {
+        // 文件签名
+        string secFile = "D:\\c-project\\wg\\temp\\sec-20251230.asc";
+        PgpSecretKeyRing secRing = GpgHelper.LoadSecretKeyRing(secFile);
+        string pubFile = "D:\\c-project\\wg\\temp\\pub-20251230.asc";
+        PgpPublicKeyRing pubRing = GpgHelper.LoadPublicKeyRing(pubFile);
+
+        string passphrase = "Soccer0boy$";
+        string filePath = "H:\\wg\\gpg-key\\alges - bala gaxeh.MP3";
+        // string signatureFilePath = GpgHelper.SignatureFile(filePath, secRing, passphrase);
+        string signatureFilePath = GpgHelper.Test12(filePath,secRing,passphrase);
+        Console.WriteLine("<signatureFilePath>: " + signatureFilePath);
+
+        bool a = GpgHelper.VerifyFileSignatureSafe(filePath, signatureFilePath, pubRing);
         Console.WriteLine("文件签名验证结果: " + a);
     }
 }

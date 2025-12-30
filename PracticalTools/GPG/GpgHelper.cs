@@ -291,6 +291,45 @@ public class GpgHelper
         return output.ToArray();
     }
 
+    public static string Test12(string exePath,
+        PgpSecretKeyRing secretKeyRing,
+        string passphrase)
+    {
+        byte[] sig = SignFile(exePath, secretKeyRing, passphrase);
+        string sigFilePath = exePath + ".sig";
+        File.WriteAllBytes(sigFilePath, sig);
+        return sigFilePath;
+    }
+
+    public static string SignatureFile(string exePath,
+        PgpSecretKeyRing secretKeyRing,
+        string passphrase)
+    {
+        // 1. 读取文件
+        byte[] fileBytes = File.ReadAllBytes(exePath);
+
+        // 2. 获取私钥
+        PgpSecretKey secretKey = secretKeyRing.GetSecretKey();
+        PgpPrivateKey privateKey = secretKey.ExtractPrivateKey(passphrase.ToCharArray());
+
+        // 3. 初始化签名生成器
+        var sigGen = new PgpSignatureGenerator(secretKey.PublicKey.Algorithm, HashAlgorithmTag.Sha256);
+        sigGen.InitSign(PgpSignature.BinaryDocument, privateKey);
+
+        // 4. 更新文件内容
+        sigGen.Update(fileBytes, 0, fileBytes.Length);
+
+        // 5. 生成 ASCII-armored detached signature 并保存到磁盘
+        string sigFilePath = exePath + ".sig";
+        using (var sigOut = File.Create(sigFilePath))
+        using (var armored = new ArmoredOutputStream(sigOut))
+        {
+            sigGen.Generate().Encode(armored);
+        }
+
+        return sigFilePath;
+    }
+
     /// <summary>
     /// 验证文件签名
     /// </summary>
@@ -318,6 +357,77 @@ public class GpgHelper
 
         return signature.Verify();
     }
+
+    /// <summary>
+    /// 安全验证 PGP detached signature（兼容 PgpSignatureList 和 PgpOnePassSignatureList）
+    /// </summary>
+    /// <param name="exePath">原文件路径</param>
+    /// <param name="sigPath">签名文件路径（ASCII-armored 或二进制）</param>
+    /// <param name="publicKeyRing">公钥环</param>
+    /// <returns>签名验证成功返回 true，否则 false</returns>
+    public static bool VerifyFileSignatureSafe(
+        string exePath,
+        string sigPath,
+        PgpPublicKeyRing publicKeyRing)
+    {
+        try
+        {
+            // 1. 读取原文件
+            byte[] fileBytes = File.ReadAllBytes(exePath);
+
+            // 2. 打开签名文件
+            using var sigStream = File.OpenRead(sigPath);
+            using var decoderStream = PgpUtilities.GetDecoderStream(sigStream);
+
+            var pgpFactory = new PgpObjectFactory(decoderStream);
+            PgpObject obj = pgpFactory.NextPgpObject();
+
+            PgpSignature signature = null;
+
+            // 3. PgpSignatureList（最常见 detached signature）
+            if (obj is PgpSignatureList sigList && sigList.Count > 0)
+            {
+                signature = sigList[0];
+            }
+            // 4. PgpOnePassSignatureList（流式签名）
+            else if (obj is PgpOnePassSignatureList onePassList && !onePassList.IsEmpty)
+            {
+                var onePass = onePassList[0];
+                PgpPublicKey pubKey = publicKeyRing.GetPublicKey(onePass.KeyId);
+                if (pubKey == null) return false;
+
+                onePass.InitVerify(pubKey);
+
+                // 更新整个文件内容
+                onePass.Update(fileBytes, 0, fileBytes.Length);
+
+                return onePass.Verify(signature);
+            }
+            else
+            {
+                return false; // 不是有效签名文件
+            }
+
+            // 5. 如果是 PgpSignatureList，验证流程
+            if (signature != null)
+            {
+                PgpPublicKey pubKey = publicKeyRing.GetPublicKey(signature.KeyId);
+                if (pubKey == null) return false;
+
+                signature.InitVerify(pubKey);
+                signature.Update(fileBytes, 0, fileBytes.Length);
+
+                return signature.Verify();
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 
     /// <summary>
     /// 在内存中生成密钥对
@@ -511,6 +621,7 @@ public class GpgHelper
         {
             return new PgpSignatureList(Array.Empty<PgpSignature>());
         }
+
         using var sigStream = File.OpenRead(signatureFilePath);
         using var decoderStream = PgpUtilities.GetDecoderStream(sigStream);
 
