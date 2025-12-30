@@ -13,7 +13,7 @@ public class FileUtil
 
     public ValueTuple<string, string, string> FileValueTuple { get; set; }
 
-    public static string[] _skipFolders = new[]
+    public static readonly string[] _skipFolders = new[]
     {
         "$Recycle.Bin",
         "System Volume Information",
@@ -25,7 +25,7 @@ public class FileUtil
 
     public static string[]? _defaultAllowedExtensions = [];
 
-    public static string[]? _phototExtensions =
+    public static readonly string[]? _phototExtensions =
     [
         ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff", ".svg",
         ".raw", ".srf", ".sr2",
@@ -35,17 +35,17 @@ public class FileUtil
         ".psd", ".psb", ".bmp", ".webp", ".heif", ".heic", ".avif"
     ];
 
-    public static string[]? _audioExtensions =
+    public static readonly string[]? _audioExtensions =
     {
         ".mp3", ".wav", ".flac", ".aac", ".wma", ".ogg", ".aiff", ".au", ".m4a", ".amr"
     };
 
-    public static string[]? _videoExtensions =
+    public static readonly string[]? _videoExtensions =
     {
         ".mp4", ".avi", ".wmv", ".mkv", ".flv", ".mov", ".rm", ".rmvb", "m4v", ".mts", "m2ts", ".3gp", ".webm"
     };
 
-    public static string[]? _wordExtensions =
+    public static readonly string[]? _wordExtensions =
     {
         ".txt", ".doc", ".docx", ".rtf", ".md", ".otd", ".pdf", ".ppt", ".pptx", ".xls", ".xlsx", ".csv", ".xml",
         ".xaml", ".json", ".html", ".ts",
@@ -53,19 +53,19 @@ public class FileUtil
     };
 
     // 压缩文件
-    public static string[]? _compressedFileExtensions =
+    public static readonly string[]? _compressedFileExtensions =
     {
         ".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".cab", ".iso", ".apk", ".jar", ".rpm"
     };
 
-    public static string[]? _programExtensions =
+    public static readonly string[]? _programExtensions =
     {
         ".c", ".cpp", ".java", ".py", ".js", ".ts", ".php", ".rb", ".go", ".swift", ".kt", ".cs", ".vb",
         ".scala", ".clj", ".erl", ".hs", ".lua", ".pl", ".tcl", ".vue",
         ".html", ".xhtml", ".css", ".scss", ".sass", ".less", "jsx", ".pug", ".hbs"
     };
 
-    public static string[]? _nullExtensions = { };
+    public static readonly string[]? _nullExtensions = { };
 
     /*****************************************************************************************************************************/
 
