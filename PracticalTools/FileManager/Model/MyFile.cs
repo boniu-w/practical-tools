@@ -70,6 +70,7 @@ public class ColumnHeaderAttribute : Attribute
     }
 }
 
+/*
 public static class DataTableMapper
 {
     public static List<MyFile> MapToMyFileList(DataTable dt)
@@ -189,4 +190,4 @@ public static class DataTableMapper
             prop.SetValue(myFile, null); // 如果解析失败，则设置为 null
         }
     }
-}
+}*/

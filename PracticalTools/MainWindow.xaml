@@ -574,37 +574,91 @@
         </TabItem>-->
 
         <TabItem Header="加密文件">
-            <Grid Margin="10">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <Grid>
+                <TabControl Grid.Column="0" Margin="10"
+                            x:Name="My0"
+                            Background="White"
+                            SelectionChanged="TabControl_SelectionChanged">
+                    <TabItem Header="111111111">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
 
-                    <Label Content="接收者密钥ID:" Grid.Row="0" Margin="0,0,0,5" VerticalAlignment="Center" />
-                    <TextBox x:Name="RecipientTextBox" Grid.Row="0" Margin="120,0,0,5" Text="your-key-id" VerticalAlignment="Center"/>
+                                <Label Content="接收者密钥ID:" Grid.Row="0" Margin="0,0,0,5" VerticalAlignment="Center" />
+                                <TextBox x:Name="RecipientTextBox" Grid.Row="0" Margin="120,0,0,5" Text="your-key-id" VerticalAlignment="Center" />
 
-                    <Button x:Name="EncryptButton" Content="选择文件并加密" Grid.Row="1" Margin="0,10,0,0"
-                            Click="OnEncryptClick" />
+                                <Button x:Name="EncryptButton" Content="选择文件并加密" Grid.Row="1" Margin="0,10,0,0"
+                                        Click="OnEncryptClick" />
 
-                    <Label Content="状态:" Grid.Row="2" Margin="0,10,0,5" 
-                           VerticalAlignment="Center"
-                            />
-                    <TextBlock x:Name="StatusText" Grid.Row="2" Margin="50,10,0,5" Text="准备就绪"
-                               VerticalAlignment="Center"/>
+                                <Label Content="状态:" Grid.Row="2" Margin="0,10,0,5"
+                                       VerticalAlignment="Center" />
+                                <TextBlock x:Name="StatusText" Grid.Row="2" Margin="50,10,0,5" Text="准备就绪"
+                                           VerticalAlignment="Center" />
 
-                </Grid>
+                            </Grid>
 
-                <Grid Grid.Row="1">
-                    <Button x:Name="DecryptButton" Click="OnDecryptClick" Content="解密文件"></Button>
-                </Grid>
+                            <Grid Grid.Row="1">
+                                <Button x:Name="DecryptButton" Click="OnDecryptClick" Content="解密文件"></Button>
+                            </Grid>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="2222222">
+                        <Grid>
+                            <DataGrid>
+                                <DataGrid.Columns>
+                                    <DataGridCheckBoxColumn IsReadOnly="False"
+                                                            Width="0.5*"
+                                                            Header=""
+                                                            Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <DataGridCheckBoxColumn.ElementStyle>
+                                            <Style TargetType="CheckBox"
+                                                   BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.ElementStyle>
+                                        <DataGridCheckBoxColumn.EditingElementStyle>
+                                            <Style TargetType="CheckBox"
+                                                   BasedOn="{StaticResource MaterialDesignCheckBox}">
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.EditingElementStyle>
+                                    </DataGridCheckBoxColumn>
+
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名"
+                                                        Binding="{Binding Entry.FileName}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值[MD5]"
+                                                        Binding="{Binding Entry.Md5Value}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址"
+                                                        Binding="{Binding Entry.FilePath}" />
+                                    <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]"
+                                                        Binding="{Binding Entry.FileSize}" />
+
+
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹"
+                                                        Binding="{Binding Entry.ScanDirectory}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间"
+                                                        Binding="{Binding Entry.ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="3333333333">
+
+                    </TabItem>
+                </TabControl>
             </Grid>
         </TabItem>
 
