@@ -428,19 +428,28 @@ public class GpgHelper
         }
     }
 
+    public static void GeneratePgpKeyPairFile(string identity,
+        string passphrase,
+        int keySize = 4096,
+        long? keyLifeSeconds = null)
+    {
+        var (pubRing, secRing) = GeneratePgpKeyPair(identity, passphrase, keySize, keyLifeSeconds);
+    }
 
     /// <summary>
     /// 在内存中生成密钥对
     /// </summary>
     /// <param name="identity">邮箱</param>
     /// <param name="passphrase">密码</param>
-    /// <param name="keySize"></param>
+    /// <param name="keySize">RSA 密钥长度，推荐 2048 或 4096</param>
+    /// <param name="keyLifeSeconds">有效时长(秒), null-长期有效永不过期</param>
     /// <returns></returns>
     public static (PgpPublicKeyRing pubRing, PgpSecretKeyRing secRing)
         GeneratePgpKeyPair(
             string identity,
             string passphrase,
-            int keySize = 4096)
+            int keySize = 4096,
+            long? keyLifeSeconds = null)
     {
         var random = new SecureRandom();
 
@@ -488,6 +497,12 @@ public class GpgHelper
             true,
             Features.FEATURE_MODIFICATION_DETECTION);
 
+        // ⭐ 关键点：设置主密钥有效期
+        if (keyLifeSeconds.HasValue)
+        {
+            masterSubpacket.SetKeyExpirationTime(true, keyLifeSeconds.Value);
+        }
+
         // =====================================================
         // 3. KeyRingGenerator（核心）
         // =====================================================
@@ -516,6 +531,12 @@ public class GpgHelper
             true,
             PgpKeyFlags.CanEncryptCommunications |
             PgpKeyFlags.CanEncryptStorage);
+
+        // ⭐ 子密钥也可以设置同样的有效期
+        if (keyLifeSeconds.HasValue)
+        {
+            encSubpacket.SetKeyExpirationTime(true, keyLifeSeconds.Value);
+        }
 
         // ✅ 2.7.0 的“添加子密钥”方式
         keyRingGen.AddSubKey(
