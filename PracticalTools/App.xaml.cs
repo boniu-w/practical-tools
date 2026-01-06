@@ -3,6 +3,7 @@ using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PracticalTools.DuplicateFiles.service;
+using PracticalTools.GPG;
 using PracticalTools.Sqlite;
 using PracticalTools.vo;
 using Serilog;
@@ -27,7 +28,7 @@ public partial class App : Application
 
         // 配置服务
         var serviceCollection = new ServiceCollection();
-        
+
         ConfigureServices(serviceCollection);
         _serviceProvider = serviceCollection.BuildServiceProvider();
     }
@@ -53,7 +54,8 @@ public partial class App : Application
 
         services.AddTransient<SQLiteDemo>();
         services.AddTransient<DuplicateFilesService>();
-        
+        services.AddTransient<GpgFileService>();
+
         // 注册 ViewModel
         services.AddTransient<MainViewModel>();
         // 注册主窗口
@@ -63,12 +65,12 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         Log.Information("应用启动");
-        
+
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         mainWindow.Show();
         base.OnStartup(e);
     }
-    
+
     protected override void OnExit(ExitEventArgs e)
     {
         Log.Information("应用退出");

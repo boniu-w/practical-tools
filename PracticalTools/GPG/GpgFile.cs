@@ -23,7 +23,7 @@ public class GpgFile : INotifyPropertyChanged
     [ColumnHeader("私钥的签名")] public string? SignaturePrivate { get; set; }
     [ColumnHeader("公钥的签名")] public string? SignaturePublic { get; set; }
     [ColumnHeader("类别")] public string? Type { get; set; }
-    public DateTime? CreateTime { get; set; }
+    [ColumnHeader("创建时间")]  public DateTime? CreateTime { get; set; }
     public DateTime? UpdateTime { get; set; }
 
 

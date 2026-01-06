@@ -152,22 +152,6 @@
                             Padding="0"
                             Content="开始扫描" Click="ScanTheFolders" />
 
-                    <!-- 测试使用事件绑定 button上没有明写 click -->
-                    <!-- <Button Grid.Row="0" Grid.Column="4" -->
-                    <!--         x:Name="ScanButton" -->
-                    <!--         Margin="5,0,0,0" -->
-                    <!--         Padding="0" -->
-                    <!--         Content="开始扫描" /> -->
-
-                    <!-- 测试 使用command 方式,  -->
-                    <!-- <Button Grid.Row="0" Grid.Column="4" -->
-                    <!--         x:Name="ScanButton" -->
-                    <!--         Margin="5,0,0,0" -->
-                    <!--         Padding="0" -->
-                    <!--         Content="开始扫描" -->
-                    <!--         Command="{Binding ScanCommand}" -->
-                    <!--         CommandParameter="{Binding Text, ElementName=TheFilePath}" /> -->
-
                     <Button Grid.Row="0" Grid.Column="6"
                             Margin="5,0,0,0"
                             Padding="0"
@@ -550,36 +534,13 @@
             </Grid>
         </TabItem>-->
 
-        <!--<TabItem Header="test">
-            <Grid>
-                ~1~ <Button Click="SqliteTest" Content="Sqlite Test" /> @1@
-                ~1~ <Button Click="List" Content="List" /> @1@
-                ~1~ <Button Click="DeleteFiles" Content="DeleteFiles" /> @1@
-                <Grid>
-                    <Button Click="GetSelectedAll" Content="GetSelectedAll" />
-                </Grid>
-
-                <Grid>
-                    <Button Click="Exit" Content="退出程序" />
-                </Grid>
-            </Grid>
-        </TabItem>-->
-
-        <!--<TabItem Header="test2">
-            <DataGrid x:Name="MyDataGrid"
-                      AutoGenerateColumns="False"
-                      CanUserAddRows="False"
-                      ColumnWidth="*">
-            </DataGrid>
-        </TabItem>-->
-
         <TabItem Header="加密文件">
             <Grid>
                 <TabControl Grid.Column="0" Margin="10"
                             x:Name="My0"
                             Background="White"
                             SelectionChanged="TabControl_SelectionChanged">
-                    <TabItem Header="111111111">
+                    <TabItem Header="我自己用">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -613,9 +574,12 @@
                         </Grid>
                     </TabItem>
 
-                    <TabItem Header="2222222">
+                    <TabItem Header="都可用">
                         <Grid>
-                            <DataGrid>
+                            <DataGrid ItemsSource="{Binding GpgFileWrapperList}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      HeadersVisibility="Column">
                                 <DataGrid.Columns>
                                     <DataGridCheckBoxColumn IsReadOnly="False"
                                                             Width="0.5*"
@@ -637,48 +601,42 @@
                                         </DataGridCheckBoxColumn.EditingElementStyle>
                                     </DataGridCheckBoxColumn>
 
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名"
-                                                        Binding="{Binding Entry.FileName}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值[MD5]"
-                                                        Binding="{Binding Entry.Md5Value}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址"
-                                                        Binding="{Binding Entry.FilePath}" />
-                                    <DataGridTextColumn Width="*" IsReadOnly="False" Header="文件大小[k]"
-                                                        Binding="{Binding Entry.FileSize}" />
-
-
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹"
-                                                        Binding="{Binding Entry.ScanDirectory}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间"
-                                                        Binding="{Binding Entry.ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="身份"
+                                                        Binding="{Binding GpgFile.Identity}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="密钥对有效时长"
+                                                        Binding="{Binding GpgFile.ValidDurationSeconds}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="私钥文件名"
+                                                        Binding="{Binding GpgFile.FileNamePrivate}" />
+                                    <DataGridTextColumn Width="*" IsReadOnly="True" Header="公钥文件名"
+                                                        Binding="{Binding GpgFile.FileNamePublic}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="类别"
+                                                        Binding="{Binding GpgFile.Type}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="创建时间"
+                                                        Binding="{Binding GpgFile.CreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
                     </TabItem>
-                    <TabItem Header="3333333333">
-
+                    <TabItem Header="测试">
+                        <Grid>
+                            <Button Click="GpgFileSaveDemo" Content="新增一个密钥对" />
+                        </Grid>
                     </TabItem>
                 </TabControl>
             </Grid>
         </TabItem>
 
-        <!--<TabItem Header="记账">
+        <!--<TabItem Header="test">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <Grid Row="0" Style="{StaticResource RightGrid}">
-
-                </Grid>
-
-                <Grid Row="1" Style="{StaticResource RightGrid}">
-
-                </Grid>
+                <StackPanel HorizontalAlignment="Center">
+                    ~1~ <Button Click="SqliteTest" Content="Sqlite Test" /> @1@
+                    ~1~ <Button Click="List" Content="List" /> @1@
+                    ~1~ <Button Click="DeleteFiles" Content="DeleteFiles" /> @1@
+                        <Button Click="GetSelectedAll" Content="GetSelectedAll" />
+                        <Button Click="Exit" Content="退出程序" />
+                        <Button Click="GetCurrentTime" Content="当前毫秒数" />
+                </StackPanel>
             </Grid>
         </TabItem>-->
-
     </TabControl>
 </Window>

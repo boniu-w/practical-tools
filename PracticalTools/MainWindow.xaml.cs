@@ -39,14 +39,16 @@ public partial class MainWindow : Window
     private readonly SQLiteDemo _sqLiteDemo;
     private readonly MainViewModel _mainViewModel;
     private DuplicateFilesService _duplicateFilesService;
+    GpgFileService _gpgFileService;
 
-    public MainWindow(MainViewModel mainViewModel, SQLiteDemo sqLiteDemo, DuplicateFilesService duplicateFilesService)
+    public MainWindow(MainViewModel mainViewModel, SQLiteDemo sqLiteDemo, DuplicateFilesService duplicateFilesService, GpgFileService gpgFileService)
     {
         InitializeComponent();
         DataContext = mainViewModel;
         _mainViewModel = mainViewModel;
         _sqLiteDemo = sqLiteDemo;
         _duplicateFilesService = duplicateFilesService;
+        _gpgFileService = gpgFileService;
         SetupDataGridColumns();
         SetMessageText(_message1);
 
@@ -978,5 +980,28 @@ public partial class MainWindow : Window
         };
 
         return true;
+    }
+
+    public void GpgFileSaveDemo(object sender, RoutedEventArgs e)
+    {
+        _gpgFileService.SaveDemo();
+    }
+
+    private void GetCurrentTime(object sender, RoutedEventArgs e)
+    {
+        // DateTime now = DateTime.Now;
+        //
+        // TimeSpan timeSpan = new TimeSpan(DateTime.Now.Ticks);
+        //
+        // Console.WriteLine(timeSpan.TotalMilliseconds);
+        // Console.WriteLine(timeSpan.TotalSeconds);
+
+        long milliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        Console.WriteLine(milliseconds);
+        DateTimeOffset dateTimeOffset = DateTimeOffset.Now;
+        Console.WriteLine(dateTimeOffset.ToString());
+
+        DateTime dateTime = DateTime.Now;
+        Console.WriteLine(dateTime.ToString());
     }
 }

@@ -10,6 +10,7 @@ using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.FileManager.Model;
 using PracticalTools.FileManager.Service;
+using PracticalTools.GPG;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.Views;
@@ -74,6 +75,8 @@ public class MainViewModel : INotifyPropertyChanged
         //     execute: ScanFolder,
         //     canExecute: path => !string.IsNullOrEmpty(path) && !IsScanning // 只有路径非空才允许执行
         // );
+
+        LoadGpgFileList();
     }
 
     // private bool _isScanning;
@@ -124,6 +127,21 @@ public class MainViewModel : INotifyPropertyChanged
 
                 OnPropertyChanged(nameof(FileList));
                 // UpdateIsAllSelected(); // 顺便刷新一下全选状态
+            }
+        }
+    }
+
+    private ObservableCollection<GpgFileEntryWrapper>? _gpgFileWrapperList;
+
+    public ObservableCollection<GpgFileEntryWrapper>? GpgFileWrapperList
+    {
+        get => _gpgFileWrapperList;
+        set
+        {
+            if (_gpgFileWrapperList != value)
+            {
+                _gpgFileWrapperList = value;
+                OnPropertyChanged(nameof(GpgFileWrapperList));
             }
         }
     }
@@ -393,7 +411,7 @@ public class MainViewModel : INotifyPropertyChanged
             PageSize = 100
         };
         PagedFileList.Refresh();
-        
+
         UpdatePageInfo();
     }
 
@@ -448,5 +466,23 @@ public class MainViewModel : INotifyPropertyChanged
             IsAllSelected = false;
         else
             IsAllSelected = null; // 你可以不处理这项
+    }
+
+    public void InitGpgFileList()
+    {
+   
+    }
+
+    private void LoadGpgFileList()
+    {
+        try
+        {
+            GpgFileWrapperList = new ObservableCollection<GpgFileEntryWrapper>(_myDbContext.GpgFile.Select(e => new GpgFileEntryWrapper(e)));
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.Message);
+            throw;
+        }
     }
 }
