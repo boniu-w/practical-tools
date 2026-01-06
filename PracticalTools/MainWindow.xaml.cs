@@ -1005,4 +1005,10 @@ public partial class MainWindow : Window
         DateTime dateTime = DateTime.Now;
         Console.WriteLine(dateTime.ToString());
     }
+
+    public void IsSelectedGpgFile(object sender, RoutedEventArgs e)
+    {
+        List<GpgFileEntryWrapper> entryWrappers = _mainViewModel.GpgFileWrapperList?.Where(wrapper => wrapper.IsSelected).ToList();
+        Console.WriteLine(entryWrappers.Count > 0 ? entryWrappers[0].GpgFile?.Id : "null");
+    }
 }
