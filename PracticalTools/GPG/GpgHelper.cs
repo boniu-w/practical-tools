@@ -433,7 +433,7 @@ public class GpgHelper
         int keySize = 4096,
         long? keyLifeSeconds = null)
     {
-        var (pubRing, secRing) = GeneratePgpKeyPair(identity, passphrase, keySize, keyLifeSeconds);
+        var (pubRing, secRing, beginsOn, endOn) = GeneratePgpKeyPair(identity, passphrase, keySize, keyLifeSeconds);
     }
 
     /// <summary>
@@ -444,13 +444,21 @@ public class GpgHelper
     /// <param name="keySize">RSA 密钥长度，推荐 2048 或 4096</param>
     /// <param name="keyLifeSeconds">有效时长(秒), null-长期有效永不过期</param>
     /// <returns></returns>
-    public static (PgpPublicKeyRing pubRing, PgpSecretKeyRing secRing)
+    public static (PgpPublicKeyRing pubRing, PgpSecretKeyRing secRing, DateTime beginsOn, DateTime? endsOn)
         GeneratePgpKeyPair(
             string identity,
             string passphrase,
-            int keySize = 4096,
+            int keySize = 2048,
             long? keyLifeSeconds = null)
     {
+        DateTime now = DateTime.Now;
+        DateTime beginsOn = now;
+        DateTime? endsOn = null;
+        if (keyLifeSeconds.HasValue)
+        {
+            endsOn = now.AddSeconds(keyLifeSeconds.Value);
+        }
+
         var random = new SecureRandom();
 
         // =====================================================
@@ -467,7 +475,7 @@ public class GpgHelper
         var masterPgpKeyPair = new PgpKeyPair(
             PublicKeyAlgorithmTag.RsaSign,
             masterKeyPair,
-            DateTime.UtcNow);
+            now);
 
         // =====================================================
         // 2. 主密钥 Subpacket
@@ -524,7 +532,7 @@ public class GpgHelper
         var encPgpKeyPair = new PgpKeyPair(
             PublicKeyAlgorithmTag.RsaEncrypt,
             encKeyPair,
-            DateTime.UtcNow);
+            now);
 
         var encSubpacket = new PgpSignatureSubpacketGenerator();
         encSubpacket.SetKeyFlags(
@@ -550,7 +558,7 @@ public class GpgHelper
         PgpSecretKeyRing secretKeyRing = keyRingGen.GenerateSecretKeyRing();
         PgpPublicKeyRing publicKeyRing = keyRingGen.GeneratePublicKeyRing();
 
-        return (publicKeyRing, secretKeyRing);
+        return (publicKeyRing, secretKeyRing, beginsOn, endsOn);
     }
 
     /// <summary>

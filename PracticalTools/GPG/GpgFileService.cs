@@ -14,7 +14,8 @@ public class GpgFileService
 
     public List<GpgFile> List()
     {
-        return _myDbContext.GpgFile.ToList();
+        List<GpgFile> gpgFiles = _myDbContext.GpgFile.ToList();
+        return gpgFiles;
     }
 
     public int SaveDemo()
@@ -23,7 +24,7 @@ public class GpgFileService
         string passphrase = "Soccer0boy$";
         int keySize = 2048;
         long validDuration = long.MaxValue;
-        var (pubRing, secRing) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
+        var (pubRing, secRing, beginsOn, endOn) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
         string pubKeyAscii = GpgHelper.ExportPublicKey(pubRing);
         string secKeyAscii = GpgHelper.ExportPrivateKey(secRing);
 
@@ -55,7 +56,8 @@ public class GpgFileService
         string signaturePub = "",
         string signatureSec = "",
         string md5Pub = "",
-        string md5Sec = ""
+        string md5Sec = "",
+        string description = ""
     )
     {
         GpgFile gpgFile = new GpgFile();
@@ -80,6 +82,7 @@ public class GpgFileService
         gpgFile.Identity = identity;
         gpgFile.Passphrase = passphrase;
         gpgFile.KeySize = keySize;
+        gpgFile.Description = description;
 
         return gpgFile;
     }

@@ -12,9 +12,9 @@ public class PgpTest
     {
         string identity = "boniu-w@live.cn";
         string passphrase = "Soccer0boy$";
-        int keySize = 4096;
+        int keySize = 2048;
         long validDuration = long.MaxValue;
-        var (pubRing, secRing) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
+        var (pubRing, secRing, beginsOn, endOn) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
 
         string pubKeyAscii = GpgHelper.ExportPublicKey(pubRing);
         string secKeyAscii = GpgHelper.ExportPrivateKey(secRing);

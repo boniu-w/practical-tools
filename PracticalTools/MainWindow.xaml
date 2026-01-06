@@ -4,10 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:util="clr-namespace:PracticalTools.util"
         mc:Ignorable="d"
         Icon="/Assets/icons8-cancer-48.png"
         Title="实用工具" Height="600" Width="1090">
     <Window.Resources>
+        <util:SecondsToDurationConverter x:Key="SecondsToDurationConverter" />
         <FrameworkElement x:Key="DataContextProxy" DataContext="{Binding}" />
 
         <!-- 2. 全局 DataGridColumnHeader 样式（表头区） -->
@@ -604,7 +606,7 @@
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="身份"
                                                         Binding="{Binding GpgFile.Identity}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="密钥对有效时长"
-                                                        Binding="{Binding GpgFile.ValidDurationSeconds}" />
+                                                        Binding="{Binding Path=GpgFile.ValidDurationSeconds, Converter={StaticResource SecondsToDurationConverter}}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="私钥文件名"
                                                         Binding="{Binding GpgFile.FileNamePrivate}" />
                                     <DataGridTextColumn Width="*" IsReadOnly="True" Header="公钥文件名"
@@ -612,7 +614,7 @@
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="类别"
                                                         Binding="{Binding GpgFile.Type}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="创建时间"
-                                                        Binding="{Binding GpgFile.CreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                                        Binding="{Binding GpgFile.FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
