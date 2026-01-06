@@ -15,7 +15,7 @@ public class GpgFile : INotifyPropertyChanged
     [ColumnHeader("私钥")] public string SecretKey { get; set; } = "";
     [ColumnHeader("公钥")] public string PublicKey { get; set; } = "";
     [ColumnHeader("有效期开始于")] public DateTime? ValidDurationBeginsOn { get; set; }
-    [ColumnHeader("有效期截至于")] public DateTime? ValidDurationEndOn { get; set; }
+    [ColumnHeader("有效期截至于")] public DateTime? ValidDurationEndsOn { get; set; }
     [ColumnHeader("密钥对有效时长")] public long ValidDurationSeconds { get; set; }
     [ColumnHeader("说明")] public string? Description { get; set; }
     [ColumnHeader("私钥文件名")] public string FileNamePrivate { get; set; } = "";

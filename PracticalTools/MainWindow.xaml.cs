@@ -985,6 +985,7 @@ public partial class MainWindow : Window
     public void GpgFileSaveDemo(object sender, RoutedEventArgs e)
     {
         _gpgFileService.SaveDemo();
+        _mainViewModel.LoadGpgFileList();
     }
 
     private void GetCurrentTime(object sender, RoutedEventArgs e)

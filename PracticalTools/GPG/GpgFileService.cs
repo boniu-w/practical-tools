@@ -23,14 +23,14 @@ public class GpgFileService
     {
         string identity = "boniu-w@live.cn";
         string passphrase = "Soccer0boy$";
-        string a = StringUtil.Xor(passphrase, CommonConst.Salt);
+        string password = StringUtil.Xor(passphrase, CommonConst.Salt);
         int keySize = 2048;
         long validDuration = long.MaxValue;
-        var (pubRing, secRing, beginsOn, endOn) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
+        var (pubRing, secRing, beginsOn, endsOn) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
         string pubKeyAscii = GpgHelper.ExportPublicKey(pubRing);
         string secKeyAscii = GpgHelper.ExportPrivateKey(secRing);
 
-        GpgFile gpgFile = GenerateGpgFile(identity, passphrase, keySize, validDuration, pubKeyAscii, secKeyAscii);
+        GpgFile gpgFile = GenerateGpgFile(identity, password, keySize, validDuration, pubKeyAscii, secKeyAscii, beginsOn, endsOn);
         _myDbContext.GpgFile.Add(gpgFile);
         int saveChanges = _myDbContext.SaveChanges();
         return saveChanges;
@@ -55,6 +55,8 @@ public class GpgFileService
         long validDuration = 0,
         string pubKey = "",
         string secretKey = "",
+        DateTime? beginsOn = null,
+        DateTime? endsOn = null,
         string signaturePub = "",
         string signatureSec = "",
         string md5Pub = "",
@@ -67,24 +69,27 @@ public class GpgFileService
         DateTimeOffset dateTimeOffset = DateTimeOffset.Now;
         long milliseconds = dateTimeOffset.ToUnixTimeMilliseconds();
         DateTime now = dateTimeOffset.DateTime;
-        gpgFile.CreateTime = now;
-        gpgFile.UpdateTime = now;
-        gpgFile.Type = ".asc";
         gpgFile.Id = id;
-        gpgFile.SignaturePublic = signaturePub;
-        gpgFile.SignaturePrivate = signatureSec;
+        gpgFile.Identity = identity;
+        gpgFile.IdentityName = identity;
+        gpgFile.Passphrase = passphrase;
+        gpgFile.KeySize = keySize;
+        gpgFile.SecretKey = secretKey;
+        gpgFile.PublicKey = pubKey;
+        gpgFile.ValidDurationBeginsOn = beginsOn;
+        gpgFile.ValidDurationEndsOn = endsOn;
+        gpgFile.ValidDurationSeconds = validDuration;
+        gpgFile.Description = description;
         gpgFile.FileNamePublic = string.Concat("pub-", milliseconds, ".asc");
         gpgFile.FileNamePrivate = string.Concat("sec-", milliseconds, ".asc");
         gpgFile.Md5ValuePublic = md5Pub;
         gpgFile.Md5ValuePrivate = md5Sec;
+        gpgFile.SignaturePublic = signaturePub;
+        gpgFile.SignaturePrivate = signatureSec;
         gpgFile.FileCreateTime = now;
-        gpgFile.ValidDurationSeconds = validDuration;
-        gpgFile.SecretKey = secretKey;
-        gpgFile.PublicKey = pubKey;
-        gpgFile.Identity = identity;
-        gpgFile.Passphrase = passphrase;
-        gpgFile.KeySize = keySize;
-        gpgFile.Description = description;
+        gpgFile.Type = ".asc";
+        gpgFile.CreateTime = now;
+        gpgFile.UpdateTime = now;
 
         return gpgFile;
     }

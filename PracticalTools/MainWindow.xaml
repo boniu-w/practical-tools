@@ -614,16 +614,22 @@
 
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="身份"
                                                         Binding="{Binding GpgFile.Identity}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="别名"
+                                                        Binding="{Binding GpgFile.IdentityName}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="有效期开始于"
+                                                        Binding="{Binding Path=GpgFile.ValidDurationBeginsOn, StringFormat=HH:mm:ss yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="有效期截至于"
+                                                        Binding="{Binding Path=GpgFile.ValidDurationEndsOn, StringFormat=HH:mm:ss yyyy-MM-dd}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="密钥对有效时长"
                                                         Binding="{Binding Path=GpgFile.ValidDurationSeconds, Converter={StaticResource SecondsToDurationConverter}}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="私钥文件名"
                                                         Binding="{Binding GpgFile.FileNamePrivate}" />
                                     <DataGridTextColumn Width="*" IsReadOnly="True" Header="公钥文件名"
                                                         Binding="{Binding GpgFile.FileNamePublic}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="类别"
-                                                        Binding="{Binding GpgFile.Type}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="创建时间"
                                                         Binding="{Binding GpgFile.FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="说明"
+                                                        Binding="{Binding GpgFile.Description}" />
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>

@@ -473,7 +473,7 @@ public class MainViewModel : INotifyPropertyChanged
    
     }
 
-    private void LoadGpgFileList()
+    public void LoadGpgFileList()
     {
         try
         {
