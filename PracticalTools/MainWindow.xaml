@@ -581,7 +581,16 @@
                             <DataGrid ItemsSource="{Binding GpgFileWrapperList}"
                                       AutoGenerateColumns="False"
                                       CanUserAddRows="False"
-                                      HeadersVisibility="Column">
+                                      HeadersVisibility="Column"
+                                      >
+                                <DataGrid.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGrid.CellStyle>
                                 <DataGrid.Columns>
                                     <DataGridCheckBoxColumn IsReadOnly="False"
                                                             Width="0.5*"

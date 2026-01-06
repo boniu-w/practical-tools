@@ -1,4 +1,5 @@
-﻿using PracticalTools.Sqlite;
+﻿using PracticalTools.Constant;
+using PracticalTools.Sqlite;
 using PracticalTools.util;
 
 namespace PracticalTools.GPG;
@@ -22,6 +23,7 @@ public class GpgFileService
     {
         string identity = "boniu-w@live.cn";
         string passphrase = "Soccer0boy$";
+        string a = StringUtil.Xor(passphrase, CommonConst.Salt);
         int keySize = 2048;
         long validDuration = long.MaxValue;
         var (pubRing, secRing, beginsOn, endOn) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
