@@ -1,6 +1,11 @@
-﻿namespace PracticalTools.Views;
+﻿using System.Windows.Controls;
 
-public partial class HomePage
+namespace PracticalTools.Views;
+
+public partial class HomePage : UserControl
 {
-    
+    public HomePage()
+    {
+        InitializeComponent();
+    }
 }

@@ -712,7 +712,7 @@ public partial class MainWindow : Window
     //     }
     // }
 
-    private async void OnEncryptClick(object sender, RoutedEventArgs e)
+    /*private async void OnEncryptClick(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -748,6 +748,7 @@ public partial class MainWindow : Window
             EncryptButton.IsEnabled = true;
         }
     }
+    */
 
     /// <summary>
     /// 解密
@@ -789,7 +790,7 @@ public partial class MainWindow : Window
     //         DecryptButton.IsEnabled = true;
     //     }
     // }
-    private async void OnDecryptClick(object sender, RoutedEventArgs e)
+    /*private async void OnDecryptClick(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -825,7 +826,7 @@ public partial class MainWindow : Window
         {
             DecryptButton.IsEnabled = true;
         }
-    }
+    }*/
 
     /// <summary>
     /// 进度条真管用

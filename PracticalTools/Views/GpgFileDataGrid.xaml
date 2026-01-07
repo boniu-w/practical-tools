@@ -1,0 +1,68 @@
+﻿<UserControl x:Class="PracticalTools.Views.GpgFileDataGrid"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:util="clr-namespace:PracticalTools.util">
+
+    <UserControl.Resources>
+        <util:SecondsToDurationConverter x:Key="SecondsToDurationConverter" />
+    </UserControl.Resources>
+
+    <DataGrid ItemsSource="{Binding GpgFileWrapperList}"
+              Background="White"
+              BorderBrush="#FFFAF0"
+              BorderThickness="1"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False"
+              HeadersVisibility="Column">
+
+        <DataGrid.Columns>
+
+            <!-- ✅ CheckBox 列：TemplateColumn（关键） -->
+            <DataGridTemplateColumn Width="1*" Header="">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource MaterialDesignCheckBox}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Padding="0"
+                                  Focusable="False" />
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+            <!-- 文本列：完全不用管 CheckBox 了 -->
+            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="身份"
+                                Binding="{Binding GpgFile.Identity}" />
+
+            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="别名"
+                                Binding="{Binding GpgFile.IdentityName}" />
+
+            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="有效期开始于"
+                                Binding="{Binding Path=GpgFile.ValidDurationBeginsOn,
+                                                      StringFormat=HH:mm:ss yyyy-MM-dd}" />
+
+            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="有效期截至于"
+                                Binding="{Binding Path=GpgFile.ValidDurationEndsOn,
+                                                      StringFormat=HH:mm:ss yyyy-MM-dd}" />
+
+            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="密钥对有效时长"
+                                Binding="{Binding Path=GpgFile.ValidDurationSeconds,
+                                                      Converter={StaticResource SecondsToDurationConverter}}" />
+
+            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="私钥文件名"
+                                Binding="{Binding GpgFile.FileNamePrivate}" />
+
+            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="公钥文件名"
+                                Binding="{Binding GpgFile.FileNamePublic}" />
+
+            <DataGridTextColumn Width="3*" IsReadOnly="True" Header="创建时间"
+                                Binding="{Binding GpgFile.FileCreateTime,
+                                                      StringFormat=HH:mm yyyy-MM-dd}" />
+
+            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="说明"
+                                Binding="{Binding GpgFile.Description}" />
+
+        </DataGrid.Columns>
+    </DataGrid>
+</UserControl>

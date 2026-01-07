@@ -4,46 +4,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:util="clr-namespace:PracticalTools.util"
-        mc:Ignorable="d"
+        xmlns:viewMessage="clr-namespace:PracticalTools.Views"
+        mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="300"
         Icon="/Assets/icons8-cancer-48.png"
         Title="实用工具" Height="600" Width="1090">
     <Window.Resources>
-        <util:SecondsToDurationConverter x:Key="SecondsToDurationConverter" />
         <FrameworkElement x:Key="DataContextProxy" DataContext="{Binding}" />
 
         <!-- 2. 全局 DataGridColumnHeader 样式（表头区） -->
-        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+        <!--<Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
             <Setter Property="BorderBrush" Value="LightGray" />
-            <Setter Property="BorderThickness" Value="0,0,1,1" /> <!-- 右边和底部都有线 -->
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
             <Setter Property="Padding" Value="8,4" />
-            <Setter Property="Background" Value="#FFF8F8F8" /> <!-- 表头浅灰背景 -->
+            <Setter Property="Background" Value="#FFF8F8F8" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
+        </Style>-->
 
         <!-- 全局DataGridCell样式 -->
-        <Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+        <!--<Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
             <Setter Property="BorderBrush" Value="LightGray" />
-            <Setter Property="BorderThickness" Value="0,0,1,0" /> <!-- 只画右边线 -->
+            <Setter Property="BorderThickness" Value="0,0,1,0" />
             <Setter Property="Padding" Value="5,2" />
             <Setter Property="Background" Value="Transparent" />
-        </Style>
-
-        <Style x:Key="HengTabItem" TargetType="TabItem" BasedOn="{StaticResource MaterialDesignTabItem}">
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Stretch" />
-            <Setter Property="materialDesign:ColorZoneAssist.Foreground" Value="{DynamicResource PrimaryHueMidBrush}" />
-            <Setter Property="materialDesign:ColorZoneAssist.Mode" Value="Custom" />
-
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <!-- <Setter Property="materialDesign:ColorZoneAssist.Background" Value="{DynamicResource MaterialDesignCardBackground}" /> -->
-                    <Setter Property="materialDesign:ColorZoneAssist.Background" Value="#0073b9" />
-                    <Setter Property="materialDesign:ColorZoneAssist.Foreground" Value="White"></Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+        </Style>-->
 
         <Style x:Key="TheTextBoxStyle" TargetType="TextBox"
                BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
@@ -66,6 +50,7 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
         TabStripPlacement="Left">
+
         <TabItem Header="重复文件">
             <Grid Background="#f2f3f8">
                 <Grid.RowDefinitions>
@@ -167,10 +152,7 @@
                             Background="White"
                             SelectionChanged="TabControl_SelectionChanged">
 
-                    <TabItem x:Name="ScanResult">
-                        <TabItem.Header>
-                            <TextBlock Text="扫描结果" />
-                        </TabItem.Header>
+                    <TabItem x:Name="ScanResult" Header="扫描结果">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="10*" />
@@ -225,7 +207,7 @@
                                       HeadersVisibility="Column">
                                 <DataGrid.Columns>
                                     <DataGridCheckBoxColumn IsReadOnly="False"
-                                                            Width="0.5*"
+                                                            Width="0.7*"
                                                             Header=""
                                                             Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                         <DataGridCheckBoxColumn.ElementStyle>
@@ -265,13 +247,7 @@
 
                     <!-- Style="{StaticResource HengTabItem}" -->
                     <!-- Header="扫描历史" -->
-                    <TabItem>
-                        <!-- <Border BorderBrush="Gray" BorderThickness="0,0,1,0" Padding="8,4"> -->
-                        <TabItem.Header>
-                            <TextBlock Text="扫描历史" />
-                        </TabItem.Header>
-                        <!-- </Border> -->
-
+                    <TabItem Header="扫描历史">
                         <Grid>
                             <DataGrid Grid.Row="0"
                                       Background="White"
@@ -536,116 +512,27 @@
             </Grid>
         </TabItem>-->
 
-        <TabItem Header="加密文件">
-            <Grid>
-                <TabControl Grid.Column="0" Margin="10"
-                            x:Name="My0"
-                            Background="White"
-                            SelectionChanged="TabControl_SelectionChanged">
-                    <TabItem Header="我自己用">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+        <TabItem Header="加密文件" Background="Aquamarine">
+            <Grid Margin="10,10,5,0">
+                <Grid Grid.Row="0">
+                    <TabControl>
+                        <!-- <TabItem Header="我自己用"> -->
+                        <!--     <viewMessage:MyGpg></viewMessage:MyGpg> -->
+                        <!-- </TabItem> -->
 
-                            <Grid Grid.Row="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
+                        <!--Header="加密, 解密文件"-->
+                        <TabItem Header="mess">
+                            <viewMessage:GpgUniversal></viewMessage:GpgUniversal>
+                        </TabItem>
 
-                                <Label Content="接收者密钥ID:" Grid.Row="0" Margin="0,0,0,5" VerticalAlignment="Center" />
-                                <TextBox x:Name="RecipientTextBox" Grid.Row="0" Margin="120,0,0,5" Text="your-key-id" VerticalAlignment="Center" />
-
-                                <Button x:Name="EncryptButton" Content="选择文件并加密" Grid.Row="1" Margin="0,10,0,0"
-                                        Click="OnEncryptClick" />
-
-                                <Label Content="状态:" Grid.Row="2" Margin="0,10,0,5"
-                                       VerticalAlignment="Center" />
-                                <TextBlock x:Name="StatusText" Grid.Row="2" Margin="50,10,0,5" Text="准备就绪"
-                                           VerticalAlignment="Center" />
-
-                            </Grid>
-
-                            <Grid Grid.Row="1">
-                                <Button x:Name="DecryptButton" Click="OnDecryptClick" Content="解密文件"></Button>
-                            </Grid>
-                        </Grid>
-                    </TabItem>
-
-                    <TabItem Header="都可用">
-                        <Grid>
-                            <DataGrid ItemsSource="{Binding GpgFileWrapperList}"
-                                      Background="White"
-                                      BorderBrush="#FFFAF0"
-                                      BorderThickness="1"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="False"
-                                      HeadersVisibility="Column">
-
-                                <DataGrid.Columns>
-
-                                    <!-- ✅ CheckBox 列：TemplateColumn（关键） -->
-                                    <DataGridTemplateColumn Width="0.5*" Header="">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                          Style="{StaticResource MaterialDesignCheckBox}"
-                                                          HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center"
-                                                          Padding="0"
-                                                          Focusable="False" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-
-                                    <!-- 文本列：完全不用管 CheckBox 了 -->
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="身份"
-                                                        Binding="{Binding GpgFile.Identity}" />
-
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="别名"
-                                                        Binding="{Binding GpgFile.IdentityName}" />
-
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="有效期开始于"
-                                                        Binding="{Binding Path=GpgFile.ValidDurationBeginsOn,
-                                                      StringFormat=HH:mm:ss yyyy-MM-dd}" />
-
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="有效期截至于"
-                                                        Binding="{Binding Path=GpgFile.ValidDurationEndsOn,
-                                                      StringFormat=HH:mm:ss yyyy-MM-dd}" />
-
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="密钥对有效时长"
-                                                        Binding="{Binding Path=GpgFile.ValidDurationSeconds,
-                                                      Converter={StaticResource SecondsToDurationConverter}}" />
-
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="私钥文件名"
-                                                        Binding="{Binding GpgFile.FileNamePrivate}" />
-
-                                    <DataGridTextColumn Width="*" IsReadOnly="True" Header="公钥文件名"
-                                                        Binding="{Binding GpgFile.FileNamePublic}" />
-
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="创建时间"
-                                                        Binding="{Binding GpgFile.FileCreateTime,
-                                                      StringFormat=HH:mm yyyy-MM-dd}" />
-
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="说明"
-                                                        Binding="{Binding GpgFile.Description}" />
-
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </Grid>
-                    </TabItem>
-
-                    <TabItem Header="测试">
-                        <StackPanel>
-                            <Button Click="GpgFileSaveDemo" Content="新增一个密钥对" />
-                            <Button Click="IsSelectedGpgFile" Content="选中的是谁" />
-                        </StackPanel>
-                    </TabItem>
-                </TabControl>
+                        <!-- <TabItem Header="测试"> -->
+                        <!--     <StackPanel> -->
+                        <!--         <Button Click="GpgFileSaveDemo" Content="新增一个密钥对" /> -->
+                        <!--         <Button Click="IsSelectedGpgFile" Content="选中的是谁" /> -->
+                        <!--     </StackPanel> -->
+                        <!-- </TabItem> -->
+                    </TabControl>
+                </Grid>
             </Grid>
         </TabItem>
 
