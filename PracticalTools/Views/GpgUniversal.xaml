@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:PracticalTools.Views"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -22,7 +23,7 @@
         </Grid.RowDefinitions>
 
         <!--页眉-->
-        <Grid Grid.Row="0" Background="Red">
+        <Grid Grid.Row="0">
             <Border />
         </Grid>
 
@@ -37,7 +38,7 @@
             <Grid Grid.Row="0">
                 <TabControl>
                     <TabItem Header="我要加密" Background="Aqua">
-
+                        <local:EncryptionPage></local:EncryptionPage>
                     </TabItem>
 
                     <TabItem Header="我要解密" Background="#FF6A6A">
