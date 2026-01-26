@@ -4,11 +4,13 @@
              xmlns:util="clr-namespace:PracticalTools.util">
 
     <UserControl.Resources>
-        <util:SecondsToDurationConverter x:Key="SecondsToDurationConverter" />
+        <ResourceDictionary>
+            <util:SecondsToDurationConverter x:Key="SecondsToDurationConverter" />
+        </ResourceDictionary>
     </UserControl.Resources>
 
+    <!-- Background="White" -->
     <DataGrid ItemsSource="{Binding GpgFileWrapperList}"
-              Background="White"
               BorderBrush="#FFFAF0"
               BorderThickness="1"
               AutoGenerateColumns="False"

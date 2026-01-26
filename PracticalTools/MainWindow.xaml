@@ -9,10 +9,14 @@
         Icon="/Assets/icons8-cancer-48.png"
         Title="实用工具" Height="600" Width="1090">
     <Window.Resources>
-        <FrameworkElement x:Key="DataContextProxy" DataContext="{Binding}" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ResourceDictionary/CommonStyle.xaml"></ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+            <FrameworkElement x:Key="DataContextProxy" DataContext="{Binding}" />
 
-        <!-- 2. 全局 DataGridColumnHeader 样式（表头区） -->
-        <!--<Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+            <!-- 2. 全局 DataGridColumnHeader 样式（表头区） -->
+            <!--<Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
             <Setter Property="BorderBrush" Value="LightGray" />
             <Setter Property="BorderThickness" Value="0,0,1,1" />
             <Setter Property="Padding" Value="8,4" />
@@ -21,24 +25,25 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>-->
 
-        <!-- 全局DataGridCell样式 -->
-        <!--<Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+            <!-- 全局DataGridCell样式 -->
+            <!--<Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
             <Setter Property="BorderBrush" Value="LightGray" />
             <Setter Property="BorderThickness" Value="0,0,1,0" />
             <Setter Property="Padding" Value="5,2" />
             <Setter Property="Background" Value="Transparent" />
         </Style>-->
 
-        <Style x:Key="TheTextBoxStyle" TargetType="TextBox"
-               BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
-            <Setter Property="Margin" Value="5"></Setter>
-            <Setter Property="Padding" Value="0"></Setter>
-        </Style>
+            <Style x:Key="TheTextBoxStyle" TargetType="TextBox"
+                   BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
+                <Setter Property="Margin" Value="5"></Setter>
+                <Setter Property="Padding" Value="0"></Setter>
+            </Style>
 
-        <Style x:Key="RightGrid" TargetType="Grid">
-            <Setter Property="Margin" Value="10,10,5,0"></Setter>
-            <Setter Property="Background" Value="White"></Setter>
-        </Style>
+            <Style x:Key="RightGrid" TargetType="Grid">
+                <Setter Property="Margin" Value="10,10,5,0"></Setter>
+                <Setter Property="Background" Value="White"></Setter>
+            </Style>
+        </ResourceDictionary>
     </Window.Resources>
 
 
@@ -512,27 +517,29 @@
             </Grid>
         </TabItem>-->
 
-        <TabItem Header="加密文件" Background="Aquamarine">
-            <Grid Margin="10,10,5,0">
-                <Grid Grid.Row="0">
-                    <TabControl>
-                        <!-- <TabItem Header="我自己用"> -->
-                        <!--     <viewMessage:MyGpg></viewMessage:MyGpg> -->
-                        <!-- </TabItem> -->
+        <TabItem Header="加密文件">
+            <!-- Margin="10,10,5,0" -->
+            <Grid Background="#f2f3f8">
+                <TabControl>
+                    <!-- <TabItem Header="我自己用"> -->
+                    <!--     <viewMessage:MyGpg></viewMessage:MyGpg> -->
+                    <!-- </TabItem> -->
 
-                        <!--Header="加密, 解密文件"-->
-                        <TabItem Header="mess">
-                            <viewMessage:GpgUniversal></viewMessage:GpgUniversal>
-                        </TabItem>
+                    <!--Header="加密, 解密文件"-->
+                    <TabItem Margin="10,10,5,0">
+                        <TabItem.Header>
+                            <viewMessage:GpgTabItemHeader></viewMessage:GpgTabItemHeader>
+                        </TabItem.Header>
+                        <viewMessage:GpgUniversal></viewMessage:GpgUniversal>
+                    </TabItem>
 
-                        <!-- <TabItem Header="测试"> -->
-                        <!--     <StackPanel> -->
-                        <!--         <Button Click="GpgFileSaveDemo" Content="新增一个密钥对" /> -->
-                        <!--         <Button Click="IsSelectedGpgFile" Content="选中的是谁" /> -->
-                        <!--     </StackPanel> -->
-                        <!-- </TabItem> -->
-                    </TabControl>
-                </Grid>
+                    <!-- <TabItem Header="测试"> -->
+                    <!--     <StackPanel> -->
+                    <!--         <Button Click="GpgFileSaveDemo" Content="新增一个密钥对" /> -->
+                    <!--         <Button Click="IsSelectedGpgFile" Content="选中的是谁" /> -->
+                    <!--     </StackPanel> -->
+                    <!-- </TabItem> -->
+                </TabControl>
             </Grid>
         </TabItem>
 

@@ -5,8 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:PracticalTools.Views"
              mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../ResourceDictionary/CommonStyle.xaml"></ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
 
-    <Grid>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Style="{StaticResource RightGrid}">
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" />
             <RowDefinition Height="196*" />
@@ -14,8 +22,8 @@
         </Grid.RowDefinitions>
 
         <!--页眉-->
-        <Grid Grid.Row="0">
-            <Border/>
+        <Grid Grid.Row="0" Background="Red">
+            <Border />
         </Grid>
 
         <!--正文-->
@@ -28,15 +36,15 @@
             <!--标题-->
             <Grid Grid.Row="0">
                 <TabControl>
-                    <TabItem Header="我要加密">
+                    <TabItem Header="我要加密" Background="Aqua">
 
                     </TabItem>
 
-                    <TabItem Header="我要解密">
+                    <TabItem Header="我要解密" Background="#FF6A6A">
 
                     </TabItem>
 
-                    <TabItem Header="我要生成一个密钥对">
+                    <TabItem Header="我要生成一个密钥对" Background="Chartreuse">
 
                     </TabItem>
                 </TabControl>
