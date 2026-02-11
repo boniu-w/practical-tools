@@ -1,0 +1,54 @@
+﻿<UserControl x:Class="PracticalTools.Views.DencryptionPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:PracticalTools.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             xmlns:util="clr-namespace:PracticalTools.util">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <CheckBox
+                Visibility="Hidden" />
+            <Grid>
+                <!-- Padding="8,8,40,8" -->
+                <TextBox materialDesign:HintAssist.Hint="选择一个文件"
+                         Text="{Binding SelectedFilePath}"
+                         IsReadOnly="True"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}" />
+
+                <Button Style="{StaticResource MaterialDesignIconButton}"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,8,0"
+                        Click="SelectFile_Click">
+                    <materialDesign:PackIcon Kind="Upload" />
+                </Button>
+            </Grid>
+            <TextBox x:Name="SelectKeytDe"
+                     IsReadOnly="True"
+                     Text="{Binding GpgFileSelectedOne}"
+                materialDesign:HintAssist.Hint="在下方选择一个密钥, 只能选一个"
+                Style="{StaticResource MaterialDesignOutlinedTextBox}" />
+
+            <Grid
+                Width="Auto"
+                Margin="10">
+                <Button
+                    HorizontalAlignment="Left"
+                    materialDesign:ButtonProgressAssist.IsIndicatorVisible="True"
+                    materialDesign:ButtonProgressAssist.Value="{Binding DismissButtonProgress}"
+                    Click="DencryptFile"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Visibility="{Binding ShowDismissButton, Converter={x:Static util:MyBooleanToVisibilityConverter.CollapsedInstance}}">
+                    <StackPanel
+                        Orientation="Horizontal">
+                        <TextBlock x:Name="ButtonTextBlockDe" Text="开始解密" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

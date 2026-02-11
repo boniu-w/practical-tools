@@ -37,7 +37,11 @@ public class GpgFileEntryWrapper : INotifyPropertyChanged
             {
                 _isSelected = value;
                 OnPropertyChanged(nameof(IsSelected));
+                // 当勾选状态变化时，通知 MainViewModel 更新 GpgFileSelectedOne
+                SelectedChanged?.Invoke(this, EventArgs.Empty);
             }
         }
     }
+
+    public event EventHandler? SelectedChanged;
 }

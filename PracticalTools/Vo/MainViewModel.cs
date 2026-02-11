@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
+using Org.BouncyCastle.Crypto;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
@@ -79,6 +80,7 @@ public class MainViewModel : INotifyPropertyChanged
         // );
 
         LoadGpgFileList();
+        WrapperSelectedChangedEvent();
     }
 
     // private bool _isScanning;
@@ -495,4 +497,45 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private string _gpgFileSelectedOne;
+    public string GpgFileSelectedOne
+    {
+        get => _gpgFileSelectedOne;
+        set
+        {
+            _gpgFileSelectedOne = value;
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>
+    /// GpgFileEntryWrapper.isSelected 事件
+    /// </summary>
+    public void WrapperSelectedChangedEvent()
+    {
+        if (GpgFileWrapperList != null)
+        {
+            foreach (var wrapper in GpgFileWrapperList)
+            {
+                wrapper.SelectedChanged += Wrapper_SelectedChanged;
+            }
+        }
+
+
+        // 如果 GpgFileWrapperList 会动态增加元素，需要在 Add 时订阅事件
+        //GpgFileWrapperList.CollectionChanged += (s, e) =>
+        //{
+        //    if (e.NewItems != null)
+        //        foreach (GpgFileEntryWrapper item in e.NewItems)
+        //            item.SelectedChanged += Wrapper_SelectedChanged;
+        //};
+    }
+    private void Wrapper_SelectedChanged(object? sender, EventArgs e)
+    {
+        if (GpgFileWrapperList != null)
+        {
+            var selected = GpgFileWrapperList.FirstOrDefault(x => x.IsSelected);
+            GpgFileSelectedOne = selected?.GpgFile.FileNamePublic ?? string.Empty;
+        }
+    }
 }

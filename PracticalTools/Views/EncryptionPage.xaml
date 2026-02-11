@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:PracticalTools.Views"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:PracticalTools.Views"
              xmlns:util="clr-namespace:PracticalTools.util"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300"
@@ -38,11 +38,12 @@
             </Grid>
             <TextBox x:Name="SelectKeyt"
                      IsReadOnly="True"
-                materialDesign:HintAssist.Hint="在下方选择一个密钥"
+                     Text="{Binding GpgFileSelectedOne}"
+                materialDesign:HintAssist.Hint="在下方选择一个密钥, 只能选一个"
                 Style="{StaticResource MaterialDesignOutlinedTextBox}" />
 
             <Grid
-                Width="124"
+                Width="Auto"
                 Margin="10">
                 <Button
                     HorizontalAlignment="Left"
@@ -53,7 +54,7 @@
                     Visibility="{Binding ShowDismissButton, Converter={x:Static util:MyBooleanToVisibilityConverter.CollapsedInstance}}">
                     <StackPanel
                         Orientation="Horizontal">
-                        <TextBlock Text="开始加密" />
+                        <TextBlock x:Name="ButtonTextBlock" Text="开始加密" />
                     </StackPanel>
                 </Button>
             </Grid>

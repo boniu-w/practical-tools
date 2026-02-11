@@ -86,9 +86,7 @@ public class GpgHelper
     /// <param name="passphrase"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static PgpPrivateKey ReadPrivateKey(
-        Stream privateKeyStream,
-        string passphrase)
+    public static PgpPrivateKey ReadPrivateKey(Stream privateKeyStream, string passphrase)
     {
         using var input = PgpUtilities.GetDecoderStream(privateKeyStream);
         var bundle = new PgpSecretKeyRingBundle(input);
@@ -97,15 +95,22 @@ public class GpgHelper
         {
             foreach (PgpSecretKey key in ring.GetSecretKeys())
             {
-                if (key.IsSigningKey || key.IsMasterKey)
+                try
                 {
-                    return key.ExtractPrivateKey(passphrase.ToCharArray());
+                    var privateKey = key.ExtractPrivateKey(passphrase?.ToCharArray());
+                    if (privateKey != null)
+                        return privateKey;
+                }
+                catch (PgpException)
+                {
+                    // checksum mismatch, 忽略尝试下一个
                 }
             }
         }
 
-        throw new ArgumentException("未找到私钥");
+        throw new ArgumentException("未找到可用的私钥，或 passphrase 错误");
     }
+
 
     /// <summary>
     /// 加密
@@ -116,6 +121,20 @@ public class GpgHelper
     public static void EncryptFile(string inputFile, string outputFile, string publicKeyFile)
     {
         using var pubKeyStream = File.OpenRead(publicKeyFile);
+        EncryptFileBy(inputFile, outputFile, pubKeyStream);
+    }
+
+    public static async Task EncryptFileByPublicString(string inputFile, string outputFile, string publicKeyString)
+    {
+        await Task.Run(() =>
+        {
+            using var pubKeyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(publicKeyString));
+            EncryptFileBy(inputFile, outputFile, pubKeyStream);
+        });
+    }
+
+    private static void EncryptFileBy(string inputFile, string outputFile, Stream pubKeyStream)
+    {
         var pubKey = ReadPublicKey(pubKeyStream);
 
         using var outStream = File.Create(outputFile);
@@ -154,13 +173,34 @@ public class GpgHelper
         using var input = File.OpenRead(inputFile);
         using var decoder = PgpUtilities.GetDecoderStream(input);
         var pgpObjFactory = new PgpObjectFactory(decoder);
-
         var encDataList = pgpObjFactory.NextPgpObject() as PgpEncryptedDataList
                           ?? (PgpEncryptedDataList)pgpObjFactory.NextPgpObject();
 
         using var privKeyStream = File.OpenRead(privateKeyFile);
-        var privKey = ReadPrivateKey(privKeyStream, passphrase);
 
+        DencryptFileBy(outputFile, privKeyStream, passphrase, encDataList);
+    }
+
+    public static async Task DencryptFileByPublicString(string inputFile, string outputFile, string privateKeyString,
+        string passphrase)
+    {
+        await Task.Run(() =>
+        {
+            using var input = File.OpenRead(inputFile);
+            using var decoder = PgpUtilities.GetDecoderStream(input);
+            var pgpObjFactory = new PgpObjectFactory(decoder);
+            PgpEncryptedDataList encDataList = pgpObjFactory.NextPgpObject() as PgpEncryptedDataList
+                              ?? (PgpEncryptedDataList)pgpObjFactory.NextPgpObject();
+
+            using var privateKeyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(privateKeyString));
+
+            DencryptFileBy(outputFile, privateKeyStream, passphrase, encDataList);
+        });
+    }
+
+    private static void DencryptFileBy(string outputFile, Stream privateKeyStream, string passphrase, PgpEncryptedDataList encDataList)
+    {
+        var privKey = ReadPrivateKey(privateKeyStream, passphrase);
         PgpPublicKeyEncryptedData encData = null;
 
         foreach (PgpPublicKeyEncryptedData data in encDataList.GetEncryptedDataObjects())

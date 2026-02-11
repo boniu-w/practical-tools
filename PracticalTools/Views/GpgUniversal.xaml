@@ -42,7 +42,7 @@
                     </TabItem>
 
                     <TabItem Header="我要解密" Background="#FF6A6A">
-
+                        <local:DencryptionPage />
                     </TabItem>
 
                     <TabItem Header="我要生成一个密钥对" Background="Chartreuse">
