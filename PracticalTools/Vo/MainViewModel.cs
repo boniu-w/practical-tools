@@ -1,10 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
@@ -468,11 +470,6 @@ public class MainViewModel : INotifyPropertyChanged
             IsAllSelected = null; // 你可以不处理这项
     }
 
-    public void InitGpgFileList()
-    {
-   
-    }
-
     public void LoadGpgFileList()
     {
         try
@@ -485,4 +482,17 @@ public class MainViewModel : INotifyPropertyChanged
             throw;
         }
     }
+
+    private string _selectedFilePath;
+
+    public string SelectedFilePath
+    {
+        get => _selectedFilePath;
+        set
+        {
+            _selectedFilePath = value;
+            OnPropertyChanged();
+        }
+    }
+
 }

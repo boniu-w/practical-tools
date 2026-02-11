@@ -614,7 +614,7 @@ public partial class MainWindow : Window
         // // 设置数据源
         // MyDataGrid.ItemsSource = new ObservableCollection<DuplicateFilesEntry>
         // {
-        //     new DuplicateFilesEntry { FileName = "test.txt", FileSize = 1 },
+        //     new DuplicateFilesEntry { FileName = "EncryptFile.txt", FileSize = 1 },
         //     new DuplicateFilesEntry { FileName = "hello.doc", FileSize = 1 }
         // };
     }

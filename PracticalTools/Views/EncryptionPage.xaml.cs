@@ -1,8 +1,14 @@
 ﻿using System.ComponentModel;
+using System.IO.Enumeration;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Win32;
+using PracticalTools.GPG;
+using PracticalTools.util;
+using PracticalTools.vo;
 
 namespace PracticalTools.Views;
 
@@ -11,8 +17,11 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
     public EncryptionPage()
     {
         InitializeComponent();
-        DataContext = this;
+
+       // DismissCommand = new RelayCommand<Object>(EncryptFile);
     }
+
+    // public ICommand DismissCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -21,22 +30,13 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public bool ShowDismissButton { get; set; }
+    public bool ShowDismissButton { get; set; } = true;
 
-    private string _selectedFilePath;
 
-    public string SelectedFilePath
-    {
-        get => _selectedFilePath;
-        set
-        {
-            _selectedFilePath = value;
-            OnPropertyChanged();
-        }
-    }
 
     private void SelectFile_Click(object sender, RoutedEventArgs e)
     {
+        var dc = DataContext as MainViewModel;
         var dialog = new OpenFileDialog
         {
             Filter = "所有文件 (*.*)|*.*",
@@ -45,7 +45,7 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
 
         if (dialog.ShowDialog() == true)
         {
-            SelectedFilePath = dialog.FileName;
+            dc.SelectedFilePath = dialog.FileName;
         }
     }
 
@@ -58,10 +58,30 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
         return true;
     }
 
-    public void test()
+    public void EncryptFile(object sender, RoutedEventArgs e)
     {
-        ShowDismissButton = true;
+        var dc = DataContext as MainViewModel;
+        List<GpgFileEntryWrapper>? entryWrappers = dc?.GpgFileWrapperList?.Where(wrapper => wrapper.IsSelected).ToList();
+        
+        if (entryWrappers?.Count > 1)
+        {
+            MessageBox.Show("只能选一个",
+                    "提示",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Question);
+        }
+        else if (entryWrappers?.Count == 1)
+        {
+            GpgFileEntryWrapper gpgFileWrapper = entryWrappers[0];
+            
+            GpgHelper.EncryptFile(dc.SelectedFilePath, dc.SelectedFilePath, gpgFileWrapper.GpgFile.PublicKey);
+        }
+        else
+        {
+            MessageBox.Show("有问题",
+                    "提示",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Question);
+        }
     }
-
-    
 }

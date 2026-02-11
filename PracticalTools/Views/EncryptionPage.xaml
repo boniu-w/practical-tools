@@ -7,7 +7,8 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:util="clr-namespace:PracticalTools.util"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             x:Name="root">
     <UserControl.Resources>
         <ResourceDictionary>
             <!-- <util:MyBooleanToVisibilityConverter x:Key="CollapsedInstance"></util:MyBooleanToVisibilityConverter> -->
@@ -35,36 +36,27 @@
                     <materialDesign:PackIcon Kind="Upload" />
                 </Button>
             </Grid>
-            <TextBox
+            <TextBox x:Name="SelectKeyt"
+                     IsReadOnly="True"
                 materialDesign:HintAssist.Hint="在下方选择一个密钥"
                 Style="{StaticResource MaterialDesignOutlinedTextBox}" />
 
             <Grid
-                Width="124">
-                <!-- raised button with progress, useful to auto dismiss/accept something -->
+                Width="124"
+                Margin="10">
                 <Button
                     HorizontalAlignment="Left"
                     materialDesign:ButtonProgressAssist.IsIndicatorVisible="True"
                     materialDesign:ButtonProgressAssist.Value="{Binding DismissButtonProgress}"
-                    Command="{Binding DismissCommand}"
-                    IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                    Click="EncryptFile"
                     Style="{StaticResource MaterialDesignRaisedButton}"
                     Visibility="{Binding ShowDismissButton, Converter={x:Static util:MyBooleanToVisibilityConverter.CollapsedInstance}}">
                     <StackPanel
                         Orientation="Horizontal">
-                        <TextBlock
-                            Text="开始加密" />
-                        <materialDesign:PackIcon
-                            Margin="4,.5,0,0"
-                            Kind="Close" />
+                        <TextBlock Text="开始加密" />
                     </StackPanel>
                 </Button>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{Binding DemoRestartCountdownText}"
-                    Visibility="{Binding ShowDismissButton, Converter={x:Static  util:MyBooleanToVisibilityConverter.NotCollapsedInstance}}" />
             </Grid>
-
         </StackPanel>
     </ScrollViewer>
 </UserControl>

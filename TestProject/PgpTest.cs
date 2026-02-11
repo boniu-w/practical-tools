@@ -30,7 +30,7 @@ public class PgpTest
         #region 对信息签名
 
         // 2. 待签数据
-        string message = "Hello, this is a test message.";
+        string message = "Hello, this is a EncryptFile message.";
 
         // 3. 生成签名
         string signature = GpgHelper.SignData(message, secRing, passphrase);

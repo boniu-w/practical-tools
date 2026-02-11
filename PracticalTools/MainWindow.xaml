@@ -15,24 +15,6 @@
             </ResourceDictionary.MergedDictionaries>
             <FrameworkElement x:Key="DataContextProxy" DataContext="{Binding}" />
 
-            <!-- 2. 全局 DataGridColumnHeader 样式（表头区） -->
-            <!--<Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
-            <Setter Property="BorderBrush" Value="LightGray" />
-            <Setter Property="BorderThickness" Value="0,0,1,1" />
-            <Setter Property="Padding" Value="8,4" />
-            <Setter Property="Background" Value="#FFF8F8F8" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>-->
-
-            <!-- 全局DataGridCell样式 -->
-            <!--<Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
-            <Setter Property="BorderBrush" Value="LightGray" />
-            <Setter Property="BorderThickness" Value="0,0,1,0" />
-            <Setter Property="Padding" Value="5,2" />
-            <Setter Property="Background" Value="Transparent" />
-        </Style>-->
-
             <Style x:Key="TheTextBoxStyle" TargetType="TextBox"
                    BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
                 <Setter Property="Margin" Value="5"></Setter>
