@@ -1,14 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Win32;
-using Org.BouncyCastle.Crypto;
-using PracticalTools.Blacklist.Model;
+﻿using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.FileManager.Model;
@@ -17,6 +7,12 @@ using PracticalTools.GPG;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.Views;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace PracticalTools.vo;
 
@@ -504,6 +500,28 @@ public class MainViewModel : INotifyPropertyChanged
         set
         {
             _gpgFileSelectedOne = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private string _emailText;
+    public string EmailText
+    {
+        get => _emailText;
+        set
+        {
+            _emailText = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private string _passphraseText;
+    public string PassphraseText
+    {
+        get => _passphraseText;
+        set
+        {
+            _passphraseText = value;
             OnPropertyChanged();
         }
     }

@@ -13,20 +13,40 @@ public class SecondsToDurationConverter : IValueConverter
     private const long TicksPerMillisecond = 10000L;
     private const long MillisPerSecond = 1000L;
 
+    //public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    //{
+    //    if (value is long seconds)
+    //    {
+    //        try
+    //        {
+    //            // 方法1：转为 "X天 X小时 X分 X秒"
+    //            var ts = TimeSpan.FromSeconds(seconds);
+    //            return $"{ts.Days}天 {ts.Hours}小时 {ts.Minutes}分 {ts.Seconds}秒";
+    //        }
+    //        catch (Exception e)
+    //        {
+    //            return "永久有效";
+    //        }
+    //    }
+
+    //    return string.Empty;
+    //}
+
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is long seconds)
         {
-            try
-            {
-                // 方法1：转为 "X天 X小时 X分 X秒"
-                var ts = TimeSpan.FromSeconds(seconds);
-                return $"{ts.Days}天 {ts.Hours}小时 {ts.Minutes}分 {ts.Seconds}秒";
-            }
-            catch (Exception e)
-            {
+            // 如果是 0 或负数，视为永久
+            if (seconds <= 0)
                 return "永久有效";
-            }
+
+            // 超过 TimeSpan 最大值
+            if (seconds > TimeSpan.MaxValue.TotalSeconds)
+                return "永久有效";
+
+            var ts = TimeSpan.FromSeconds(seconds);
+
+            return $"{ts.Days}天 {ts.Hours}小时 {ts.Minutes}分 {ts.Seconds}秒";
         }
 
         return string.Empty;

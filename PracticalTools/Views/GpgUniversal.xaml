@@ -46,7 +46,7 @@
                     </TabItem>
 
                     <TabItem Header="我要生成一个密钥对" Background="Chartreuse">
-
+                        <local:GenerateKeyPair />
                     </TabItem>
                 </TabControl>
             </Grid>

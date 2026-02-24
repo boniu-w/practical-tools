@@ -30,7 +30,14 @@ public class GpgFileService
         string pubKeyAscii = GpgHelper.ExportPublicKey(pubRing);
         string secKeyAscii = GpgHelper.ExportPrivateKey(secRing);
 
-        GpgFile gpgFile = GenerateGpgFile(identity, password, keySize, validDuration, pubKeyAscii, secKeyAscii, beginsOn, endsOn);
+        GpgFile gpgFile = GenerateGpgFile(identity, password, secKeyAscii, pubKeyAscii, beginsOn, endsOn, "", keySize, validDuration);
+        _myDbContext.GpgFile.Add(gpgFile);
+        int saveChanges = _myDbContext.SaveChanges();
+        return saveChanges;
+    }
+
+    public int Save(GpgFile gpgFile)
+    {
         _myDbContext.GpgFile.Add(gpgFile);
         int saveChanges = _myDbContext.SaveChanges();
         return saveChanges;
@@ -48,20 +55,20 @@ public class GpgFileService
     {
     }
 
-    private GpgFile GenerateGpgFile(
+    public GpgFile GenerateGpgFile(
         string identity,
         string passphrase,
-        int keySize,
-        long validDuration = 0,
-        string pubKey = "",
         string secretKey = "",
+        string pubKey = "",
         DateTime? beginsOn = null,
         DateTime? endsOn = null,
+        string description = "",
+        int keySize = 2048,
+        long validDuration = 0,
         string signaturePub = "",
         string signatureSec = "",
         string md5Pub = "",
-        string md5Sec = "",
-        string description = ""
+        string md5Sec = ""
     )
     {
         GpgFile gpgFile = new GpgFile();

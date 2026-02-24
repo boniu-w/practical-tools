@@ -111,19 +111,13 @@ public class GpgHelper
         throw new ArgumentException("未找到可用的私钥，或 passphrase 错误");
     }
 
-
     /// <summary>
     /// 加密
     /// </summary>
     /// <param name="inputFile"></param>
     /// <param name="outputFile"></param>
-    /// <param name="publicKeyFile"></param>
-    public static void EncryptFile(string inputFile, string outputFile, string publicKeyFile)
-    {
-        using var pubKeyStream = File.OpenRead(publicKeyFile);
-        EncryptFileBy(inputFile, outputFile, pubKeyStream);
-    }
-
+    /// <param name="publicKeyString"></param>
+    /// <returns></returns>
     public static async Task EncryptFileByPublicString(string inputFile, string outputFile, string publicKeyString)
     {
         await Task.Run(() =>
@@ -161,6 +155,76 @@ public class GpgHelper
     }
 
     /// <summary>
+    /// 加密
+    /// </summary>
+    /// <param name="outputFile"></param>
+    /// <param name="inputFile"></param>
+    /// <param name="publicKeyString"></param>
+    /// <param name="armor"></param>
+    public static void EncryptFile(
+        string outputFile,
+        string inputFile,
+        string publicKeyString,
+        bool armor = true)
+    {
+        using var outputStream = File.Create(outputFile);
+
+        Stream finalOut = outputStream;
+
+        if (armor)
+            finalOut = new ArmoredOutputStream(outputStream);
+
+        var encGen = new PgpEncryptedDataGenerator(
+            SymmetricKeyAlgorithmTag.Aes256,
+            true,
+            new SecureRandom());
+
+        var encKey = ReadEncryptionPublicKey(publicKeyString);
+
+        encGen.AddMethod(encKey);
+
+        using var encryptedOut = encGen.Open(finalOut, new byte[1 << 16]);
+
+        var comData = new PgpCompressedDataGenerator(CompressionAlgorithmTag.Zip);
+
+        using var compressedOut = comData.Open(encryptedOut);
+
+        var literalData = new PgpLiteralDataGenerator();
+
+        using var literalOut = literalData.Open(
+            compressedOut,
+            PgpLiteralData.Binary,
+            Path.GetFileName(inputFile),
+            new FileInfo(inputFile).Length,
+            DateTime.Now);
+
+        using var inputFileStream = File.OpenRead(inputFile);
+
+        Streams.PipeAll(inputFileStream, literalOut);
+    }
+
+    private static PgpPublicKey ReadEncryptionPublicKey(string publicKeyString)
+    {
+        using var stream = new MemoryStream(
+            System.Text.Encoding.UTF8.GetBytes(publicKeyString));
+
+        using var input = PgpUtilities.GetDecoderStream(stream);
+
+        var bundle = new PgpPublicKeyRingBundle(input);
+
+        foreach (PgpPublicKeyRing ring in bundle.GetKeyRings())
+        {
+            foreach (PgpPublicKey key in ring.GetPublicKeys())
+            {
+                if (key.IsEncryptionKey)
+                    return key;
+            }
+        }
+
+        throw new ArgumentException("未找到可用于加密的公钥");
+    }
+
+    /// <summary>
     /// 解密
     /// </summary>
     /// <param name="inputFile"></param>
@@ -181,22 +245,6 @@ public class GpgHelper
         DencryptFileBy(outputFile, privKeyStream, passphrase, encDataList);
     }
 
-    public static async Task DencryptFileByPublicString(string inputFile, string outputFile, string privateKeyString,
-        string passphrase)
-    {
-        await Task.Run(() =>
-        {
-            using var input = File.OpenRead(inputFile);
-            using var decoder = PgpUtilities.GetDecoderStream(input);
-            var pgpObjFactory = new PgpObjectFactory(decoder);
-            PgpEncryptedDataList encDataList = pgpObjFactory.NextPgpObject() as PgpEncryptedDataList
-                              ?? (PgpEncryptedDataList)pgpObjFactory.NextPgpObject();
-
-            using var privateKeyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(privateKeyString));
-
-            DencryptFileBy(outputFile, privateKeyStream, passphrase, encDataList);
-        });
-    }
 
     private static void DencryptFileBy(string outputFile, Stream privateKeyStream, string passphrase, PgpEncryptedDataList encDataList)
     {
@@ -224,6 +272,112 @@ public class GpgHelper
             using var outStream = File.Create(outputFile);
             Streams.PipeAll(literal.GetInputStream(), outStream);
         }
+    }
+
+    public static async Task DencryptFileByPublicString(string inputFile, string outputFile, string privateKeyString,
+        string passphrase)
+    {
+        await Task.Run(() =>
+        {
+            DecryptFile2(inputFile, outputFile, privateKeyString, passphrase);
+        });
+    }
+
+    /// <summary>
+    /// 解密
+    /// </summary>
+    /// <param name="inputFile"></param>
+    /// <param name="outputFile"></param>
+    /// <param name="privateKeyString"></param>
+    /// <param name="passphrase"></param>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="PgpException"></exception>
+    public static void DecryptFile2(
+        string inputFile,
+        string outputFile,
+        string privateKeyString,
+        string passphrase)
+    {
+        using var input = File.OpenRead(inputFile);
+
+        using var decoderStream = PgpUtilities.GetDecoderStream(input);
+
+        // 👇 关键：转成可 Seek 的 MemoryStream
+        using var memStream = new MemoryStream();
+        decoderStream.CopyTo(memStream);
+        memStream.Position = 0;
+
+        var pgpObjFactory = new PgpObjectFactory(memStream);
+
+        PgpEncryptedDataList encDataList = null;
+
+        var obj = pgpObjFactory.NextPgpObject();
+
+        if (obj is PgpEncryptedDataList list)
+            encDataList = list;
+        else
+            encDataList = (PgpEncryptedDataList)pgpObjFactory.NextPgpObject();
+
+        PgpPrivateKey privateKey = null;
+        PgpPublicKeyEncryptedData encryptedData = null;
+
+        foreach (PgpPublicKeyEncryptedData data in encDataList.GetEncryptedDataObjects())
+        {
+            using var privateKeyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(privateKeyString));
+
+            privateKey = FindPrivateKey(privateKeyStream, data.KeyId, passphrase);
+
+            if (privateKey != null)
+            {
+                encryptedData = data;
+                break;
+            }
+        }
+
+        if (privateKey == null)
+            throw new ArgumentException("未找到匹配的私钥");
+
+        using var clear = encryptedData.GetDataStream(privateKey);
+
+        var plainFact = new PgpObjectFactory(clear);
+        var message = plainFact.NextPgpObject();
+
+        if (message is PgpCompressedData compressedData)
+        {
+            var compFact = new PgpObjectFactory(compressedData.GetDataStream());
+            message = compFact.NextPgpObject();
+        }
+
+        if (message is PgpLiteralData literalData)
+        {
+            using var unc = literalData.GetInputStream();
+            using var output = File.Create(outputFile);
+            Streams.PipeAll(unc, output);
+        }
+        else
+        {
+            throw new PgpException("无法解析解密数据");
+        }
+
+        if (encryptedData.IsIntegrityProtected() && !encryptedData.Verify())
+            throw new PgpException("完整性校验失败");
+    }
+
+    public static PgpPrivateKey FindPrivateKey(Stream privateKeyStream, long keyId, string passphrase)
+    {
+        // 解码 armored key
+        using var decoderStream = PgpUtilities.GetDecoderStream(privateKeyStream);
+
+        var secretKeyRingBundle = new PgpSecretKeyRingBundle(decoderStream);
+
+        // 根据 keyId 找 SecretKey
+        PgpSecretKey secretKey = secretKeyRingBundle.GetSecretKey(keyId);
+
+        if (secretKey == null)
+            return null;
+
+        // 提取私钥
+        return secretKey.ExtractPrivateKey(passphrase.ToCharArray());
     }
 
     /// <summary>

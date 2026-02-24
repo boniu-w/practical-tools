@@ -15,7 +15,7 @@ namespace PracticalTools;
 /// </summary>
 public partial class App : Application
 {
-    private readonly IServiceProvider _serviceProvider;
+    public static IServiceProvider _serviceProvider { get; private set; }
 
     public App()
     {
@@ -60,6 +60,8 @@ public partial class App : Application
         services.AddTransient<MainViewModel>();
         // 注册主窗口
         services.AddTransient<MainWindow>();
+
+        services.AddTransient<GpgFileService>();
     }
 
     protected override void OnStartup(StartupEventArgs e)
