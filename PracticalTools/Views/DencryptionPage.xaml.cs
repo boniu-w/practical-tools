@@ -67,8 +67,7 @@ public partial class DencryptionPage : UserControl
             string passphrase = file.Passphrase;
             string privateKey = file.SecretKey;
             // 异步调用解密方法
-            await GpgHelper.DencryptFileByPublicString(dc.SelectedFilePath, outPath, privateKey, passphrase);
-
+            await GpgHelper.DecryptFileByPublicString(dc.SelectedFilePath, outPath, privateKey, passphrase);
             // 成功提示
             MessageBox.Show($"解密成功！输出路径:\n{outPath}",
                             "成功",

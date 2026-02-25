@@ -35,7 +35,7 @@ public class MainViewModel : INotifyPropertyChanged
 
     /**************************************************************************************************************/
 
-    private readonly MyDbContext _myDbContext;
+    public readonly MyDbContext _myDbContext;
     // private readonly MainWindow _mainWindow;
 
     public MainViewModel(MyDbContext myDbContext)
