@@ -20,6 +20,11 @@ namespace PracticalTools.Views
             _service = App._serviceProvider.GetRequiredService<GpgFileService>();
         }
 
+        /// <summary>
+        /// 生成密钥对并保存到数据库
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void GeneratreKeyPairStr(object sender, RoutedEventArgs e)
         {
             var dc = DataContext as MainViewModel;

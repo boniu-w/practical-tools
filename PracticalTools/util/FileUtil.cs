@@ -174,6 +174,24 @@ public class FileUtil
         return Math.Clamp(fileLength, 512, 65536);
     }
 
+    // Create concrete HashAlgorithm implementations from algorithm name.
+    // Avoids obsolete HashAlgorithm.Create(string) overloads and addresses SYSLIB0045.
+    private static HashAlgorithm? CreateHashAlgorithm(string algorithm)
+    {
+        if (string.IsNullOrWhiteSpace(algorithm)) return null;
+
+        string name = algorithm.Replace("-", "", StringComparison.Ordinal).Trim().ToUpperInvariant();
+        return name switch
+        {
+            "MD5" => MD5.Create(),
+            "SHA1" or "SHA-1" => SHA1.Create(),
+            "SHA256" or "SHA-256" => SHA256.Create(),
+            "SHA384" or "SHA-384" => SHA384.Create(),
+            "SHA512" or "SHA-512" => SHA512.Create(),
+            _ => null
+        };
+    }
+
     /// <summary>
     /// 自己指定算法
     /// </summary>
@@ -188,7 +206,7 @@ public class FileUtil
 
         // 规范化算法名称（例如将"SHA-256"转换为"SHA256"）
         string normalizedAlgorithm = algorithm.Replace("-", "");
-        using HashAlgorithm hashAlgorithm = HashAlgorithm.Create(normalizedAlgorithm)
+        using HashAlgorithm hashAlgorithm = CreateHashAlgorithm(normalizedAlgorithm)
                                             ?? throw new ArgumentException($"Unsupported hash algorithm: {algorithm}", nameof(algorithm));
 
         using FileStream stream = file.OpenRead();
@@ -223,7 +241,7 @@ public class FileUtil
             throw new FileNotFoundException("The specified file does not exist.", filePath);
 
         using var stream = File.OpenRead(filePath);
-        using var hashAlgorithm = HashAlgorithm.Create(algorithm)
+        using var hashAlgorithm = CreateHashAlgorithm(algorithm)
                                   ?? throw new ArgumentException($"Unsupported algorithm: {algorithm}");
 
         // 缓冲区大小逻辑（512B - 64KB）
@@ -259,7 +277,7 @@ public class FileUtil
             throw new FileNotFoundException("The specified file does not exist.", filePath);
 
         using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        using var hashAlgorithm = HashAlgorithm.Create(algorithm)
+        using var hashAlgorithm = CreateHashAlgorithm(algorithm)
                                   ?? throw new ArgumentException($"Unsupported algorithm: {algorithm}");
 
         // 缓冲区大小逻辑（512B - 64KB）

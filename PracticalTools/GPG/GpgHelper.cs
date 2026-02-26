@@ -71,19 +71,17 @@ public class GpgHelper
     /// <exception cref="Exception">运行 gpg 失败或退出码非零时抛出。</exception>
     private static async Task RunGpgCommandAsync(string arguments, int timeoutMilliseconds = 60_000)
     {
-        using var process = new Process
+        var startInfo = new ProcessStartInfo
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = GpgPath,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            },
-            EnableRaisingEvents = true
+            FileName = GpgPath,
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
         };
+
+        using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
 
         try
         {
@@ -94,19 +92,44 @@ public class GpgHelper
 #if NET6_0_OR_GREATER
             var waitTask = process.WaitForExitAsync();
 #else
-        var waitTask = Task.Run(() => process.WaitForExit());
+            var waitTask = Task.Run(() => process.WaitForExit());
 #endif
-            // 等待所有任务完成
-            await Task.WhenAll(outputTask, errorTask, waitTask).ConfigureAwait(false);
 
+            // Wait for either the process to exit or the timeout
+            var completed = await Task.WhenAny(waitTask, Task.Delay(timeoutMilliseconds)).ConfigureAwait(false);
+
+            if (completed != waitTask)
+            {
+                // timeout occurred
+                try
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill(true);
+                    }
+                }
+                catch
+                {
+                    // ignore kill exceptions
+                }
+
+                throw new TimeoutException($"GPG command timed out after {timeoutMilliseconds} ms");
+            }
+
+            // process exited; ensure output and error tasks complete
             string output = await outputTask.ConfigureAwait(false);
             string error = await errorTask.ConfigureAwait(false);
 
             if (!process.HasExited)
             {
-                if (!process.CloseMainWindow())
+                try
                 {
-                    process.Kill(true);
+                    if (!process.CloseMainWindow())
+                        process.Kill(true);
+                }
+                catch
+                {
+                    // ignore
                 }
             }
 
@@ -115,7 +138,7 @@ public class GpgHelper
                 throw new Exception($"GPG error (exit {process.ExitCode}): {error}\n{output}");
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not TimeoutException)
         {
             throw new Exception($"Failed to run gpg: {ex.Message}", ex);
         }
@@ -312,33 +335,33 @@ public class GpgHelper
     /// <param name="encDataList">来自 PGP 文件的加密数据列表。</param>
     /// <exception cref="Exception">当找不到匹配私钥时抛出。</exception>
     private static void DecryptFileBy(string outputFile, Stream privateKeyStream, string passphrase,
-        PgpEncryptedDataList encDataList)
-    {
-        var privKey = ReadPrivateKey(privateKeyStream, passphrase);
-        PgpPublicKeyEncryptedData encData = null;
+         PgpEncryptedDataList encDataList)
+     {
+         var privKey = ReadPrivateKey(privateKeyStream, passphrase);
+         PgpPublicKeyEncryptedData? encData = null;
 
-        foreach (PgpPublicKeyEncryptedData data in encDataList.GetEncryptedDataObjects())
-        {
-            if (data.KeyId == privKey.KeyId)
-            {
-                encData = data;
-                break;
-            }
-        }
+         foreach (PgpEncryptedData ed in encDataList.GetEncryptedDataObjects())
+         {
+             if (ed is PgpPublicKeyEncryptedData data && data.KeyId == privKey.KeyId)
+             {
+                 encData = data;
+                 break;
+             }
+         }
 
-        if (encData == null)
-            throw new Exception("找不到匹配的私钥");
+         if (encData == null)
+             throw new Exception("找不到匹配的私钥");
 
-        using var clear = encData.GetDataStream(privKey);
-        var plainFact = new PgpObjectFactory(clear);
-        var message = plainFact.NextPgpObject();
+         using var clear = encData.GetDataStream(privKey);
+         var plainFact = new PgpObjectFactory(clear);
+         var message = plainFact.NextPgpObject();
 
-        if (message is PgpLiteralData literal)
-        {
-            using var outStream = File.Create(outputFile);
-            Streams.PipeAll(literal.GetInputStream(), outStream);
-        }
-    }
+         if (message is PgpLiteralData literal)
+         {
+             using var outStream = File.Create(outputFile);
+             Streams.PipeAll(literal.GetInputStream(), outStream);
+         }
+     }
 
     /// <summary>
     /// 使用内存中私钥字符串异步解密文件（包装同步实现）。
@@ -437,7 +460,7 @@ public class GpgHelper
     /// <param name="passphrase">私钥口令，可能为 null。</param>
     /// <returns>找到并提取的私钥，找不到则返回 null。</returns>
     /// <exception cref="ArgumentNullException">当 <paramref name="privateKeyStream"/> 为 null 时抛出。</exception>
-    public static PgpPrivateKey FindPrivateKey(Stream privateKeyStream, long keyId, string passphrase)
+    public static PgpPrivateKey? FindPrivateKey(Stream privateKeyStream, long keyId, string passphrase)
     {
         if (privateKeyStream == null) throw new ArgumentNullException(nameof(privateKeyStream));
 
@@ -471,8 +494,18 @@ public class GpgHelper
         signatureGenerator.InitSign(PgpSignature.BinaryDocument, privateKey);
 
         var subpacket = new PgpSignatureSubpacketGenerator();
-        var userId = secretKey.PublicKey.GetUserIds().Cast<string>().FirstOrDefault() ?? string.Empty;
-        subpacket.SetSignerUserId(false, userId);
+        // Extract the first user id safely without redundant LINQ casts
+        string userId = string.Empty;
+        foreach (var uid in secretKey.PublicKey.GetUserIds())
+        {
+            if (uid != null)
+            {
+                userId = uid.ToString() ?? string.Empty;
+                break;
+            }
+        }
+        // Use the modern AddSignerUserId overload (isCritical, userId)
+        subpacket.AddSignerUserId(false, userId);
         signatureGenerator.SetHashedSubpackets(subpacket.Generate());
 
         using var outputStream = new MemoryStream();
@@ -666,7 +699,7 @@ public class GpgHelper
                 // 接着读取后续对象（通常是 PgpLiteralData 或 PgpCompressedData）
                 var next = pgpFactory.NextPgpObject();
 
-                Stream dataStream = next switch
+                Stream? dataStream = next switch
                 {
                     PgpCompressedData comp => comp.GetDataStream(),
                     PgpLiteralData lit => lit.GetInputStream(),
@@ -707,13 +740,13 @@ public class GpgHelper
     /// <param name="keySize">RSA 密钥大小（位）。</param>
     /// <param name="keyLifeSeconds">可选的密钥过期时间（秒）。</param>
     public static void GeneratePgpKeyPairFile(string identity,
-        string passphrase,
-        int keySize = 4096,
-        long? keyLifeSeconds = null)
-    {
-        var (pubRing, secRing, beginsOn, endOn) = GeneratePgpKeyPair(identity, passphrase, keySize, keyLifeSeconds);
-        // 如需写入文件，可在此添加
-    }
+         string passphrase,
+         int keySize = 4096,
+         long? keyLifeSeconds = null)
+     {
+         _ = GeneratePgpKeyPair(identity, passphrase, keySize, keyLifeSeconds);
+         // 如需写入文件，可在此添加
+     }
 
     /// <summary>
     /// 生成 PGP 公/私钥环并返回，同时返回生效时间和可选到期时间。
@@ -753,7 +786,9 @@ public class GpgHelper
         var masterSubpacket = new PgpSignatureSubpacketGenerator();
         masterSubpacket.SetKeyFlags(true, PgpKeyFlags.CanSign | PgpKeyFlags.CanCertify);
         masterSubpacket.SetPreferredHashAlgorithms(true, ToIntArray(HashAlgorithmTag.Sha512, HashAlgorithmTag.Sha256));
-        masterSubpacket.SetPreferredSymmetricAlgorithms(true, ToIntArray(SymmetricKeyAlgorithmTag.Aes256, SymmetricKeyAlgorithmTag.Aes192, SymmetricKeyAlgorithmTag.Aes128));
+        masterSubpacket.SetPreferredSymmetricAlgorithms(true,
+            ToIntArray(SymmetricKeyAlgorithmTag.Aes256, SymmetricKeyAlgorithmTag.Aes192,
+                SymmetricKeyAlgorithmTag.Aes128));
         masterSubpacket.SetFeature(true, Features.FEATURE_MODIFICATION_DETECTION);
         if (keyLifeSeconds.HasValue) masterSubpacket.SetKeyExpirationTime(true, keyLifeSeconds.Value);
 
@@ -774,6 +809,103 @@ public class GpgHelper
         var encSubpacket = new PgpSignatureSubpacketGenerator();
         encSubpacket.SetKeyFlags(true, PgpKeyFlags.CanEncryptCommunications | PgpKeyFlags.CanEncryptStorage);
         if (keyLifeSeconds.HasValue) encSubpacket.SetKeyExpirationTime(true, keyLifeSeconds.Value);
+
+        keyRingGen.AddSubKey(encPgpKeyPair, encSubpacket.Generate(), null);
+
+        PgpSecretKeyRing secretKeyRing = keyRingGen.GenerateSecretKeyRing();
+        PgpPublicKeyRing publicKeyRing = keyRingGen.GeneratePublicKeyRing();
+
+        return (publicKeyRing, secretKeyRing, beginsOn, endsOn);
+    }
+
+    /// <summary>
+    /// 生成密钥对, 并指定密钥的生效时间和可选的过期时间；返回公钥环、私钥环以及生效/过期时间。
+    /// </summary>
+    /// <param name="identity"></param>
+    /// <param name="passphrase"></param>
+    /// <param name="beginsOn">密钥开始时间</param>
+    /// <param name="endsOn">密钥结束时间</param>
+    /// <param name="keySize"></param>
+    /// <param name="keyLifeSeconds"></param>
+    /// <returns></returns>
+    public static (PgpPublicKeyRing pubRing, PgpSecretKeyRing secRing, DateTime beginsOn, DateTime? endsOn)
+        GeneratePgpKeyPair2(
+            string identity,
+            string passphrase,
+            DateTime beginsOn,
+            DateTime? endsOn = null,
+            int keySize = 2048,
+            long? keyLifeSeconds = null)
+    {
+        // Validate and derive the effective key lifetime (in seconds).
+        // Behavior and precedence:
+        // - If caller provides an explicit endsOn, use it and compute keyLifeSeconds = endsOn - beginsOn.
+        // - Else if caller provides keyLifeSeconds, use that and compute endsOn = beginsOn + keyLifeSeconds.
+        // - If neither is provided, the key will have no expiration.
+
+        if (endsOn.HasValue && endsOn.Value <= beginsOn)
+            throw new ArgumentException("endsOn must be after beginsOn", nameof(endsOn));
+
+        long? effectiveKeyLifeSeconds = null;
+        if (endsOn.HasValue)
+        {
+            // compute seconds difference and ensure it's positive
+            var secs = (long)Math.Floor((endsOn.Value - beginsOn).TotalSeconds);
+            if (secs <= 0)
+                throw new ArgumentException("endsOn must be at least one second after beginsOn", nameof(endsOn));
+
+            effectiveKeyLifeSeconds = secs;
+        }
+        else if (keyLifeSeconds.HasValue)
+        {
+            effectiveKeyLifeSeconds = keyLifeSeconds.Value;
+            endsOn = beginsOn.AddSeconds(effectiveKeyLifeSeconds.Value);
+        }
+
+        // Use the provided beginsOn as the creation time for generated PgpKeyPair objects.
+        DateTime creationTime = beginsOn;
+
+        var random = new SecureRandom();
+
+        var rsaGen = new RsaKeyPairGenerator();
+        rsaGen.Init(new RsaKeyGenerationParameters(
+            BigInteger.ValueOf(0x10001),
+            random,
+            keySize,
+            12));
+
+        var masterKeyPair = rsaGen.GenerateKeyPair();
+        var masterPgpKeyPair = new PgpKeyPair(
+            PublicKeyAlgorithmTag.RsaSign,
+            masterKeyPair,
+            creationTime);
+
+        var masterSubpacket = new PgpSignatureSubpacketGenerator();
+        masterSubpacket.SetKeyFlags(true, PgpKeyFlags.CanSign | PgpKeyFlags.CanCertify);
+        masterSubpacket.SetPreferredHashAlgorithms(true, ToIntArray(HashAlgorithmTag.Sha512, HashAlgorithmTag.Sha256));
+        masterSubpacket.SetPreferredSymmetricAlgorithms(true,
+            ToIntArray(SymmetricKeyAlgorithmTag.Aes256, SymmetricKeyAlgorithmTag.Aes192,
+                SymmetricKeyAlgorithmTag.Aes128));
+        masterSubpacket.SetFeature(true, Features.FEATURE_MODIFICATION_DETECTION);
+        if (effectiveKeyLifeSeconds.HasValue) masterSubpacket.SetKeyExpirationTime(true, effectiveKeyLifeSeconds.Value);
+
+        var keyRingGen = new PgpKeyRingGenerator(
+            PgpSignature.PositiveCertification,
+            masterPgpKeyPair,
+            identity,
+            SymmetricKeyAlgorithmTag.Aes256,
+            passphrase.ToCharArray(),
+            true,
+            masterSubpacket.Generate(),
+            null,
+            random);
+
+        var encKeyPair = rsaGen.GenerateKeyPair();
+        var encPgpKeyPair = new PgpKeyPair(PublicKeyAlgorithmTag.RsaEncrypt, encKeyPair, creationTime);
+
+        var encSubpacket = new PgpSignatureSubpacketGenerator();
+        encSubpacket.SetKeyFlags(true, PgpKeyFlags.CanEncryptCommunications | PgpKeyFlags.CanEncryptStorage);
+        if (effectiveKeyLifeSeconds.HasValue) encSubpacket.SetKeyExpirationTime(true, effectiveKeyLifeSeconds.Value);
 
         keyRingGen.AddSubKey(encPgpKeyPair, encSubpacket.Generate(), null);
 
