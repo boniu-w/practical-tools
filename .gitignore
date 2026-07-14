@@ -21,3 +21,5 @@ TestProject1/obj
 */obj
 
 PracticalTools.sln.DotSettings.user
+.claude/
+.agents/

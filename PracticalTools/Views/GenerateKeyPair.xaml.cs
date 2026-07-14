@@ -17,7 +17,7 @@ namespace PracticalTools.Views
         public GenerateKeyPair()
         {
             InitializeComponent();
-            _service = App._serviceProvider.GetRequiredService<GpgFileService>();
+            _service = App.ServiceProvider.GetRequiredService<GpgFileService>();
         }
 
         /// <summary>
