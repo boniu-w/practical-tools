@@ -30,7 +30,7 @@ namespace PracticalTools.Views
             var dc = DataContext as MainViewModel;
             var emailText = dc.EmailText;
             var passphraseText = dc.PassphraseText;
-            var (pubRing, secRing, beginsOn, endsOn) = GpgHelper.GeneratePgpKeyPair(passphraseText, emailText);
+            var (pubRing, secRing, beginsOn, endsOn) = GpgHelper.GeneratePgpKeyPair(emailText, passphraseText);
             string secKeyAscii = GpgHelper.ExportPrivateKey(secRing);
             string pubKeyAscii = GpgHelper.ExportPublicKey(pubRing);
 

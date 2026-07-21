@@ -4,6 +4,7 @@ using System.Text;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using Org.BouncyCastle.Bcpg.Sig;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
@@ -18,52 +19,19 @@ namespace PracticalTools.GPG;
 public class GpgHelper
 {
     /// <summary>
-    /// gpg.exe 的完整路径。默认自动探测，若环境特殊可自行设置。
+    /// gpg.exe 的完整路径。外部设置（如测试项目），未设置则为 null。
+    /// 仅 SetKeyExpiration、GetKeyFingerprints 等方法需要。
     /// </summary>
-    public static string GpgExePath { get; set; } = ResolveGpgPath();
+    public static string? GpgExePath { get; set; }
 
     /// <summary>
-    /// 自动探测系统上可用的 gpg.exe 路径。
+    /// 确保 gpg.exe 可用，否则抛出明确异常。
     /// </summary>
-    /// <returns>第一个可用的 gpg.exe 完整路径。</returns>
-    /// <exception cref="Exception">未找到可用的 gpg.exe 时抛出。</exception>
-    public static string ResolveGpgPath()
+    private static void RequireGpg()
     {
-        string[] candidates =
-        {
-            @"C:\Program Files (x86)\gnupg\bin\gpg.exe",
-            @"C:\Program Files\Git\usr\bin\gpg.exe",
-            @"C:\Program Files\GnuPG\bin\gpg.exe",
-            @"gpg"
-        };
-
-        foreach (var path in candidates)
-        {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = path,
-                    Arguments = "--version",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                using var p = Process.Start(psi);
-                if (p != null)
-                {
-                    p.WaitForExit(2000);
-                    if (p.ExitCode == 0) return path;
-                }
-            }
-            catch
-            {
-                // 继续尝试下一个
-            }
-        }
-
-        throw new Exception("找不到可用的 gpg.exe，请安装 GnuPG 或将其加入 PATH。");
+        if (GpgExePath == null)
+            throw new InvalidOperationException(
+                "此功能需要外部 gpg.exe，但当前环境中未找到。请安装 GnuPG (Gpg4win 或 gnupg-w32) 后重试。");
     }
 
     /// <summary>
@@ -75,6 +43,7 @@ public class GpgHelper
     /// <exception cref="ArgumentNullException">当任一参数为空或空白时抛出。</exception>
     public static void EncryptFile1(string inputFile, string outputFile, string recipient)
     {
+        RequireGpg();
         if (string.IsNullOrWhiteSpace(inputFile)) throw new ArgumentNullException(nameof(inputFile));
         if (string.IsNullOrWhiteSpace(outputFile)) throw new ArgumentNullException(nameof(outputFile));
         if (string.IsNullOrWhiteSpace(recipient)) throw new ArgumentNullException(nameof(recipient));
@@ -91,6 +60,7 @@ public class GpgHelper
     /// <exception cref="ArgumentNullException">当参数为空或空白时抛出。</exception>
     public static void DecryptFile(string inputFile, string outputFile)
     {
+        RequireGpg();
         if (string.IsNullOrWhiteSpace(inputFile)) throw new ArgumentNullException(nameof(inputFile));
         if (string.IsNullOrWhiteSpace(outputFile)) throw new ArgumentNullException(nameof(outputFile));
 
@@ -117,6 +87,7 @@ public class GpgHelper
     /// <exception cref="ArgumentNullException">当任一参数为空或空白时抛出。</exception>
     public static void SetKeyExpiration(string fingerprint, string passphrase, string expireString, string? subkeyFingerprint = null)
     {
+        RequireGpg();
         if (string.IsNullOrWhiteSpace(fingerprint)) throw new ArgumentNullException(nameof(fingerprint));
         if (string.IsNullOrWhiteSpace(passphrase)) throw new ArgumentNullException(nameof(passphrase));
         if (string.IsNullOrWhiteSpace(expireString)) throw new ArgumentNullException(nameof(expireString));
@@ -128,12 +99,151 @@ public class GpgHelper
     }
 
     /// <summary>
-    /// 获取本地 GPG 密钥环中匹配标识的密钥指纹。
+    /// 修改密钥对的过期时间（基于 BouncyCastle，无需 gpg.exe）。
+    /// 使用原有密钥材料重建密钥环，仅更新有效期签名。
+    /// </summary>
+    /// <param name="secRing">私钥环。</param>
+    /// <param name="passphrase">私钥口令。</param>
+    /// <param name="keyLifeSeconds">新的过期时间（秒），0 表示永不过期。</param>
+    /// <returns>修改后的公钥环和私钥环。</returns>
+    public static (PgpPublicKeyRing pubRing, PgpSecretKeyRing secRing) SetKeyExpiration(
+        PgpSecretKeyRing secRing,
+        string passphrase,
+        long keyLifeSeconds)
+    {
+        // 1. 获取主密钥的 RSA 参数
+        var masterSecKey = secRing.GetSecretKey()
+            ?? throw new ArgumentException("密钥环中没有找到主密钥");
+        var masterPubKey = masterSecKey.PublicKey;
+        var masterPrivate = masterSecKey.ExtractPrivateKey(passphrase.ToCharArray());
+
+        var rsaPriv = masterPrivate.Key as RsaPrivateCrtKeyParameters
+            ?? throw new NotSupportedException("仅支持 RSA 密钥");
+
+        var rsaPub = new RsaKeyParameters(false, rsaPriv.Modulus, rsaPriv.PublicExponent);
+        var masterKeyPair = new AsymmetricCipherKeyPair(rsaPub, rsaPriv);
+        var masterPgpKeyPair = new PgpKeyPair(PublicKeyAlgorithmTag.RsaSign, masterKeyPair, masterPubKey.CreationTime);
+
+        // 2. 获取用户标识
+        string identity = string.Empty;
+        foreach (var uid in masterPubKey.GetUserIds())
+        {
+            if (uid != null)
+            {
+                identity = uid.ToString()!;
+                break;
+            }
+        }
+
+        // 3. 构建主密钥
+        var masterSubpacket = new PgpSignatureSubpacketGenerator();
+        masterSubpacket.SetKeyFlags(true, PgpKeyFlags.CanSign | PgpKeyFlags.CanCertify);
+        masterSubpacket.SetPreferredHashAlgorithms(true,
+            ToIntArray(HashAlgorithmTag.Sha512, HashAlgorithmTag.Sha256));
+        masterSubpacket.SetPreferredSymmetricAlgorithms(true,
+            ToIntArray(SymmetricKeyAlgorithmTag.Aes256, SymmetricKeyAlgorithmTag.Aes192,
+                SymmetricKeyAlgorithmTag.Aes128));
+        masterSubpacket.SetFeature(true, Features.FEATURE_MODIFICATION_DETECTION);
+        if (keyLifeSeconds > 0)
+            masterSubpacket.SetKeyExpirationTime(true, keyLifeSeconds);
+
+        var keyRingGen = new PgpKeyRingGenerator(
+            PgpSignature.PositiveCertification,
+            masterPgpKeyPair,
+            identity,
+            SymmetricKeyAlgorithmTag.Aes256,
+            passphrase.ToCharArray(),
+            true,
+            masterSubpacket.Generate(),
+            null,
+            new SecureRandom());
+
+        // 4. 重建加密子密钥（使用相同密钥材料）
+        foreach (PgpSecretKey subSecKey in secRing.GetSecretKeys())
+        {
+            if (subSecKey.IsMasterKey)
+                continue;
+
+            if (!subSecKey.IsSigningKey)
+            {
+                var subPrivate = subSecKey.ExtractPrivateKey(passphrase.ToCharArray());
+                var subRsaPriv = subPrivate.Key as RsaPrivateCrtKeyParameters;
+                if (subRsaPriv == null) continue;
+
+                var subRsaPub = new RsaKeyParameters(false, subRsaPriv.Modulus, subRsaPriv.PublicExponent);
+                var subKeyPair = new AsymmetricCipherKeyPair(subRsaPub, subRsaPriv);
+                var subPgpKeyPair = new PgpKeyPair(PublicKeyAlgorithmTag.RsaEncrypt, subKeyPair, subSecKey.PublicKey.CreationTime);
+
+                var encSubpacket = new PgpSignatureSubpacketGenerator();
+                encSubpacket.SetKeyFlags(true, PgpKeyFlags.CanEncryptCommunications | PgpKeyFlags.CanEncryptStorage);
+                if (keyLifeSeconds > 0)
+                    encSubpacket.SetKeyExpirationTime(true, keyLifeSeconds);
+
+                keyRingGen.AddSubKey(subPgpKeyPair, encSubpacket.Generate(), null);
+            }
+        }
+
+        return (keyRingGen.GeneratePublicKeyRing(), keyRingGen.GenerateSecretKeyRing());
+    }
+
+    /// <summary>
+    /// 修改密钥过期时间（字符串版本，方便传入/传出 armored 密钥文本）。
+    /// </summary>
+    /// <param name="armoredSecretKey">ASCII-armored 私钥文本。</param>
+    /// <param name="passphrase">私钥口令。</param>
+    /// <param name="keyLifeSeconds">新的过期时间（秒），0 表示永不过期。</param>
+    /// <returns>修改后的 armored 公钥和私钥文本。</returns>
+    public static (string armoredPub, string armoredSec) SetKeyExpiration(
+        string armoredSecretKey,
+        string passphrase,
+        long keyLifeSeconds)
+    {
+        using var secStream = new MemoryStream(Encoding.UTF8.GetBytes(armoredSecretKey));
+        var secRing = new PgpSecretKeyRing(PgpUtilities.GetDecoderStream(secStream));
+
+        var (pubRing, newSecRing) = SetKeyExpiration(secRing, passphrase, keyLifeSeconds);
+
+        return (ExportPublicKey(pubRing), ExportPrivateKey(newSecRing));
+    }
+
+    /// <summary>
+    /// 从公钥环计算密钥指纹（基于 BouncyCastle，无需 gpg.exe）。
+    /// </summary>
+    /// <param name="pubRing">公钥环。</param>
+    /// <returns>40 位十六进制指纹字符串（大写）。</returns>
+    public static string GetFingerprint(PgpPublicKeyRing pubRing)
+    {
+        var masterKey = pubRing.GetPublicKey();
+        return BitConverter.ToString(masterKey.GetFingerprint()).Replace("-", "");
+    }
+
+    /// <summary>
+    /// 从 armored 公钥字符串计算密钥指纹。
+    /// </summary>
+    /// <param name="armoredPublicKey">ASCII-armored 公钥文本。</param>
+    /// <returns>40 位十六进制指纹字符串（大写）。</returns>
+    public static string GetFingerprint(string armoredPublicKey)
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(armoredPublicKey));
+        var pubRing = new PgpPublicKeyRing(PgpUtilities.GetDecoderStream(stream));
+        return GetFingerprint(pubRing);
+    }
+
+    /// <summary>
+    /// 从公钥环获取 64 位 Key ID（指纹低 8 字节）。
+    /// </summary>
+    public static long GetKeyId(PgpPublicKeyRing pubRing)
+    {
+        return pubRing.GetPublicKey().KeyId;
+    }
+
+    /// <summary>
     /// </summary>
     /// <param name="identityPattern">要查找的标识（name 或 email），为 null 或空则返回所有密钥的指纹。</param>
     /// <returns>找到的指纹数组，未找到返回空数组。</returns>
     public static string[] GetKeyFingerprints(string? identityPattern = null)
     {
+        RequireGpg();
         var pattern = !string.IsNullOrWhiteSpace(identityPattern) ? $" \"{identityPattern}\"" : "";
         string output = RunGpgAndGetOutput($"--list-keys --with-colons{pattern}");
 

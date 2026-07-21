@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using PracticalTools.GPG;
 using PracticalTools.util;
@@ -8,6 +9,54 @@ namespace TestProject1;
 [TestClass]
 public class PgpTest
 {
+    /// <summary>
+    /// 测试前自动探测 gpg.exe 路径（仅测试需要）。
+    /// </summary>
+    [ClassInitialize]
+    public static void Setup(TestContext _)
+    {
+        GpgHelper.GpgExePath = ResolveGpgPath();
+    }
+
+    private static string? ResolveGpgPath()
+    {
+        string[] candidates =
+        {
+            @"C:\Program Files (x86)\gnupg\bin\gpg.exe",
+            @"C:\Program Files\Git\usr\bin\gpg.exe",
+            @"C:\Program Files\GnuPG\bin\gpg.exe",
+            @"gpg"
+        };
+
+        foreach (var path in candidates)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = path,
+                    Arguments = "--version",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using var p = Process.Start(psi);
+                if (p != null)
+                {
+                    p.WaitForExit(2000);
+                    if (p.ExitCode == 0) return path;
+                }
+            }
+            catch
+            {
+                // try next
+            }
+        }
+
+        return null;
+    }
+
     [TestMethod]
     public void TestPgp()
     {
