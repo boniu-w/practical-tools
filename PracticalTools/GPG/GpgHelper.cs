@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Org.BouncyCastle.Bcpg;
@@ -17,7 +17,54 @@ namespace PracticalTools.GPG;
 /// </summary>
 public class GpgHelper
 {
-    private const string GpgPath = @"C:\Program Files (x86)\gnupg\bin\gpg.exe";
+    /// <summary>
+    /// gpg.exe 的完整路径。默认自动探测，若环境特殊可自行设置。
+    /// </summary>
+    public static string GpgExePath { get; set; } = ResolveGpgPath();
+
+    /// <summary>
+    /// 自动探测系统上可用的 gpg.exe 路径。
+    /// </summary>
+    /// <returns>第一个可用的 gpg.exe 完整路径。</returns>
+    /// <exception cref="Exception">未找到可用的 gpg.exe 时抛出。</exception>
+    public static string ResolveGpgPath()
+    {
+        string[] candidates =
+        {
+            @"C:\Program Files (x86)\gnupg\bin\gpg.exe",
+            @"C:\Program Files\Git\usr\bin\gpg.exe",
+            @"C:\Program Files\GnuPG\bin\gpg.exe",
+            @"gpg"
+        };
+
+        foreach (var path in candidates)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = path,
+                    Arguments = "--version",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using var p = Process.Start(psi);
+                if (p != null)
+                {
+                    p.WaitForExit(2000);
+                    if (p.ExitCode == 0) return path;
+                }
+            }
+            catch
+            {
+                // 继续尝试下一个
+            }
+        }
+
+        throw new Exception("找不到可用的 gpg.exe，请安装 GnuPG 或将其加入 PATH。");
+    }
 
     /// <summary>
     /// 使用系统 gpg 对文件进行加密并输出到指定文件（通过接收者标识符）。
@@ -52,6 +99,108 @@ public class GpgHelper
     }
 
     /// <summary>
+    /// 修改指定密钥的过期时间（使用 gpg --quick-set-expire）。
+    /// 需要提供私钥口令以重新签名密钥。
+    /// </summary>
+    /// <param name="fingerprint">密钥指纹（完整或部分，只要能唯一标识）。</param>
+    /// <param name="passphrase">私钥口令（用于重新签名）。</param>
+    /// <param name="expireString">
+    /// 过期时间字符串，支持以下格式：
+    /// "0" — 永不过期；
+    /// "2027-12-31" — 指定日期；
+    /// "2y" — 2 年后；
+    /// "6m" — 6 个月后；
+    /// "30d" — 30 天后；
+    /// "1w" — 1 周后。
+    /// </param>
+    /// <param name="subkeyFingerprint">可选：仅修改指定子密钥的过期时间，null 则修改整个主密钥及其所有子密钥。</param>
+    /// <exception cref="ArgumentNullException">当任一参数为空或空白时抛出。</exception>
+    public static void SetKeyExpiration(string fingerprint, string passphrase, string expireString, string? subkeyFingerprint = null)
+    {
+        if (string.IsNullOrWhiteSpace(fingerprint)) throw new ArgumentNullException(nameof(fingerprint));
+        if (string.IsNullOrWhiteSpace(passphrase)) throw new ArgumentNullException(nameof(passphrase));
+        if (string.IsNullOrWhiteSpace(expireString)) throw new ArgumentNullException(nameof(expireString));
+
+        var subkeyPart = subkeyFingerprint != null ? $" \"{subkeyFingerprint}\"" : "";
+        var args = $"--batch --yes --pinentry-mode loopback --passphrase \"{passphrase}\" --quick-set-expire \"{fingerprint}\" \"{expireString}\"{subkeyPart}";
+
+        RunGpgCommand(args);
+    }
+
+    /// <summary>
+    /// 获取本地 GPG 密钥环中匹配标识的密钥指纹。
+    /// </summary>
+    /// <param name="identityPattern">要查找的标识（name 或 email），为 null 或空则返回所有密钥的指纹。</param>
+    /// <returns>找到的指纹数组，未找到返回空数组。</returns>
+    public static string[] GetKeyFingerprints(string? identityPattern = null)
+    {
+        var pattern = !string.IsNullOrWhiteSpace(identityPattern) ? $" \"{identityPattern}\"" : "";
+        string output = RunGpgAndGetOutput($"--list-keys --with-colons{pattern}");
+
+        var fingerprints = new List<string>();
+        foreach (var line in output.Split('\n'))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("fpr:"))
+            {
+                var parts = trimmed.Split(':');
+                if (parts.Length > 9 && !string.IsNullOrEmpty(parts[9]))
+                    fingerprints.Add(parts[9]);
+            }
+        }
+        return fingerprints.ToArray();
+    }
+
+    /// <summary>
+    /// 运行 gpg 命令并返回标准输出内容（不抛异常，仅返回空字符串）。
+    /// </summary>
+    private static string RunGpgAndGetOutput(string arguments, int timeoutMilliseconds = 30_000)
+    {
+        try
+        {
+            var tcs = new TaskCompletionSource<string>();
+            var task = Task.Run(async () =>
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = GpgExePath,
+                    Arguments = arguments,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+                process.Start();
+
+                var outputTask = process.StandardOutput.ReadToEndAsync();
+                var errorTask = process.StandardError.ReadToEndAsync();
+#if NET6_0_OR_GREATER
+                var waitTask = process.WaitForExitAsync();
+#else
+                var waitTask = Task.Run(() => process.WaitForExit());
+#endif
+                var completed = await Task.WhenAny(waitTask, Task.Delay(timeoutMilliseconds)).ConfigureAwait(false);
+
+                if (completed != waitTask)
+                {
+                    try { if (!process.HasExited) process.Kill(true); } catch { }
+                    return string.Empty;
+                }
+
+                return await outputTask.ConfigureAwait(false);
+            });
+
+            return task.GetAwaiter().GetResult();
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
     /// 同步包装：运行 gpg 命令并阻塞直到完成。
     /// </summary>
     /// <param name="arguments">传递给 gpg 的命令参数。</param>
@@ -73,7 +222,7 @@ public class GpgHelper
     {
         var startInfo = new ProcessStartInfo
         {
-            FileName = GpgPath,
+            FileName = GpgExePath,
             Arguments = arguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
