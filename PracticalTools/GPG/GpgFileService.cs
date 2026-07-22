@@ -47,12 +47,44 @@ public class GpgFileService
     {
     }
 
-    public void Delete()
+    public int Delete(long id)
     {
+        var entity = _myDbContext.GpgFile.Find(id);
+        if (entity != null)
+        {
+            _myDbContext.GpgFile.Remove(entity);
+            return _myDbContext.SaveChanges();
+        }
+        return 0;
     }
 
-    public void Update()
+    public int Update(GpgFile gpgFile)
     {
+        var existing = _myDbContext.GpgFile.Find(gpgFile.Id);
+        if (existing != null)
+        {
+            existing.Identity = gpgFile.Identity;
+            existing.IdentityName = gpgFile.IdentityName;
+            existing.Passphrase = gpgFile.Passphrase;
+            existing.KeySize = gpgFile.KeySize;
+            existing.SecretKey = gpgFile.SecretKey;
+            existing.PublicKey = gpgFile.PublicKey;
+            existing.ValidDurationBeginsOn = gpgFile.ValidDurationBeginsOn;
+            existing.ValidDurationEndsOn = gpgFile.ValidDurationEndsOn;
+            existing.ValidDurationSeconds = gpgFile.ValidDurationSeconds;
+            existing.Description = gpgFile.Description;
+            existing.FileNamePrivate = gpgFile.FileNamePrivate;
+            existing.FileNamePublic = gpgFile.FileNamePublic;
+            existing.Md5ValuePrivate = gpgFile.Md5ValuePrivate;
+            existing.Md5ValuePublic = gpgFile.Md5ValuePublic;
+            existing.SignaturePrivate = gpgFile.SignaturePrivate;
+            existing.SignaturePublic = gpgFile.SignaturePublic;
+            existing.FileCreateTime = gpgFile.FileCreateTime;
+            existing.Type = gpgFile.Type;
+            existing.UpdateTime = DateTime.Now;
+            return _myDbContext.SaveChanges();
+        }
+        return 0;
     }
 
     public GpgFile GenerateGpgFile(

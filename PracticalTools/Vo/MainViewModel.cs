@@ -1,4 +1,4 @@
-﻿using PracticalTools.Blacklist.Model;
+using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.Wrapper;
 using PracticalTools.FileManager.Model;
@@ -472,7 +472,10 @@ public class MainViewModel : INotifyPropertyChanged
     {
         try
         {
-            GpgFileWrapperList = new ObservableCollection<GpgFileEntryWrapper>(_myDbContext.GpgFile.Select(e => new GpgFileEntryWrapper(e)));
+            GpgFileWrapperList = new ObservableCollection<GpgFileEntryWrapper>(
+                _myDbContext.GpgFile
+                    .OrderByDescending(e => e.UpdateTime)
+                    .Select(e => new GpgFileEntryWrapper(e)));
         }
         catch (Exception e)
         {

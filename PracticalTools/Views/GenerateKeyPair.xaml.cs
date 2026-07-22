@@ -34,7 +34,7 @@ namespace PracticalTools.Views
             string secKeyAscii = GpgHelper.ExportPrivateKey(secRing);
             string pubKeyAscii = GpgHelper.ExportPublicKey(pubRing);
 
-            GpgFile gpgFile = _service.GenerateGpgFile(emailText, emailText, secKeyAscii, pubKeyAscii, beginsOn, endsOn, "");
+            GpgFile gpgFile = _service.GenerateGpgFile(emailText, passphraseText, secKeyAscii, pubKeyAscii, beginsOn, endsOn, "");
             int saved = _service.Save(gpgFile);
             dc.GpgFileWrapperList = new ObservableCollection<GpgFileEntryWrapper>(dc._myDbContext.GpgFile.Select(e => new GpgFileEntryWrapper(e)));
         }
