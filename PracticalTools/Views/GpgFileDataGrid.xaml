@@ -42,12 +42,51 @@
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   HeadersVisibility="Column"
+                  SelectionUnit="FullRow"
+                  SelectionMode="Extended"
                   CellEditEnding="GpgDataGrid_CellEditEnding">
+
+            <DataGrid.Resources>
+                <!-- 选中行背景色：Material Design 风格的淡色 -->
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                 Color="#1E90C0E0" />
+                <!-- 选中行（失去焦点时）背景色 -->
+                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
+                                 Color="#1E90C0E0" />
+                <!-- 选中行文字颜色不变 -->
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                 Color="{StaticResource MaterialDesignBody}" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
+                                 Color="{StaticResource MaterialDesignBody}" />
+            </DataGrid.Resources>
+
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <!-- 鼠标悬停效果 -->
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#F0F8FF" />
+                        </Trigger>
+                        <!-- 选中效果已通过上面的 SystemColors 覆盖 -->
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
 
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Setter Property="VerticalAlignment" Value="Center" />
                     <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                    <!-- 去掉单元格焦点虚线框 -->
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="Foreground" Value="{StaticResource MaterialDesignBody}" />
+                            <Setter Property="BorderThickness" Value="0" />
+                        </Trigger>
+                    </Style.Triggers>
                 </Style>
             </DataGrid.CellStyle>
 

@@ -15,7 +15,7 @@
                 Visibility="Hidden" />
             <Grid>
                 <!-- Padding="8,8,40,8" -->
-                <TextBox materialDesign:HintAssist.Hint="选择一个文件"
+                <TextBox materialDesign:HintAssist.Hint="点击右侧的向上箭头选择一个文件"
                          Text="{Binding SelectedFilePath}"
                          IsReadOnly="True"
                          Style="{StaticResource MaterialDesignOutlinedTextBox}" />
