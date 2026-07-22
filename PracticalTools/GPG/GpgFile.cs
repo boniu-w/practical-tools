@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 using PracticalTools.FileManager.Model;
@@ -26,6 +26,7 @@ public class GpgFile : INotifyPropertyChanged
     [ColumnHeader("公钥的签名")] public string? SignaturePublic { get; set; }
     [ColumnHeader("创建时间")] public DateTime? FileCreateTime { get; set; }
     [ColumnHeader("类别")] public string? Type { get; set; }
+    [ColumnHeader("导入的")] public bool IsImported { get; set; }
     public DateTime? CreateTime { get; set; }
     public DateTime? UpdateTime { get; set; }
 

@@ -13,6 +13,10 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using Microsoft.Win32;
+using OfficeOpenXml;
+using System.IO;
 
 namespace PracticalTools.vo;
 
@@ -79,6 +83,8 @@ public class MainViewModel : INotifyPropertyChanged
         WrapperSelectedChangedEvent();
 
         DeleteSelectedGpgFilesCommand = new RelayCommand<object>(DeleteSelectedGpgFiles);
+        ExportSelectedGpgFilesCommand = new RelayCommand<object>(ExportPublic);
+        ImportGpgFilesCommand = new RelayCommand<object>(ImportGpgFiles);
     }
 
     // private bool _isScanning;
@@ -101,6 +107,8 @@ public class MainViewModel : INotifyPropertyChanged
 
     public ICommand RefreshCommand { get; }
     public ICommand DeleteSelectedGpgFilesCommand { get; }
+    public ICommand ExportSelectedGpgFilesCommand { get; }
+    public ICommand ImportGpgFilesCommand { get; }
 
     // 重复的文件
     private ObservableCollection<DuplicateFilesEntryWrapper>? _fileList;
@@ -559,6 +567,287 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// 导出
+    /// </summary>
+    /// <param name="obj"></param>
+    private void ExportSelectedGpgFiles(object obj)
+    {
+        if (GpgFileWrapperList == null) return;
+
+        var selected = GpgFileWrapperList.Where(x => x.IsSelected).ToList();
+        if (selected.Count == 0)
+        {
+            MessageBox.Show("请先勾选要导出的密钥。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var saveFileDialog = new SaveFileDialog
+        {
+            Title = "导出密钥到 Excel",
+            FileName = $"GpgKeys_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+            DefaultExt = ".xlsx"
+        };
+
+        if (saveFileDialog.ShowDialog() != true) return;
+        string filePath = saveFileDialog.FileName;
+
+        try
+        {
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("GPG密钥");
+
+                // 表头
+                string[] headers =
+                {
+                    "身份", "别名", "密钥长度", "有效期开始于", "有效期截至于",
+                    "有效时长(秒)", "私钥文件名", "公钥文件名", "说明", "创建时间", "更新时间"
+                };
+
+                for (int col = 0; col < headers.Length; col++)
+                {
+                    var cell = worksheet.Cells[1, col + 1];
+                    cell.Value = headers[col];
+                    cell.Style.Font.Bold = true;
+                }
+
+                // 数据行
+                for (int row = 0; row < selected.Count; row++)
+                {
+                    var gpg = selected[row].GpgFile;
+                    int r = row + 2;
+
+                    worksheet.Cells[r, 1].Value = gpg.Identity;
+                    worksheet.Cells[r, 2].Value = gpg.IdentityName;
+                    worksheet.Cells[r, 3].Value = gpg.KeySize;
+                    worksheet.Cells[r, 4].Value = gpg.ValidDurationBeginsOn?.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[r, 5].Value = gpg.ValidDurationEndsOn?.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[r, 6].Value = gpg.ValidDurationSeconds;
+                    worksheet.Cells[r, 7].Value = gpg.FileNamePrivate;
+                    worksheet.Cells[r, 8].Value = gpg.FileNamePublic;
+                    worksheet.Cells[r, 9].Value = gpg.Description;
+                    worksheet.Cells[r, 10].Value = gpg.CreateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[r, 11].Value = gpg.UpdateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
+                // 自动列宽
+                worksheet.Cells.AutoFitColumns();
+
+                // 保存 Excel
+                package.SaveAs(new FileInfo(filePath));
+            }
+
+            // 导出公钥和私钥 .asc 文件到同目录
+            string dir = Path.GetDirectoryName(filePath)!;
+            int fileCount = 0;
+            foreach (var wrapper in selected)
+            {
+                var gpg = wrapper.GpgFile;
+
+                if (!string.IsNullOrEmpty(gpg.PublicKey))
+                {
+                    string pubPath = Path.Combine(dir, gpg.FileNamePublic);
+                    File.WriteAllText(pubPath, gpg.PublicKey);
+                    fileCount++;
+                }
+
+                if (!string.IsNullOrEmpty(gpg.SecretKey))
+                {
+                    string secPath = Path.Combine(dir, gpg.FileNamePrivate);
+                    File.WriteAllText(secPath, gpg.SecretKey);
+                    fileCount++;
+                }
+            }
+
+            MessageBox.Show(
+                $"已导出 {selected.Count} 个密钥对到:\n{dir}\n\nExcel 汇总: {Path.GetFileName(filePath)}\n密钥文件: {fileCount} 个 .asc",
+                "导出成功",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"导出失败: {e.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ExportPublic(object obj)
+    {
+        if (GpgFileWrapperList == null) return;
+
+        var selected = GpgFileWrapperList.Where(x => x.IsSelected).ToList();
+        if (selected.Count == 0)
+        {
+            MessageBox.Show("请先勾选要导出的密钥。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var saveFileDialog = new SaveFileDialog
+        {
+            Title = "导出公钥",
+            FileName = $"GpgPublicKeys_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
+            DefaultExt = ".xlsx"
+        };
+
+        if (saveFileDialog.ShowDialog() != true) return;
+        string filePath = saveFileDialog.FileName;
+
+        try
+        {
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("GPG公钥");
+
+                string[] headers =
+                {
+                    "身份", "别名", "密钥长度", "有效期开始于", "有效期截至于",
+                    "有效时长(秒)", "公钥文件名", "说明", "创建时间", "更新时间"
+                };
+
+                for (int col = 0; col < headers.Length; col++)
+                {
+                    var cell = worksheet.Cells[1, col + 1];
+                    cell.Value = headers[col];
+                    cell.Style.Font.Bold = true;
+                }
+
+                for (int row = 0; row < selected.Count; row++)
+                {
+                    var gpg = selected[row].GpgFile;
+                    int r = row + 2;
+
+                    worksheet.Cells[r, 1].Value = gpg.Identity;
+                    worksheet.Cells[r, 2].Value = gpg.IdentityName;
+                    worksheet.Cells[r, 3].Value = gpg.KeySize;
+                    worksheet.Cells[r, 4].Value = gpg.ValidDurationBeginsOn?.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[r, 5].Value = gpg.ValidDurationEndsOn?.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[r, 6].Value = gpg.ValidDurationSeconds;
+                    worksheet.Cells[r, 7].Value = gpg.FileNamePublic;
+                    worksheet.Cells[r, 8].Value = gpg.Description;
+                    worksheet.Cells[r, 9].Value = gpg.CreateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[r, 10].Value = gpg.UpdateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
+                worksheet.Cells.AutoFitColumns();
+                package.SaveAs(new FileInfo(filePath));
+            }
+
+            // 导出公钥 .asc 文件到同目录
+            string dir = Path.GetDirectoryName(filePath)!;
+            int fileCount = 0;
+            foreach (var wrapper in selected)
+            {
+                var gpg = wrapper.GpgFile;
+
+                if (!string.IsNullOrEmpty(gpg.PublicKey))
+                {
+                    string pubPath = Path.Combine(dir, gpg.FileNamePublic);
+                    File.WriteAllText(pubPath, gpg.PublicKey);
+                    fileCount++;
+                }
+            }
+
+            MessageBox.Show(
+                $"已导出 {selected.Count} 个公钥到:\n{dir}\n\nExcel 汇总: {Path.GetFileName(filePath)}\n公钥文件: {fileCount} 个 .asc",
+                "导出成功",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"导出失败: {e.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// 导入
+    /// </summary>
+    /// <param name="obj"></param>
+    private void ImportGpgFiles(object obj)
+    {
+        var window = new ImportGpgWindow();
+        window.Owner = Application.Current.MainWindow;
+        if (window.ShowDialog() != true) return;
+
+        try
+        {
+            string publicKey = File.ReadAllText(window.PublicKeyPath);
+            string fileName = Path.GetFileName(window.PublicKeyPath);
+
+            // 尝试从公钥内容中提取身份
+            string identity = ExtractIdentityFromPublicKey(publicKey);
+            if (string.IsNullOrEmpty(identity))
+                identity = Path.GetFileNameWithoutExtension(window.PublicKeyPath);
+
+            string alias = string.IsNullOrEmpty(window.Alias)
+                ? identity
+                : window.Alias;
+
+            // 检查是否已存在
+            var existing = _myDbContext.GpgFile.FirstOrDefault(f =>
+                f.Identity == identity || f.FileNamePublic == fileName);
+            if (existing != null)
+            {
+                MessageBox.Show($"公钥 \"{identity}\" 已存在 (ID: {existing.Id})，无法重复导入。",
+                                "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var service = new GpgFileService(_myDbContext);
+            var gpgFile = service.GenerateGpgFile(
+                identity, "",
+                "", publicKey, // 无私钥
+                DateTime.Now, null, "",
+                0, 0
+            );
+            gpgFile.IdentityName = alias;
+            gpgFile.FileNamePublic = fileName;
+            gpgFile.Description = window.Description;
+            gpgFile.IsImported = true;
+
+            service.Save(gpgFile);
+
+            LoadGpgFileList();
+            WrapperSelectedChangedEvent();
+
+            GpgStatusMessage = $"成功导入: {alias}";
+            GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"导入失败: {e.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// 从 PGP 公钥 ASCII-armored 文本中提取身份（email）
+    /// </summary>
+    private static string ExtractIdentityFromPublicKey(string publicKey)
+    {
+        // PGP 公钥中包含类似 "uid [ultimate] boniu-w@live.cn" 的行
+        foreach (var line in publicKey.Split('\n'))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("uid "))
+            {
+                // 去掉 "uid " 前缀和可能的状态标记如 [ultimate]
+                string uid = trimmed[4..].Trim();
+                int bracketIdx = uid.IndexOf(']');
+                if (bracketIdx >= 0)
+                    uid = uid[(bracketIdx + 1)..].Trim();
+                return uid;
+            }
+        }
+        return "";
+    }
+
     private string _selectedFilePath;
 
     public string SelectedFilePath
@@ -567,6 +856,30 @@ public class MainViewModel : INotifyPropertyChanged
         set
         {
             _selectedFilePath = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private string _gpgStatusMessage = "当前无新消息";
+
+    public string GpgStatusMessage
+    {
+        get => _gpgStatusMessage;
+        set
+        {
+            _gpgStatusMessage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private SolidColorBrush _gpgStatusColor = new SolidColorBrush(Colors.Red);
+
+    public SolidColorBrush GpgStatusColor
+    {
+        get => _gpgStatusColor;
+        set
+        {
+            _gpgStatusColor = value;
             OnPropertyChanged();
         }
     }

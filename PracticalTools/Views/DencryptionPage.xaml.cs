@@ -4,6 +4,7 @@ using PracticalTools.GPG;
 using PracticalTools.vo;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace PracticalTools.Views;
 
@@ -34,11 +35,9 @@ public partial class DencryptionPage : UserControl
 
     public async void DencryptFile(object sender, RoutedEventArgs e)
     {
-        // 获取父级 ViewModel
         if (DataContext is not MainViewModel dc)
             return;
 
-        // 获取选中的文件条目
         var entryWrappers = dc.GpgFileWrapperList?.Where(wrapper => wrapper.IsSelected).ToList();
 
         if (entryWrappers == null || entryWrappers.Count == 0)
@@ -59,14 +58,18 @@ public partial class DencryptionPage : UserControl
             return;
         }
 
+        // 弹窗选输出目录
+        var folderDialog = new OpenFolderDialog { Title = "选择解密后的保存目录" };
+        if (folderDialog.ShowDialog() != true) return;
+
+        string inputFileName = Path.GetFileName(dc.SelectedFilePath);
+        string outName = inputFileName.EndsWith(".gpg", StringComparison.OrdinalIgnoreCase)
+            ? inputFileName[..^4]
+            : inputFileName + ".decrypted";
+        string outPath = Path.Combine(folderDialog.FolderName, outName);
+
         try
         {
-            // 只处理一个选中条目
-            var gpgFileWrapper = entryWrappers[0];
-            string outPath = dc.SelectedFilePath.EndsWith(".gpg", StringComparison.OrdinalIgnoreCase)
-                ? dc.SelectedFilePath[..^4]
-                : dc.SelectedFilePath + ".decrypted";
-            // 大文件解密前，检查输出路径是否已存在同名文件
             if (File.Exists(outPath))
             {
                 var overwriteResult = MessageBox.Show(
@@ -78,25 +81,20 @@ public partial class DencryptionPage : UserControl
                     return;
             }
 
+            var gpgFileWrapper = entryWrappers[0];
             GpgFile file = gpgFileWrapper.GpgFile;
             string passphrase = file.Passphrase;
             string privateKey = file.SecretKey;
-            // 异步调用解密方法
             await GpgHelper.DecryptFileByPublicString(dc.SelectedFilePath, outPath, privateKey, passphrase);
-            // 成功提示
-            MessageBox.Show($"解密成功！输出路径:\n{outPath}",
-                            "成功",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+
+            dc.GpgStatusMessage = $"解密成功！输出: {outPath}";
+            dc.GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
             OutputPathText.Text = $"输出: {outPath}";
         }
         catch (Exception ex)
         {
-            // 失败提示
-            MessageBox.Show($"解密失败：{ex.Message}",
-                            "错误",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
+            dc.GpgStatusMessage = $"解密失败：{ex.Message}";
+            dc.GpgStatusColor = new SolidColorBrush(Colors.Red);
         }
     }
 }

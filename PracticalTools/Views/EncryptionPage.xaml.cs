@@ -1,9 +1,8 @@
 using System.ComponentModel;
-using System.IO.Enumeration;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
 using PracticalTools.GPG;
@@ -32,8 +31,6 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
 
     public bool ShowDismissButton { get; set; } = true;
 
-
-
     private void SelectFile_Click(object sender, RoutedEventArgs e)
     {
         var dc = DataContext as MainViewModel;
@@ -49,7 +46,6 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
         }
     }
 
-
     protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
@@ -60,11 +56,9 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
 
     public async void EncryptFile(object sender, RoutedEventArgs e)
     {
-        // 获取父级 ViewModel
         if (DataContext is not MainViewModel dc)
             return;
 
-        // 获取选中的文件条目
         var entryWrappers = dc.GpgFileWrapperList?.Where(wrapper => wrapper.IsSelected).ToList();
 
         if (entryWrappers == null || entryWrappers.Count == 0)
@@ -85,29 +79,37 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
             return;
         }
 
+        // 弹窗选输出目录
+        var folderDialog = new OpenFolderDialog { Title = "选择加密后的保存目录" };
+        if (folderDialog.ShowDialog() != true) return;
+
+        string outName = Path.GetFileName(dc.SelectedFilePath) + ".gpg";
+        string outPath = Path.Combine(folderDialog.FolderName, outName);
+
         try
         {
-            // 只处理一个选中条目
+            if (File.Exists(outPath))
+            {
+                var overwriteResult = MessageBox.Show(
+                    $"输出路径已存在同名文件:\n{outPath}\n\n是否覆盖?",
+                    "文件已存在",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                if (overwriteResult != MessageBoxResult.Yes)
+                    return;
+            }
+
             var gpgFileWrapper = entryWrappers[0];
-            string outPath = dc.SelectedFilePath + ".gpg";
-            // 异步调用加密方法
             await GpgHelper.EncryptFileByPublicString(dc.SelectedFilePath, outPath, gpgFileWrapper.GpgFile.PublicKey);
 
-            // 成功提示
-            MessageBox.Show($"加密成功！输出路径:\n{outPath}",
-                            "成功",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+            dc.GpgStatusMessage = $"加密成功！输出: {outPath}";
+            dc.GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
             OutputPathText.Text = $"输出: {outPath}";
         }
         catch (Exception ex)
         {
-            // 失败提示
-            MessageBox.Show($"加密失败：{ex.Message}",
-                            "错误",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
+            dc.GpgStatusMessage = $"加密失败：{ex.Message}";
+            dc.GpgStatusColor = new SolidColorBrush(Colors.Red);
         }
     }
-
 }
