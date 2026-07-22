@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+using System.IO;
+using Microsoft.Win32;
 using PracticalTools.GPG;
 using PracticalTools.vo;
 using System.Windows;
@@ -62,7 +63,21 @@ public partial class DencryptionPage : UserControl
         {
             // 只处理一个选中条目
             var gpgFileWrapper = entryWrappers[0];
-            string outPath = dc.SelectedFilePath + ".txt";
+            string outPath = dc.SelectedFilePath.EndsWith(".gpg", StringComparison.OrdinalIgnoreCase)
+                ? dc.SelectedFilePath[..^4]
+                : dc.SelectedFilePath + ".decrypted";
+            // 大文件解密前，检查输出路径是否已存在同名文件
+            if (File.Exists(outPath))
+            {
+                var overwriteResult = MessageBox.Show(
+                    $"输出路径已存在同名文件:\n{outPath}\n\n是否覆盖?",
+                    "文件已存在",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                if (overwriteResult != MessageBoxResult.Yes)
+                    return;
+            }
+
             GpgFile file = gpgFileWrapper.GpgFile;
             string passphrase = file.Passphrase;
             string privateKey = file.SecretKey;
@@ -73,7 +88,7 @@ public partial class DencryptionPage : UserControl
                             "成功",
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
-            ButtonTextBlockDe.Text = outPath;
+            OutputPathText.Text = $"输出: {outPath}";
         }
         catch (Exception ex)
         {

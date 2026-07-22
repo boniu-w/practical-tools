@@ -9,17 +9,49 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <!-- Background="White" -->
-    <DataGrid x:Name="GpgDataGrid"
-              ItemsSource="{Binding GpgFileWrapperList}"
-              BorderBrush="#FFFAF0"
-              BorderThickness="1"
-              AutoGenerateColumns="False"
-              CanUserAddRows="False"
-              HeadersVisibility="Column"
-              CellEditEnding="GpgDataGrid_CellEditEnding">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <DataGrid.Columns>
+        <!-- 工具栏 -->
+        <Border Grid.Row="0" Padding="6,4" Background="#F5F5F5"
+                BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+                <CheckBox IsChecked="{Binding IsGpgAllSelected}"
+                          Style="{StaticResource MaterialDesignCheckBox}"
+                          VerticalAlignment="Center"
+                          Content="全选" />
+                <Button Content="删除选中"
+                        Command="{Binding DeleteSelectedGpgFilesCommand}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        Padding="8,3"
+                        FontSize="12"
+                        Foreground="Red"
+                        Margin="12,0,0,0" />
+            </StackPanel>
+        </Border>
+
+        <!-- Background="White" -->
+        <DataGrid x:Name="GpgDataGrid"
+                  Grid.Row="1"
+                  ItemsSource="{Binding GpgFileWrapperList}"
+                  BorderBrush="#FFFAF0"
+                  BorderThickness="1"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  HeadersVisibility="Column"
+                  CellEditEnding="GpgDataGrid_CellEditEnding">
+
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+            </DataGrid.CellStyle>
+
+            <DataGrid.Columns>
 
             <!-- ✅ CheckBox 列：TemplateColumn（关键） -->
             <DataGridTemplateColumn Width="1*" Header="">
@@ -92,4 +124,5 @@
 
         </DataGrid.Columns>
     </DataGrid>
+    </Grid>
 </UserControl>

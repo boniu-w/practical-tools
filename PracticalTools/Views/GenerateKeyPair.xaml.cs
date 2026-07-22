@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Microsoft.Extensions.DependencyInjection;
 using PracticalTools.GPG;
 using PracticalTools.vo;
@@ -36,7 +36,8 @@ namespace PracticalTools.Views
 
             GpgFile gpgFile = _service.GenerateGpgFile(emailText, passphraseText, secKeyAscii, pubKeyAscii, beginsOn, endsOn, "");
             int saved = _service.Save(gpgFile);
-            dc.GpgFileWrapperList = new ObservableCollection<GpgFileEntryWrapper>(dc._myDbContext.GpgFile.Select(e => new GpgFileEntryWrapper(e)));
+            dc.LoadGpgFileList();
+            dc.WrapperSelectedChangedEvent();
         }
     }
 }

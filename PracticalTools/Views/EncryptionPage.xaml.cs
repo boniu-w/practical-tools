@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.IO.Enumeration;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -98,7 +98,7 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
                             "成功",
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
-            ButtonTextBlock.Text = outPath;
+            OutputPathText.Text = $"输出: {outPath}";
         }
         catch (Exception ex)
         {

@@ -77,6 +77,8 @@ public class MainViewModel : INotifyPropertyChanged
 
         LoadGpgFileList();
         WrapperSelectedChangedEvent();
+
+        DeleteSelectedGpgFilesCommand = new RelayCommand<object>(DeleteSelectedGpgFiles);
     }
 
     // private bool _isScanning;
@@ -98,6 +100,7 @@ public class MainViewModel : INotifyPropertyChanged
     public List<DuplicateFilesEntry> DuplicateFilesEntries { get; set; }
 
     public ICommand RefreshCommand { get; }
+    public ICommand DeleteSelectedGpgFilesCommand { get; }
 
     // 重复的文件
     private ObservableCollection<DuplicateFilesEntryWrapper>? _fileList;
@@ -142,8 +145,46 @@ public class MainViewModel : INotifyPropertyChanged
             {
                 _gpgFileWrapperList = value;
                 OnPropertyChanged(nameof(GpgFileWrapperList));
+                UpdateIsGpgAllSelected();
             }
         }
+    }
+
+    private bool? _isGpgAllSelected = false;
+
+    public bool? IsGpgAllSelected
+    {
+        get => _isGpgAllSelected;
+        set
+        {
+            if (_isGpgAllSelected != value)
+            {
+                _isGpgAllSelected = value;
+                OnPropertyChanged();
+
+                if (GpgFileWrapperList != null && value.HasValue)
+                {
+                    foreach (var item in GpgFileWrapperList)
+                        item.IsSelected = value.Value;
+                }
+            }
+        }
+    }
+
+    private void UpdateIsGpgAllSelected()
+    {
+        if (GpgFileWrapperList == null || GpgFileWrapperList.Count == 0)
+        {
+            IsGpgAllSelected = false;
+            return;
+        }
+        var count = GpgFileWrapperList.Count(x => x.IsSelected);
+        if (count == 0)
+            IsGpgAllSelected = false;
+        else if (count == GpgFileWrapperList.Count)
+            IsGpgAllSelected = true;
+        else
+            IsGpgAllSelected = null;
     }
 
     private ObservableCollection<BlacklistEntry>? _blacklists;
@@ -484,6 +525,40 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private void DeleteSelectedGpgFiles(object obj)
+    {
+        if (GpgFileWrapperList == null) return;
+
+        var selected = GpgFileWrapperList.Where(x => x.IsSelected).ToList();
+        if (selected.Count == 0)
+        {
+            MessageBox.Show("请先勾选要删除的密钥。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"确定要删除选中的 {selected.Count} 个密钥吗？\n此操作不可撤销。",
+            "确认批量删除",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes) return;
+
+        try
+        {
+            var service = new GpgFileService(_myDbContext);
+            foreach (var wrapper in selected)
+            {
+                service.Delete(wrapper.GpgFile.Id);
+                GpgFileWrapperList.Remove(wrapper);
+            }
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"删除失败: {e.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private string _selectedFilePath;
 
     public string SelectedFilePath
@@ -557,6 +632,7 @@ public class MainViewModel : INotifyPropertyChanged
         {
             var selected = GpgFileWrapperList.FirstOrDefault(x => x.IsSelected);
             GpgFileSelectedOne = selected?.GpgFile.FileNamePublic ?? string.Empty;
+            UpdateIsGpgAllSelected();
         }
     }
 }
