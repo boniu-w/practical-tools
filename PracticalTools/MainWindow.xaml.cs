@@ -333,7 +333,7 @@ public partial class MainWindow : Window
                 "文字类" => FileUtil._wordExtensions,
                 "压缩类" => FileUtil._compressedFileExtensions,
                 "编程语言类" => FileUtil._programExtensions,
-                "无类型" => FileUtil._nullExtensions,
+                "无类型类" => FileUtil._nullExtensions,
                 "自定义" => FileUtil._nullExtensions,
                 _ => FileUtil._defaultAllowedExtensions
             };
@@ -976,7 +976,7 @@ public partial class MainWindow : Window
             "文字类" => FileUtil._wordExtensions,
             "压缩类" => FileUtil._compressedFileExtensions,
             "编程语言类" => FileUtil._programExtensions,
-            "无类型" or "自定义" => FileUtil._nullExtensions,
+            "无类型类" or "自定义" => FileUtil._nullExtensions,
             _ => FileUtil._defaultAllowedExtensions
         };
 

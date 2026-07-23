@@ -586,90 +586,106 @@ public class MainViewModel : INotifyPropertyChanged
 
         var saveFileDialog = new SaveFileDialog
         {
-            Title = "导出密钥到 Excel",
-            FileName = $"GpgKeys_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
-            Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
-            DefaultExt = ".xlsx"
+            Title = "导出密钥对",
+            FileName = $"GpgKeys_{DateTime.Now:yyyyMMdd_HHmmss}.zip",
+            Filter = "ZIP 压缩包 (*.zip)|*.zip|All Files (*.*)|*.*",
+            DefaultExt = ".zip"
         };
 
         if (saveFileDialog.ShowDialog() != true) return;
-        string filePath = saveFileDialog.FileName;
+        string zipPath = saveFileDialog.FileName;
 
         try
         {
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
 
-            using (var package = new ExcelPackage())
+            using (var zipStream = new FileStream(zipPath, FileMode.Create))
+            using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create))
             {
-                var worksheet = package.Workbook.Worksheets.Add("GPG密钥");
-
-                // 表头
-                string[] headers =
+                // 1. 生成 Excel 并写入 ZIP
+                using (var excelPackage = new ExcelPackage())
                 {
-                    "身份", "别名", "密钥长度", "有效期开始于", "有效期截至于",
-                    "有效时长(秒)", "私钥文件名", "公钥文件名", "说明", "创建时间", "更新时间"
-                };
+                    var worksheet = excelPackage.Workbook.Worksheets.Add("GPG密钥");
 
-                for (int col = 0; col < headers.Length; col++)
-                {
-                    var cell = worksheet.Cells[1, col + 1];
-                    cell.Value = headers[col];
-                    cell.Style.Font.Bold = true;
+                    string[] headers =
+                    {
+                        "身份", "别名", "密钥长度", "有效期开始于", "有效期截至于",
+                        "有效时长(秒)", "私钥文件名", "公钥文件名", "说明", "创建时间", "更新时间"
+                    };
+
+                    for (int col = 0; col < headers.Length; col++)
+                    {
+                        var cell = worksheet.Cells[1, col + 1];
+                        cell.Value = headers[col];
+                        cell.Style.Font.Bold = true;
+                    }
+
+                    for (int row = 0; row < selected.Count; row++)
+                    {
+                        var gpg = selected[row].GpgFile;
+                        int r = row + 2;
+
+                        worksheet.Cells[r, 1].Value = gpg.Identity;
+                        worksheet.Cells[r, 2].Value = gpg.IdentityName;
+                        worksheet.Cells[r, 3].Value = gpg.KeySize;
+                        worksheet.Cells[r, 4].Value = gpg.ValidDurationBeginsOn?.ToString("yyyy-MM-dd HH:mm:ss");
+                        worksheet.Cells[r, 5].Value = gpg.ValidDurationEndsOn?.ToString("yyyy-MM-dd HH:mm:ss");
+                        worksheet.Cells[r, 6].Value = gpg.ValidDurationSeconds;
+                        worksheet.Cells[r, 7].Value = gpg.FileNamePrivate;
+                        worksheet.Cells[r, 8].Value = gpg.FileNamePublic;
+                        worksheet.Cells[r, 9].Value = gpg.Description;
+                        worksheet.Cells[r, 10].Value = gpg.CreateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                        worksheet.Cells[r, 11].Value = gpg.UpdateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                    }
+
+                    worksheet.Cells.AutoFitColumns();
+
+                    var excelEntry = archive.CreateEntry("GPG密钥汇总.xlsx");
+                    using (var entryStream = excelEntry.Open())
+                    {
+                        excelPackage.SaveAs(entryStream);
+                    }
                 }
 
-                // 数据行
-                for (int row = 0; row < selected.Count; row++)
+                // 2. 将公钥和私钥 .asc 文件写入 ZIP（以身份作为文件名）
+                int ascCount = 0;
+                var usedNames = new Dictionary<string, int>();
+                foreach (var wrapper in selected)
                 {
-                    var gpg = selected[row].GpgFile;
-                    int r = row + 2;
+                    var gpg = wrapper.GpgFile;
+                    string safeName = SanitizeFileName(gpg.Identity);
 
-                    worksheet.Cells[r, 1].Value = gpg.Identity;
-                    worksheet.Cells[r, 2].Value = gpg.IdentityName;
-                    worksheet.Cells[r, 3].Value = gpg.KeySize;
-                    worksheet.Cells[r, 4].Value = gpg.ValidDurationBeginsOn?.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cells[r, 5].Value = gpg.ValidDurationEndsOn?.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cells[r, 6].Value = gpg.ValidDurationSeconds;
-                    worksheet.Cells[r, 7].Value = gpg.FileNamePrivate;
-                    worksheet.Cells[r, 8].Value = gpg.FileNamePublic;
-                    worksheet.Cells[r, 9].Value = gpg.Description;
-                    worksheet.Cells[r, 10].Value = gpg.CreateTime?.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cells[r, 11].Value = gpg.UpdateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                    if (!string.IsNullOrEmpty(gpg.PublicKey))
+                    {
+                        string entryName = GetUniqueEntryName(usedNames, safeName + "_公钥", ".asc");
+                        var pubEntry = archive.CreateEntry(entryName);
+                        using (var entryStream = pubEntry.Open())
+                        using (var writer = new StreamWriter(entryStream, Encoding.UTF8))
+                        {
+                            writer.Write(gpg.PublicKey);
+                        }
+                        ascCount++;
+                    }
+
+                    if (!string.IsNullOrEmpty(gpg.SecretKey))
+                    {
+                        string entryName = GetUniqueEntryName(usedNames, safeName + "_私钥", ".asc");
+                        var secEntry = archive.CreateEntry(entryName);
+                        using (var entryStream = secEntry.Open())
+                        using (var writer = new StreamWriter(entryStream, Encoding.UTF8))
+                        {
+                            writer.Write(gpg.SecretKey);
+                        }
+                        ascCount++;
+                    }
                 }
 
-                // 自动列宽
-                worksheet.Cells.AutoFitColumns();
-
-                // 保存 Excel
-                package.SaveAs(new FileInfo(filePath));
+                MessageBox.Show(
+                    $"已导出 {selected.Count} 个密钥对到:\n{zipPath}\n\n内含: GPG密钥汇总.xlsx + {ascCount} 个 .asc 文件",
+                    "导出成功",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
-
-            // 导出公钥和私钥 .asc 文件到同目录
-            string dir = Path.GetDirectoryName(filePath)!;
-            int fileCount = 0;
-            foreach (var wrapper in selected)
-            {
-                var gpg = wrapper.GpgFile;
-
-                if (!string.IsNullOrEmpty(gpg.PublicKey))
-                {
-                    string pubPath = Path.Combine(dir, gpg.FileNamePublic);
-                    File.WriteAllText(pubPath, gpg.PublicKey);
-                    fileCount++;
-                }
-
-                if (!string.IsNullOrEmpty(gpg.SecretKey))
-                {
-                    string secPath = Path.Combine(dir, gpg.FileNamePrivate);
-                    File.WriteAllText(secPath, gpg.SecretKey);
-                    fileCount++;
-                }
-            }
-
-            MessageBox.Show(
-                $"已导出 {selected.Count} 个密钥对到:\n{dir}\n\nExcel 汇总: {Path.GetFileName(filePath)}\n密钥文件: {fileCount} 个 .asc",
-                "导出成功",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
         }
         catch (Exception e)
         {
@@ -751,14 +767,17 @@ public class MainViewModel : INotifyPropertyChanged
                     }
                 }
 
-                // 2. 将公钥 .asc 文件写入 ZIP
+                // 2. 将公钥 .asc 文件写入 ZIP（以身份作为文件名）
                 int ascCount = 0;
+                var usedNames = new Dictionary<string, int>();
                 foreach (var wrapper in selected)
                 {
                     var gpg = wrapper.GpgFile;
                     if (!string.IsNullOrEmpty(gpg.PublicKey))
                     {
-                        var ascEntry = archive.CreateEntry(gpg.FileNamePublic);
+                        string safeName = SanitizeFileName(gpg.Identity);
+                        string entryName = GetUniqueEntryName(usedNames, safeName, ".asc");
+                        var ascEntry = archive.CreateEntry(entryName);
                         using (var entryStream = ascEntry.Open())
                         using (var writer = new StreamWriter(entryStream, Encoding.UTF8))
                         {
@@ -773,6 +792,7 @@ public class MainViewModel : INotifyPropertyChanged
                     "导出成功",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
+                GpgStatusMessage = $"已导出 {selected.Count} 个公钥到: {zipPath}";
             }
         }
         catch (Exception e)
@@ -961,6 +981,39 @@ public class MainViewModel : INotifyPropertyChanged
             var selected = GpgFileWrapperList.FirstOrDefault(x => x.IsSelected);
             GpgFileSelectedOne = selected?.GpgFile.FileNamePublic ?? string.Empty;
             UpdateIsGpgAllSelected();
+        }
+    }
+
+    /// <summary>
+    /// 去除文件名中的非法字符
+    /// </summary>
+    private static string SanitizeFileName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "unknown";
+        char[] invalid = Path.GetInvalidFileNameChars();
+        var sanitized = new StringBuilder(name.Length);
+        foreach (char c in name)
+        {
+            sanitized.Append(invalid.Contains(c) ? '_' : c);
+        }
+        return sanitized.ToString().Trim();
+    }
+
+    /// <summary>
+    /// 处理重名：name.asc, name_2.asc, name_3.asc ...
+    /// </summary>
+    private static string GetUniqueEntryName(Dictionary<string, int> usedNames, string baseName, string ext)
+    {
+        if (usedNames.TryGetValue(baseName, out int count))
+        {
+            count++;
+            usedNames[baseName] = count;
+            return $"{baseName}_{count}{ext}";
+        }
+        else
+        {
+            usedNames[baseName] = 1;
+            return $"{baseName}{ext}";
         }
     }
 }

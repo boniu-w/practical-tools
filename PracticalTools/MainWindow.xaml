@@ -112,7 +112,7 @@
                         <ComboBoxItem Content="文字类" />
                         <ComboBoxItem Content="压缩类" />
                         <ComboBoxItem Content="编程语言类" />
-                        <ComboBoxItem Content="无类型" />
+                        <ComboBoxItem Content="无类型类" />
                     </ComboBox>
                     <TextBox x:Name="Cus"
                              Grid.Row="0"
@@ -215,7 +215,7 @@
 
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件名"
                                                         Binding="{Binding Entry.FileName}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="hash值[MD5]"
+                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件值[MD5]"
                                                         Binding="{Binding Entry.Md5Value}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件地址"
                                                         Binding="{Binding Entry.FilePath}" />
@@ -249,7 +249,7 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件名"
                                                         Binding="{Binding FileName}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值[MD5]"
+                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件值[MD5]"
                                                         Binding="{Binding Md5Value}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件地址"
                                                         Binding="{Binding FilePath}" />
@@ -382,7 +382,7 @@
                                                 Binding="{Binding FilePath}" />
                             <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]"
                                                 Binding="{Binding FileSize}" />
-                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="hash值[MD5]"
+                            <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件值[MD5]"
                                                 Binding="{Binding Md5Value}" />
                             <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间"
                                                 Binding="{Binding FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
