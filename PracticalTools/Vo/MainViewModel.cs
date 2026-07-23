@@ -17,6 +17,8 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using OfficeOpenXml;
 using System.IO;
+using System.IO.Compression;
+using System.Text;
 
 namespace PracticalTools.vo;
 
@@ -689,76 +691,89 @@ public class MainViewModel : INotifyPropertyChanged
         var saveFileDialog = new SaveFileDialog
         {
             Title = "导出公钥",
-            FileName = $"GpgPublicKeys_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
-            Filter = "Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*",
-            DefaultExt = ".xlsx"
+            FileName = $"GpgPublicKeys_{DateTime.Now:yyyyMMdd_HHmmss}.zip",
+            Filter = "ZIP 压缩包 (*.zip)|*.zip|All Files (*.*)|*.*",
+            DefaultExt = ".zip"
         };
 
         if (saveFileDialog.ShowDialog() != true) return;
-        string filePath = saveFileDialog.FileName;
+        string zipPath = saveFileDialog.FileName;
 
         try
         {
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
 
-            using (var package = new ExcelPackage())
+            using (var zipStream = new FileStream(zipPath, FileMode.Create))
+            using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create))
             {
-                var worksheet = package.Workbook.Worksheets.Add("GPG公钥");
-
-                string[] headers =
+                // 1. 生成 Excel 并写入 ZIP
+                using (var excelPackage = new ExcelPackage())
                 {
-                    "身份", "别名", "密钥长度", "有效期开始于", "有效期截至于",
-                    "有效时长(秒)", "公钥文件名", "说明", "创建时间", "更新时间"
-                };
+                    var worksheet = excelPackage.Workbook.Worksheets.Add("GPG公钥");
 
-                for (int col = 0; col < headers.Length; col++)
-                {
-                    var cell = worksheet.Cells[1, col + 1];
-                    cell.Value = headers[col];
-                    cell.Style.Font.Bold = true;
+                    string[] headers =
+                    {
+                        "身份", "别名", "密钥长度", "有效期开始于", "有效期截至于",
+                        "有效时长(秒)", "公钥文件名", "说明", "创建时间", "更新时间"
+                    };
+
+                    for (int col = 0; col < headers.Length; col++)
+                    {
+                        var cell = worksheet.Cells[1, col + 1];
+                        cell.Value = headers[col];
+                        cell.Style.Font.Bold = true;
+                    }
+
+                    for (int row = 0; row < selected.Count; row++)
+                    {
+                        var gpg = selected[row].GpgFile;
+                        int r = row + 2;
+
+                        worksheet.Cells[r, 1].Value = gpg.Identity;
+                        worksheet.Cells[r, 2].Value = gpg.IdentityName;
+                        worksheet.Cells[r, 3].Value = gpg.KeySize;
+                        worksheet.Cells[r, 4].Value = gpg.ValidDurationBeginsOn?.ToString("yyyy-MM-dd HH:mm:ss");
+                        worksheet.Cells[r, 5].Value = gpg.ValidDurationEndsOn?.ToString("yyyy-MM-dd HH:mm:ss");
+                        worksheet.Cells[r, 6].Value = gpg.ValidDurationSeconds;
+                        worksheet.Cells[r, 7].Value = gpg.FileNamePublic;
+                        worksheet.Cells[r, 8].Value = gpg.Description;
+                        worksheet.Cells[r, 9].Value = gpg.CreateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                        worksheet.Cells[r, 10].Value = gpg.UpdateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                    }
+
+                    worksheet.Cells.AutoFitColumns();
+
+                    // 将 Excel 写入 ZIP
+                    var excelEntry = archive.CreateEntry("GPG公钥汇总.xlsx");
+                    using (var entryStream = excelEntry.Open())
+                    {
+                        excelPackage.SaveAs(entryStream);
+                    }
                 }
 
-                for (int row = 0; row < selected.Count; row++)
+                // 2. 将公钥 .asc 文件写入 ZIP
+                int ascCount = 0;
+                foreach (var wrapper in selected)
                 {
-                    var gpg = selected[row].GpgFile;
-                    int r = row + 2;
-
-                    worksheet.Cells[r, 1].Value = gpg.Identity;
-                    worksheet.Cells[r, 2].Value = gpg.IdentityName;
-                    worksheet.Cells[r, 3].Value = gpg.KeySize;
-                    worksheet.Cells[r, 4].Value = gpg.ValidDurationBeginsOn?.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cells[r, 5].Value = gpg.ValidDurationEndsOn?.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cells[r, 6].Value = gpg.ValidDurationSeconds;
-                    worksheet.Cells[r, 7].Value = gpg.FileNamePublic;
-                    worksheet.Cells[r, 8].Value = gpg.Description;
-                    worksheet.Cells[r, 9].Value = gpg.CreateTime?.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cells[r, 10].Value = gpg.UpdateTime?.ToString("yyyy-MM-dd HH:mm:ss");
+                    var gpg = wrapper.GpgFile;
+                    if (!string.IsNullOrEmpty(gpg.PublicKey))
+                    {
+                        var ascEntry = archive.CreateEntry(gpg.FileNamePublic);
+                        using (var entryStream = ascEntry.Open())
+                        using (var writer = new StreamWriter(entryStream, Encoding.UTF8))
+                        {
+                            writer.Write(gpg.PublicKey);
+                        }
+                        ascCount++;
+                    }
                 }
 
-                worksheet.Cells.AutoFitColumns();
-                package.SaveAs(new FileInfo(filePath));
+                MessageBox.Show(
+                    $"已导出 {selected.Count} 个公钥到:\n{zipPath}\n\n内含: GPG公钥汇总.xlsx + {ascCount} 个 .asc 文件",
+                    "导出成功",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
-
-            // 导出公钥 .asc 文件到同目录
-            string dir = Path.GetDirectoryName(filePath)!;
-            int fileCount = 0;
-            foreach (var wrapper in selected)
-            {
-                var gpg = wrapper.GpgFile;
-
-                if (!string.IsNullOrEmpty(gpg.PublicKey))
-                {
-                    string pubPath = Path.Combine(dir, gpg.FileNamePublic);
-                    File.WriteAllText(pubPath, gpg.PublicKey);
-                    fileCount++;
-                }
-            }
-
-            MessageBox.Show(
-                $"已导出 {selected.Count} 个公钥到:\n{dir}\n\nExcel 汇总: {Path.GetFileName(filePath)}\n公钥文件: {fileCount} 个 .asc",
-                "导出成功",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
         }
         catch (Exception e)
         {
