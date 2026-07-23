@@ -10,6 +10,14 @@
         <AssemblyName>实用工具</AssemblyName>
     </PropertyGroup>
 
+    <!-- 自包含发布：将 .NET 8 运行时集成到程序中，用户无需安装 .NET -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <SelfContained>true</SelfContained>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <PublishSingleFile>true</PublishSingleFile>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    </PropertyGroup>
+
     <ItemGroup>
         <!--        跨平台 ui 框架 -->
         <!--      <PackageReference Include="Avalonia" Version="11.2.7" />-->

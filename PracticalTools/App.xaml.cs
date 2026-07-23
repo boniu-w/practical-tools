@@ -92,6 +92,13 @@ public partial class App : Application
 
         Log.Information("应用启动");
 
+        // 确保数据库和表存在（新电脑首次运行自动创建）
+        using (var scope = ServiceProvider.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            db.Database.EnsureCreated();
+        }
+
         var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
         mainWindow.Closing += (_, args) =>
         {
