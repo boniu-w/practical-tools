@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -46,10 +46,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Assets\icons8-cancer-48.png" />
-      <Content Include="Assets\icons8-cancer-48.png">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
+      <Resource Include="Assets\icons8-cancer-48.png" />
     </ItemGroup>
 
 </Project>

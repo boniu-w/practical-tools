@@ -19,8 +19,7 @@ public partial class App : Application
 {
     private const string DbRelativePath = @"Sqlite\sqlite-PracticalTools.db";
 
-    private static readonly string DbFullPath =
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DbRelativePath);
+    private static readonly string DbFullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DbRelativePath);
 
     public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
@@ -52,7 +51,7 @@ public partial class App : Application
             .WriteTo.Console()
             .WriteTo.File("logs/log-.txt",
                 rollingInterval: RollingInterval.Day,
-                shared: true)        // 允许多进程写入同一日志文件
+                shared: true) // 允许多进程写入同一日志文件
             .CreateLogger();
     }
 
@@ -64,8 +63,7 @@ public partial class App : Application
         var services = new ServiceCollection();
 
         // 数据库上下文（WPF 下建议自己管理 Scope）
-        services.AddDbContext<MyDbContext>(options =>
-            options.UseSqlite($"Data Source={DbFullPath}"));
+        services.AddDbContext<MyDbContext>(options => options.UseSqlite($"Data Source={DbFullPath}"));
 
         // 业务服务
         services.AddTransient<SQLiteDemo>();
@@ -91,6 +89,14 @@ public partial class App : Application
         }
 
         Log.Information("应用启动");
+
+        // 确保数据库目录存在（SQLite 不会自动创建父目录）
+        var dbDir = Path.GetDirectoryName(DbFullPath);
+        if (!Directory.Exists(dbDir))
+        {
+            Directory.CreateDirectory(dbDir!);
+            Log.Information("已创建数据库目录: {DbDir}", dbDir);
+        }
 
         // 确保数据库和表存在（新电脑首次运行自动创建）
         using (var scope = ServiceProvider.CreateScope())
@@ -122,6 +128,7 @@ public partial class App : Application
             {
                 Log.Information("应用退出");
             }
+
             base.OnExit(e);
         }
         finally
@@ -130,6 +137,7 @@ public partial class App : Application
             {
                 AppMutex.Dispose();
             }
+
             Log.CloseAndFlush();
         }
     }

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using PracticalTools.Blacklist.Model;
@@ -44,6 +45,18 @@ public partial class MainWindow : Window
     public MainWindow(MainViewModel mainViewModel, SQLiteDemo sqLiteDemo, DuplicateFilesService duplicateFilesService, GpgFileService gpgFileService)
     {
         InitializeComponent();
+
+        // 从资源加载图标（单文件发布兼容）
+        try
+        {
+            var iconUri = new Uri("pack://application:,,,/Assets/icons8-cancer-48.png", UriKind.Absolute);
+            this.Icon = BitmapFrame.Create(iconUri);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "加载窗口图标失败，使用默认图标");
+        }
+
         DataContext = mainViewModel;
         _mainViewModel = mainViewModel;
         _sqLiteDemo = sqLiteDemo;

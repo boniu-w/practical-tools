@@ -6,7 +6,6 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:viewMessage="clr-namespace:PracticalTools.Views"
         mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="300"
-        Icon="/Assets/icons8-cancer-48.png"
         Title="实用工具" Height="600" Width="1090">
     <Window.Resources>
         <ResourceDictionary>
