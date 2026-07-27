@@ -158,7 +158,7 @@
                                 <TextBox Grid.Row="0" Grid.Column="0"
                                          x:Name="SearchText"
                                          Style="{StaticResource TheTextBoxStyle}"
-                                         materialDesign:HintAssist.Hint="搜索">
+                                         materialDesign:HintAssist.Hint="按文件名搜索">
                                 </TextBox>
                                 <Button Grid.Row="0" Grid.Column="1"
                                         Content="搜索"
@@ -222,8 +222,8 @@
                                                         Binding="{Binding Entry.FileSize}" />
                                     <!-- <DataGridTextColumn Width="2*" IsReadOnly="False" Header="文件创建时间" Binding="{Binding Entry.FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" /> -->
                                     <!-- <DataGridTextColumn Width="2*" IsReadOnly="False" Header="最后修改时间" Binding="{Binding Entry.FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" /> -->
-                                    <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹"
-                                                        Binding="{Binding Entry.ScanDirectory}" />
+                                    <!--<DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描的文件夹"
+                                                        Binding="{Binding Entry.ScanDirectory}" />-->
                                     <DataGridTextColumn Width="2*" IsReadOnly="False" Header="扫描时间"
                                                         Binding="{Binding Entry.ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                 </DataGrid.Columns>
@@ -254,12 +254,12 @@
                                                         Binding="{Binding FilePath}" />
                                     <DataGridTextColumn Width="*" IsReadOnly="True" Header="文件大小[k]"
                                                         Binding="{Binding FileSize}" />
-                                    <DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间"
+                                    <!--<DataGridTextColumn Width="2*" IsReadOnly="True" Header="文件创建时间"
                                                         Binding="{Binding FileCreateTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="最后修改时间"
                                                         Binding="{Binding FileLastedModifiedTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描的文件夹"
-                                                        Binding="{Binding ScanDirectory}" />
+                                                        Binding="{Binding ScanDirectory}" />-->
                                     <DataGridTextColumn Width="2*" IsReadOnly="True" Header="扫描时间"
                                                         Binding="{Binding ScanTime, StringFormat=HH:mm yyyy-MM-dd}" />
                                 </DataGrid.Columns>

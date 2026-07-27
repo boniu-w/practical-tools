@@ -89,7 +89,7 @@ public partial class DencryptionPage : UserControl
 
             dc.GpgStatusMessage = $"解密成功！输出: {outPath}";
             dc.GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
-            OutputPathText.Text = $"输出: {outPath}";
+            OutputPathText.Text = $"解密成功！输出: {outPath}";
         }
         catch (Exception ex)
         {

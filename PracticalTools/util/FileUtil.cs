@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Microsoft.VisualBasic.FileIO;
@@ -130,6 +130,45 @@ public class FileUtil
         // 完成最终哈希计算
         md5.TransformFinalBlock(buffer, 0, 0);
         return md5.Hash!;
+    }
+
+    /// <summary>
+    /// 检测文件是否为云盘占位符（如 OneDrive、WPS 云盘等）
+    /// 此类文件在云盘客户端未运行或未下载时无法读取
+    /// </summary>
+    private static bool IsCloudPlaceholder(string filePath)
+    {
+        try
+        {
+            FileAttributes attrs = File.GetAttributes(filePath);
+            return attrs.HasFlag(FileAttributes.Offline)
+                || attrs.HasFlag(FileAttributes.ReparsePoint);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 安全版 ComputeFileHashMD5，读取失败返回 null 而不是抛异常
+    /// </summary>
+    public static byte[]? ComputeFileHashMD5Safe(string filePath)
+    {
+        try
+        {
+            return ComputeFileHashMD5(filePath);
+        }
+        catch (IOException ex)
+        {
+            Log.Warning($"无法读取文件（可能是云盘占位符）: {filePath} - {ex.Message}");
+            return null;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Log.Warning($"无权访问文件: {filePath} - {ex.Message}");
+            return null;
+        }
     }
 
     /// <summary>
@@ -487,12 +526,21 @@ public class FileUtil
 
                 if (File.Exists(entry))
                 {
+                    // 跳过云盘占位符文件（WPS云盘、OneDrive 等未同步的文件无法读取）
+                    if (IsCloudPlaceholder(entry))
+                    {
+                        Log.Warning($"跳过云盘占位符文件: {entry}");
+                        continue;
+                    }
+
                     if (allowedExtensions.Length == 0)
                     {
                         // 只扫描没有后缀的
                         if (IsEmptyExtension(entry))
                         {
-                            byte[] md5 = ComputeFileHashMD5(entry);
+                            byte[] md5 = ComputeFileHashMD5Safe(entry);
+                            if (md5 == null) continue;
+
                             string md5String = BitConverter.ToString(md5).Replace("-", "");
 
                             FileInfo fileInfo = new FileInfo(entry);
@@ -510,7 +558,9 @@ public class FileUtil
 
                         if (HasAllowedExtension(entry, allowedExtensions))
                         {
-                            byte[] md5 = ComputeFileHashMD5(entry);
+                            byte[] md5 = ComputeFileHashMD5Safe(entry);
+                            if (md5 == null) continue;
+
                             string md5String = BitConverter.ToString(md5).Replace("-", "");
 
                             FileInfo fileInfo = new FileInfo(entry);

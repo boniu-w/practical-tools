@@ -104,7 +104,7 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
 
             dc.GpgStatusMessage = $"加密成功！输出: {outPath}";
             dc.GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
-            OutputPathText.Text = $"输出: {outPath}";
+            OutputPathText.Text = $"加密成功！输出: {outPath}";
         }
         catch (Exception ex)
         {
