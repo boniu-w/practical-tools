@@ -22,6 +22,11 @@
         <StackPanel>
             <CheckBox
                 Visibility="Hidden" />
+            <TextBox x:Name="SelectKeyt"
+                     IsReadOnly="True"
+                     Text="{Binding DataContext.GpgFileSelectedOne, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                     materialDesign:HintAssist.Hint="在下方选择一个密钥, 只能选一个"
+                     Style="{StaticResource MaterialDesignOutlinedTextBox}" />
             <Grid>
                 <!-- Padding="8,8,40,8" -->
                 <TextBox materialDesign:HintAssist.Hint="点击右侧的向上箭头选择一个文件"
@@ -36,11 +41,6 @@
                     <materialDesign:PackIcon Kind="Upload" />
                 </Button>
             </Grid>
-            <TextBox x:Name="SelectKeyt"
-                     IsReadOnly="True"
-                     Text="{Binding DataContext.GpgFileSelectedOne, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                materialDesign:HintAssist.Hint="在下方选择一个密钥, 只能选一个"
-                Style="{StaticResource MaterialDesignOutlinedTextBox}" />
 
             <Grid
                 Width="Auto"
