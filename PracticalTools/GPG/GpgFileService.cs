@@ -1,4 +1,4 @@
-﻿using PracticalTools.Constant;
+using PracticalTools.Constant;
 using PracticalTools.Sqlite;
 using PracticalTools.util;
 
@@ -23,14 +23,14 @@ public class GpgFileService
     {
         string identity = "boniu-w@live.cn";
         string passphrase = "Soccer0boy$";
-        string password = StringUtil.Xor(passphrase, CommonConst.Salt);
         int keySize = 2048;
         long validDuration = long.MaxValue;
         var (pubRing, secRing, beginsOn, endsOn) = GpgHelper.GeneratePgpKeyPair(identity, passphrase, keySize);
         string pubKeyAscii = GpgHelper.ExportPublicKey(pubRing);
         string secKeyAscii = GpgHelper.ExportPrivateKey(secRing);
 
-        GpgFile gpgFile = GenerateGpgFile(identity, password, secKeyAscii, pubKeyAscii, beginsOn, endsOn, "", keySize, validDuration);
+        // Passphrase 通过 EF Core ValueConverter 自动加密存储
+        GpgFile gpgFile = GenerateGpgFile(identity, passphrase, secKeyAscii, pubKeyAscii, beginsOn, endsOn, "", keySize, validDuration);
         _myDbContext.GpgFile.Add(gpgFile);
         int saveChanges = _myDbContext.SaveChanges();
         return saveChanges;

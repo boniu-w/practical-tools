@@ -10,7 +10,8 @@ public class GpgFile : INotifyPropertyChanged
     public long Id { get; set; }
     [ColumnHeader("身份")] public string Identity { get; set; } = "";
     [ColumnHeader("名字")] public string IdentityName { get; set; } = "";
-    [ColumnHeader("密码")] public string Passphrase { get; set; } = "";
+    [NotMapped] public string PassphraseDisplay => string.IsNullOrEmpty(Passphrase) ? "" : "******";
+    public string Passphrase { get; set; } = "";
     [ColumnHeader("密钥长度")] public int KeySize { get; set; } = 0;
     [ColumnHeader("私钥")] public string SecretKey { get; set; } = "";
     [ColumnHeader("公钥")] public string PublicKey { get; set; } = "";

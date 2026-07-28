@@ -358,4 +358,12 @@ public class PgpTest
         bool a = GpgHelper.VerifyFileSignatureSafe(filePath, signatureFilePath, pubRing);
         Console.WriteLine("文件签名验证结果: " + a);
     }
+
+    [TestMethod]
+    public void testMima()
+    {
+        string a = "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAJobL0bI27kasD/KxnCMoEAAAAAACAAAAAAAQZgAAAAEAACAAAACJZKEhlI/4SKb79Wj6y1XJJQg2sHMuJujeNkQ0RYO0OAAAAAAOgAAAAAIAACAAAABsW3jyQ/5dn8rPfBMsWTkUVyZqfgYrs1vFvw9xLggWvBAAAAACrMEdqrUdIhO1nmnv/2sEQAAAAGnWcInfJFlkxw+0CSsWVcSUc0RQD8EFlu4k20/UsjwqB+PsGTOzXj0u3rKVgo9ICV5+0krtbBqJq9wlOtlY44U=";
+        string decrypt = CryptoHelper.Decrypt(a);
+        Console.WriteLine(decrypt);
+    }
 }

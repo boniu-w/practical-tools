@@ -58,7 +58,7 @@
                            Margin="0,3" FontSize="11" Foreground="#AAA" TextWrapping="Wrap" />
 
                 <TextBlock Text="密码:" Grid.Row="2" Grid.Column="0" Foreground="#AAA" Margin="0,3" FontSize="11" />
-                <TextBlock Text="{Binding GpgFile.Passphrase}" Grid.Row="2" Grid.Column="1"
+                <TextBlock Text="{Binding GpgFile.PassphraseDisplay}" Grid.Row="2" Grid.Column="1"
                            Margin="0,3" FontSize="11" Foreground="#AAA" TextWrapping="Wrap" />
 
                 <TextBlock Text="公钥文件:" Grid.Row="3" Grid.Column="0" Foreground="#AAA" Margin="0,3" FontSize="11" />

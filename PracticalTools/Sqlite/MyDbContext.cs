@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
@@ -42,5 +42,12 @@ public class MyDbContext : DbContext
                 }
             }
         }
+
+        // GpgFile.Passphrase 使用 DPAPI 加密存储
+        modelBuilder.Entity<GpgFile>()
+            .Property(e => e.Passphrase)
+            .HasConversion(
+                v => CryptoHelper.Encrypt(v),  // 写入 DB 前加密
+                v => CryptoHelper.Decrypt(v));  // 从 DB 读取后解密
     }
 }
