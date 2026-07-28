@@ -3,9 +3,11 @@ using System.Threading;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PracticalTools.Activation.Service;
 using PracticalTools.DuplicateFiles.service;
 using PracticalTools.GPG;
 using PracticalTools.Sqlite;
+using PracticalTools.Views;
 using PracticalTools.vo;
 using Serilog;
 using Serilog.Events;
@@ -32,6 +34,8 @@ public partial class App : Application
 
     public App()
     {
+        // 防止激活窗口关闭时无其他窗口导致 Application 自动退出
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
         InitializeLogger();
         ServiceProvider = ConfigureServices();
     }
@@ -69,12 +73,42 @@ public partial class App : Application
         services.AddTransient<SQLiteDemo>();
         services.AddTransient<DuplicateFilesService>();
         services.AddTransient<GpgFileService>();
+        services.AddTransient<ActivationService>();
 
         // ViewModel & 主窗口
         services.AddTransient<MainViewModel>();
         services.AddTransient<MainWindow>();
 
         return services.BuildServiceProvider();
+    }
+
+    /// <summary>
+    /// 检查激活状态，未激活则弹出激活窗口
+    /// </summary>
+    /// <returns>true 已激活或激活成功，false 用户放弃激活</returns>
+    private static bool CheckActivation()
+    {
+        var activationService = ServiceProvider.GetRequiredService<ActivationService>();
+
+        if (activationService.IsActivated())
+            return true;
+
+        // 弹出激活窗口
+        var activationWindow = new ActivationWindow();
+        bool? result = activationWindow.ShowDialog();
+
+        if (result == true)
+        {
+            Log.Information("软件激活成功");
+            MessageBox.Show("激活成功！感谢使用。", "提示",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return true;
+        }
+
+        Log.Warning("用户未激活，程序退出");
+        MessageBox.Show("软件未激活，无法使用。", "提示",
+            MessageBoxButton.OK, MessageBoxImage.Warning);
+        return false;
     }
 
     protected override void OnStartup(StartupEventArgs e)
@@ -103,6 +137,22 @@ public partial class App : Application
         {
             var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
             db.Database.EnsureCreated();
+
+            // 确保 ActivationRecord 表存在（旧数据库升级兼容）
+            db.Database.ExecuteSqlRaw(
+                @"CREATE TABLE IF NOT EXISTS ActivationRecord (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ActivationCode TEXT NOT NULL,
+                    ActivateTime TEXT,
+                    CreateTime TEXT
+                );");
+        }
+
+        // 检查激活状态
+        if (!CheckActivation())
+        {
+            Shutdown();
+            return;
         }
 
         var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
@@ -115,6 +165,7 @@ public partial class App : Application
                 args.Cancel = true;
             }
         };
+        mainWindow.Closed += (_, _) => Shutdown();
         mainWindow.Show();
 
         base.OnStartup(e);

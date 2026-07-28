@@ -4,6 +4,7 @@ using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.FileManager.Model;
 using PracticalTools.GPG;
+using PracticalTools.Activation.Model;
 using PracticalTools.util;
 
 namespace PracticalTools.Sqlite;
@@ -17,6 +18,8 @@ public class MyDbContext : DbContext
     public DbSet<MyFile> MyFile { get; set; }
     
     public DbSet<GpgFile> GpgFile { get; set; }
+
+    public DbSet<ActivationRecord> ActivationRecord { get; set; }
 
     public MyDbContext(DbContextOptions<MyDbContext> options)
         : base(options)

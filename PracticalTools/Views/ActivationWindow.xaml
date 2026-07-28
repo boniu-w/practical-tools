@@ -1,0 +1,72 @@
+<Window x:Class="PracticalTools.Views.ActivationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="软件激活" Height="320" Width="480"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="False">
+    <Border Background="White" CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- 标题栏 -->
+            <Border Grid.Row="0" Background="#1E90FF" CornerRadius="8,8,0,0">
+                <Grid>
+                    <TextBlock Text="软件激活"
+                               Foreground="White"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"
+                               Margin="15,0,0,0" />
+                    <Button Content="✕"
+                            Foreground="White"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="16"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0,0,10,0"
+                            Click="CloseButton_Click"
+                            Cursor="Hand" />
+                </Grid>
+            </Border>
+
+            <!-- 内容区 -->
+            <StackPanel Grid.Row="1" Margin="30,25,30,20">
+                <TextBlock Text="请输入您的激活码以解锁全部功能"
+                           FontSize="13"
+                           Foreground="#555"
+                           Margin="0,0,0,20" />
+
+                <TextBox x:Name="ActivationCodeBox"
+                         materialDesign:HintAssist.Hint="激活码"
+                         FontSize="14"
+                         Margin="0,0,0,8"
+                         Height="36"
+                         VerticalContentAlignment="Center" />
+
+                <TextBlock x:Name="ErrorMessage"
+                           Text=""
+                           Foreground="Red"
+                           FontSize="12"
+                           Margin="0,0,0,15"
+                           Visibility="Collapsed" />
+
+                <Button x:Name="ActivateButton"
+                        Content="激 活"
+                        Height="36"
+                        FontSize="14"
+                        Background="#1E90FF"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Click="ActivateButton_Click"
+                        Cursor="Hand" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
