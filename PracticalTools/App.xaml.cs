@@ -4,6 +4,7 @@ using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PracticalTools.Activation.Service;
+using PracticalTools.Constant;
 using PracticalTools.DuplicateFiles.service;
 using PracticalTools.GPG;
 using PracticalTools.Sqlite;
@@ -36,6 +37,10 @@ public partial class App : Application
     {
         // 防止激活窗口关闭时无其他窗口导致 Application 自动退出
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        // 初始化 SQLCipher 引擎（必须在任何 SQLite 操作之前调用）
+        SQLitePCL.Batteries_V2.Init();
+
         InitializeLogger();
         ServiceProvider = ConfigureServices();
     }
@@ -66,8 +71,9 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        // 数据库上下文（WPF 下建议自己管理 Scope）
-        services.AddDbContext<MyDbContext>(options => options.UseSqlite($"Data Source={DbFullPath}"));
+        // 数据库上下文（SQLCipher 加密）
+        services.AddDbContext<MyDbContext>(options => options.UseSqlite(
+            $"Data Source={DbFullPath};Password={CommonConst.DbPassword}"));
 
         // 业务服务
         services.AddTransient<SQLiteDemo>();
@@ -131,6 +137,9 @@ public partial class App : Application
             Directory.CreateDirectory(dbDir!);
             Log.Information("已创建数据库目录: {DbDir}", dbDir);
         }
+
+        // 迁移旧版未加密数据库到 SQLCipher 加密格式
+        DatabaseMigrationHelper.MigrateToEncrypted(DbFullPath);
 
         // 确保数据库和表存在（新电脑首次运行自动创建）
         using (var scope = ServiceProvider.CreateScope())
