@@ -17,6 +17,9 @@ public class ActivationService
         "PT2024-9A7F-3C2E-8B1D",
         "GPGKEY-UTIL-PRO-VIP",
         "实用工具-激活码-2025",
+        "123",
+        "王刚",
+        "wanggang"
     };
 
     private readonly IServiceScopeFactory _scopeFactory;
