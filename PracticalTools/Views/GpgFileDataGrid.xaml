@@ -98,6 +98,9 @@
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
                     <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <!-- 每行下边框作为分隔线 -->
+                    <Setter Property="BorderBrush" Value="#E0E0E0" />
+                    <Setter Property="BorderThickness" Value="0,0,0,1" />
                     <Style.Triggers>
                         <!-- 导入的密钥行底色区分 -->
                         <DataTrigger Binding="{Binding GpgFile.IsImported}" Value="True">
@@ -110,6 +113,15 @@
                     </Style.Triggers>
                 </Style>
             </DataGrid.RowStyle>
+
+            <!-- 表头竖线分隔 -->
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                    <Setter Property="BorderBrush" Value="#E0E0E0" />
+                    <Setter Property="BorderThickness" Value="0,0,1,1" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
 
             <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">

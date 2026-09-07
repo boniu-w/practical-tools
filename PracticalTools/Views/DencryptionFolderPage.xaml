@@ -8,15 +8,14 @@
              d:DesignHeight="300" d:DesignWidth="300">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel>
-            <CheckBox Visibility="Hidden" />
+        <StackPanel Margin="4">
             <TextBox x:Name="SelectKeyFolderDe"
                      IsReadOnly="True"
                      Text="{Binding DataContext.GpgFileSelectedOne, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                      materialDesign:HintAssist.Hint="在下方选择一个密钥, 只能选一个"
                      Style="{StaticResource MaterialDesignOutlinedTextBox}" />
 
-            <Grid>
+            <Grid Margin="0,8,0,0">
                 <TextBox x:Name="GpgPathTextBox"
                          materialDesign:HintAssist.Hint="点击右侧的向上箭头选择一个[.zip.gpg]文件"
                          IsReadOnly="True"
@@ -30,7 +29,7 @@
                 </Button>
             </Grid>
 
-            <Grid Width="Auto" Margin="10">
+            <Grid Width="Auto" Margin="0,16,0,0">
                 <StackPanel>
                     <Button HorizontalAlignment="Left"
                             Click="DencryptFolder"

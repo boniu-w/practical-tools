@@ -19,15 +19,13 @@
 
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel>
-            <CheckBox
-                Visibility="Hidden" />
+        <StackPanel Margin="4">
             <TextBox x:Name="SelectKeyt"
                      IsReadOnly="True"
                      Text="{Binding DataContext.GpgFileSelectedOne, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                      materialDesign:HintAssist.Hint="在下方选择一个密钥, 只能选一个"
                      Style="{StaticResource MaterialDesignOutlinedTextBox}" />
-            <Grid>
+            <Grid Margin="0,8,0,0">
                 <!-- Padding="8,8,40,8" -->
                 <TextBox materialDesign:HintAssist.Hint="点击右侧的向上箭头选择一个文件"
                          Text="{Binding SelectedFilePath}"
@@ -42,9 +40,32 @@
                 </Button>
             </Grid>
 
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <CheckBox x:Name="DontAskCheckBox"
+                          Content="不要询问, 把加密的文件都放到这个文件夹下"
+                          Style="{StaticResource MaterialDesignCheckBox}"
+                          VerticalAlignment="Center" />
+            </StackPanel>
+
+            <Grid Margin="0,8,0,0">
+                <TextBox x:Name="DefaultFolderTextBox"
+                         materialDesign:HintAssist.Hint="选择加密后默认保存的文件夹"
+                         IsReadOnly="True"
+                         IsEnabled="{Binding IsChecked, ElementName=DontAskCheckBox}"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}" />
+
+                <Button Style="{StaticResource MaterialDesignIconButton}"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,8,0"
+                        IsEnabled="{Binding IsChecked, ElementName=DontAskCheckBox}"
+                        Click="SelectDefaultFolder_Click">
+                    <materialDesign:PackIcon Kind="FolderOpen" />
+                </Button>
+            </Grid>
+
             <Grid
                 Width="Auto"
-                Margin="10">
+                Margin="0,16,0,0">
                 <StackPanel>
                     <Button
                         HorizontalAlignment="Left"

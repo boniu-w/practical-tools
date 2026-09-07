@@ -46,6 +46,15 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
         }
     }
 
+    private void SelectDefaultFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "选择加密后默认保存的文件夹" };
+        if (dialog.ShowDialog() == true)
+        {
+            DefaultFolderTextBox.Text = dialog.FolderName;
+        }
+    }
+
     protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
@@ -79,12 +88,26 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
             return;
         }
 
-        // 弹窗选输出目录
-        var folderDialog = new OpenFolderDialog { Title = "选择加密后的保存目录" };
-        if (folderDialog.ShowDialog() != true) return;
-
         string outName = Path.GetFileName(dc.SelectedFilePath) + ".gpg";
-        string outPath = Path.Combine(folderDialog.FolderName, outName);
+        string outPath;
+
+        if (DontAskCheckBox.IsChecked == true)
+        {
+            string defaultFolder = DefaultFolderTextBox.Text?.Trim() ?? "";
+            if (string.IsNullOrEmpty(defaultFolder) || !Directory.Exists(defaultFolder))
+            {
+                MessageBox.Show("请先选择默认保存文件夹。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            outPath = Path.Combine(defaultFolder, outName);
+        }
+        else
+        {
+            // 弹窗选输出目录
+            var folderDialog = new OpenFolderDialog { Title = "选择加密后的保存目录" };
+            if (folderDialog.ShowDialog() != true) return;
+            outPath = Path.Combine(folderDialog.FolderName, outName);
+        }
 
         try
         {

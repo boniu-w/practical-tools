@@ -33,6 +33,15 @@ public partial class DencryptionPage : UserControl
         }
     }
 
+    private void SelectDefaultFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "选择解密后默认保存的文件夹" };
+        if (dialog.ShowDialog() == true)
+        {
+            DefaultFolderTextBox.Text = dialog.FolderName;
+        }
+    }
+
     public async void DencryptFile(object sender, RoutedEventArgs e)
     {
         if (DataContext is not MainViewModel dc)
@@ -58,15 +67,29 @@ public partial class DencryptionPage : UserControl
             return;
         }
 
-        // 弹窗选输出目录
-        var folderDialog = new OpenFolderDialog { Title = "选择解密后的保存目录" };
-        if (folderDialog.ShowDialog() != true) return;
-
         string inputFileName = Path.GetFileName(dc.SelectedFilePath);
         string outName = inputFileName.EndsWith(".gpg", StringComparison.OrdinalIgnoreCase)
             ? inputFileName[..^4]
             : inputFileName + ".decrypted";
-        string outPath = Path.Combine(folderDialog.FolderName, outName);
+
+        string outPath;
+        if (DontAskCheckBox.IsChecked == true)
+        {
+            string defaultFolder = DefaultFolderTextBox.Text?.Trim() ?? "";
+            if (string.IsNullOrEmpty(defaultFolder) || !Directory.Exists(defaultFolder))
+            {
+                MessageBox.Show("请先选择默认保存文件夹。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            outPath = Path.Combine(defaultFolder, outName);
+        }
+        else
+        {
+            // 弹窗选输出目录
+            var folderDialog = new OpenFolderDialog { Title = "选择解密后的保存目录" };
+            if (folderDialog.ShowDialog() != true) return;
+            outPath = Path.Combine(folderDialog.FolderName, outName);
+        }
 
         try
         {

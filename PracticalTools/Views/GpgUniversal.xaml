@@ -30,16 +30,20 @@
         <!--正文-->
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="50*" />
-                <RowDefinition Height="50*" />
+                <RowDefinition Height="60*" />
+                <RowDefinition Height="40*" />
             </Grid.RowDefinitions>
 
             <!--标题-->
             <Grid Grid.Row="0">
                 <TabControl>
                     <TabItem Header="我要加密" Background="Aqua">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,2,0,4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,2,0,4">
                                 <RadioButton x:Name="EncryptFileRadio"
                                              Content="加密文件"
                                              GroupName="EncryptMode"
@@ -55,14 +59,18 @@
                                              Margin="16,0,0,0"
                                              Checked="EncryptMode_Checked" />
                             </StackPanel>
-                            <local:EncryptionPage x:Name="FileEncryptPage" />
-                            <local:EncryptionFolderPage x:Name="FolderEncryptPage" Visibility="Collapsed" />
-                        </StackPanel>
+                            <local:EncryptionPage x:Name="FileEncryptPage" Grid.Row="1" />
+                            <local:EncryptionFolderPage x:Name="FolderEncryptPage" Grid.Row="1" Visibility="Collapsed" />
+                        </Grid>
                     </TabItem>
 
                     <TabItem Header="我要解密" Background="#FF6A6A">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,2,0,4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,2,0,4">
                                 <RadioButton x:Name="DecryptFileRadio"
                                              Content="解密文件"
                                              GroupName="DecryptMode"
@@ -78,9 +86,9 @@
                                              Margin="16,0,0,0"
                                              Checked="DecryptMode_Checked" />
                             </StackPanel>
-                            <local:DencryptionPage x:Name="FileDecryptPage" />
-                            <local:DencryptionFolderPage x:Name="FolderDecryptPage" Visibility="Collapsed" />
-                        </StackPanel>
+                            <local:DencryptionPage x:Name="FileDecryptPage" Grid.Row="1" />
+                            <local:DencryptionFolderPage x:Name="FolderDecryptPage" Grid.Row="1" Visibility="Collapsed" />
+                        </Grid>
                     </TabItem>
 
                     <TabItem Header="我要生成一个密钥对" Background="Chartreuse">
