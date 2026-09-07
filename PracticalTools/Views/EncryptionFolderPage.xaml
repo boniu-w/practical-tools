@@ -1,0 +1,51 @@
+<UserControl x:Class="PracticalTools.Views.EncryptionFolderPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <CheckBox Visibility="Hidden" />
+            <TextBox x:Name="SelectKeyFolder"
+                     IsReadOnly="True"
+                     Text="{Binding DataContext.GpgFileSelectedOne, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                     materialDesign:HintAssist.Hint="在下方选择一个密钥, 只能选一个"
+                     Style="{StaticResource MaterialDesignOutlinedTextBox}" />
+
+            <Grid>
+                <TextBox x:Name="FolderPathTextBox"
+                         materialDesign:HintAssist.Hint="点击右侧的文件夹图标选择一个文件夹"
+                         IsReadOnly="True"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}" />
+
+                <Button Style="{StaticResource MaterialDesignIconButton}"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,8,0"
+                        Click="SelectFolder_Click">
+                    <materialDesign:PackIcon Kind="FolderOpen" />
+                </Button>
+            </Grid>
+
+            <Grid Width="Auto" Margin="10">
+                <StackPanel>
+                    <Button HorizontalAlignment="Left"
+                            Click="EncryptFolder"
+                            Style="{StaticResource MaterialDesignRaisedButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="开始加密" />
+                        </StackPanel>
+                    </Button>
+                    <TextBlock x:Name="OutputPathText"
+                               Margin="0,6,0,0"
+                               FontSize="12"
+                               Foreground="#2E7D32"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

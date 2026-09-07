@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="PracticalTools.Views.GpgUniversal"
+<UserControl x:Class="PracticalTools.Views.GpgUniversal"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -38,11 +38,49 @@
             <Grid Grid.Row="0">
                 <TabControl>
                     <TabItem Header="我要加密" Background="Aqua">
-                        <local:EncryptionPage></local:EncryptionPage>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,4">
+                                <RadioButton x:Name="EncryptFileRadio"
+                                             Content="加密文件"
+                                             GroupName="EncryptMode"
+                                             IsChecked="True"
+                                             Style="{StaticResource MaterialDesignRadioButton}"
+                                             VerticalAlignment="Center"
+                                             Checked="EncryptMode_Checked" />
+                                <RadioButton x:Name="EncryptFolderRadio"
+                                             Content="加密文件夹"
+                                             GroupName="EncryptMode"
+                                             Style="{StaticResource MaterialDesignRadioButton}"
+                                             VerticalAlignment="Center"
+                                             Margin="16,0,0,0"
+                                             Checked="EncryptMode_Checked" />
+                            </StackPanel>
+                            <local:EncryptionPage x:Name="FileEncryptPage" />
+                            <local:EncryptionFolderPage x:Name="FolderEncryptPage" Visibility="Collapsed" />
+                        </StackPanel>
                     </TabItem>
 
                     <TabItem Header="我要解密" Background="#FF6A6A">
-                        <local:DencryptionPage />
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,4">
+                                <RadioButton x:Name="DecryptFileRadio"
+                                             Content="解密文件"
+                                             GroupName="DecryptMode"
+                                             IsChecked="True"
+                                             Style="{StaticResource MaterialDesignRadioButton}"
+                                             VerticalAlignment="Center"
+                                             Checked="DecryptMode_Checked" />
+                                <RadioButton x:Name="DecryptFolderRadio"
+                                             Content="解密文件夹"
+                                             GroupName="DecryptMode"
+                                             Style="{StaticResource MaterialDesignRadioButton}"
+                                             VerticalAlignment="Center"
+                                             Margin="16,0,0,0"
+                                             Checked="DecryptMode_Checked" />
+                            </StackPanel>
+                            <local:DencryptionPage x:Name="FileDecryptPage" />
+                            <local:DencryptionFolderPage x:Name="FolderDecryptPage" Visibility="Collapsed" />
+                        </StackPanel>
                     </TabItem>
 
                     <TabItem Header="我要生成一个密钥对" Background="Chartreuse">

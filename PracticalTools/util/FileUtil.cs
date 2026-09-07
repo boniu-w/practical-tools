@@ -1,4 +1,5 @@
 using System.IO;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Microsoft.VisualBasic.FileIO;
@@ -937,5 +938,21 @@ public class FileUtil
             return false;
 
         return true;
+    }
+
+    /// <summary>
+    /// 将文件夹递归打包为 zip
+    /// </summary>
+    public static void ZipDirectory(string sourceDir, string zipPath)
+    {
+        ZipFile.CreateFromDirectory(sourceDir, zipPath);
+    }
+
+    /// <summary>
+    /// 解压 zip 到目标目录（覆盖同名文件）
+    /// </summary>
+    public static void ExtractZip(string zipPath, string destDir)
+    {
+        ZipFile.ExtractToDirectory(zipPath, destDir, overwriteFiles: true);
     }
 }
