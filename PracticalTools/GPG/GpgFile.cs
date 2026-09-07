@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using PracticalTools.FileManager.Model;
 
 namespace PracticalTools.GPG;
@@ -10,7 +11,9 @@ public class GpgFile : INotifyPropertyChanged
     public long Id { get; set; }
     [ColumnHeader("身份")] public string Identity { get; set; } = "";
     [ColumnHeader("名字")] public string IdentityName { get; set; } = "";
-    [NotMapped] public string PassphraseDisplay => string.IsNullOrEmpty(Passphrase) ? "" : "******";
+    [NotMapped]
+    [JsonIgnore]
+    public string PassphraseDisplay => string.IsNullOrEmpty(Passphrase) ? "" : "******";
     public string Passphrase { get; set; } = "";
     [ColumnHeader("密钥长度")] public int KeySize { get; set; } = 0;
     [ColumnHeader("私钥")] public string SecretKey { get; set; } = "";
@@ -41,6 +44,7 @@ public class GpgFile : INotifyPropertyChanged
     private bool _isSelected;
 
     [NotMapped]
+    [JsonIgnore]
     public bool IsSelected
     {
         get => _isSelected;

@@ -19,6 +19,8 @@ using OfficeOpenXml;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace PracticalTools.vo;
 
@@ -87,6 +89,9 @@ public class MainViewModel : INotifyPropertyChanged
         DeleteSelectedGpgFilesCommand = new RelayCommand<object>(DeleteSelectedGpgFiles);
         ExportSelectedGpgFilesCommand = new RelayCommand<object>(ExportPublic);
         ImportGpgFilesCommand = new RelayCommand<object>(ImportGpgFiles);
+        BackupSelectedGpgFilesCommand = new RelayCommand<object>(BackupSelectedGpgFiles);
+        BackupAllGpgFilesCommand = new RelayCommand<object>(BackupAllGpgFiles);
+        RestoreGpgBackupCommand = new RelayCommand<object>(RestoreGpgBackup);
     }
 
     // private bool _isScanning;
@@ -111,6 +116,9 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand DeleteSelectedGpgFilesCommand { get; }
     public ICommand ExportSelectedGpgFilesCommand { get; }
     public ICommand ImportGpgFilesCommand { get; }
+    public ICommand BackupSelectedGpgFilesCommand { get; }
+    public ICommand BackupAllGpgFilesCommand { get; }
+    public ICommand RestoreGpgBackupCommand { get; }
 
     // 重复的文件
     private ObservableCollection<DuplicateFilesEntryWrapper>? _fileList;
@@ -858,6 +866,152 @@ public class MainViewModel : INotifyPropertyChanged
         catch (Exception e)
         {
             MessageBox.Show($"导入失败: {e.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// 备份选中 — 将勾选的密钥完整序列化到 JSON 文件（含私钥与口令）
+    /// </summary>
+    private void BackupSelectedGpgFiles(object obj)
+    {
+        if (GpgFileWrapperList == null) return;
+
+        List<GpgFile> selected = GpgFileWrapperList
+            .Where(x => x.IsSelected)
+            .Select(x => x.GpgFile)
+            .ToList();
+
+        if (selected.Count == 0)
+        {
+            MessageBox.Show("请先勾选要备份的密钥。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        WriteBackup(selected);
+    }
+
+    /// <summary>
+    /// 全部备份 — 将当前列表所有密钥完整序列化到 JSON 文件
+    /// </summary>
+    private void BackupAllGpgFiles(object obj)
+    {
+        if (GpgFileWrapperList == null || GpgFileWrapperList.Count == 0)
+        {
+            MessageBox.Show("当前没有可备份的密钥。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        WriteBackup(GpgFileWrapperList.Select(x => x.GpgFile).ToList());
+    }
+
+    /// <summary>
+    /// 写入备份文件
+    /// </summary>
+    private void WriteBackup(List<GpgFile> files)
+    {
+        SaveFileDialog saveFileDialog = new SaveFileDialog
+        {
+            Title = "备份 GPG 密钥",
+            FileName = $"GpgBackup_{DateTime.Now:yyyyMMdd_HHmmss}.json",
+            Filter = "GPG 备份文件 (*.json)|*.json|All Files (*.*)|*.*",
+            DefaultExt = ".json"
+        };
+
+        if (saveFileDialog.ShowDialog() != true) return;
+        string backupPath = saveFileDialog.FileName;
+
+        try
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+            string json = JsonSerializer.Serialize(files, options);
+            File.WriteAllText(backupPath, json, Encoding.UTF8);
+
+            GpgStatusMessage = $"已备份 {files.Count} 个密钥到: {backupPath}";
+            GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
+            MessageBox.Show(
+                $"已备份 {files.Count} 个密钥到:\n{backupPath}\n\n注意: 备份文件包含私钥与口令，请妥善保管。",
+                "备份成功",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"备份失败: {e.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// 恢复备份 — 读取 JSON 备份文件并重新导入密钥（已存在的身份跳过）
+    /// </summary>
+    private void RestoreGpgBackup(object obj)
+    {
+        OpenFileDialog openFileDialog = new OpenFileDialog
+        {
+            Title = "选择备份文件",
+            Filter = "GPG 备份文件 (*.json)|*.json|All Files (*.*)|*.*"
+        };
+
+        if (openFileDialog.ShowDialog() != true) return;
+
+        try
+        {
+            string json = File.ReadAllText(openFileDialog.FileName);
+            List<GpgFile>? backup = JsonSerializer.Deserialize<List<GpgFile>>(json);
+            if (backup == null || backup.Count == 0)
+            {
+                MessageBox.Show("备份文件中没有可恢复的密钥。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            MessageBoxResult result = MessageBox.Show(
+                $"备份文件中包含 {backup.Count} 个密钥，是否恢复？\n已存在的密钥将被跳过。",
+                "确认恢复",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            GpgFileService service = new GpgFileService(_myDbContext);
+            HashSet<string> existingIdentities = _myDbContext.GpgFile
+                .Select(f => f.Identity)
+                .ToHashSet();
+
+            int restored = 0;
+            int skipped = 0;
+            foreach (GpgFile item in backup)
+            {
+                if (existingIdentities.Contains(item.Identity))
+                {
+                    skipped++;
+                    continue;
+                }
+
+                // 重新生成 ID，避免与库中已存在记录冲突
+                item.Id = new SnowflakeId(1, 1).NextId();
+                item.UpdateTime = DateTime.Now;
+                service.Save(item);
+                existingIdentities.Add(item.Identity);
+                restored++;
+            }
+
+            LoadGpgFileList();
+            WrapperSelectedChangedEvent();
+
+            GpgStatusMessage = $"恢复完成: 新增 {restored} 个, 跳过 {skipped} 个";
+            GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
+            MessageBox.Show(
+                $"恢复完成: 新增 {restored} 个密钥, 跳过 {skipped} 个已存在的密钥。",
+                "恢复完成",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"恢复失败: {e.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

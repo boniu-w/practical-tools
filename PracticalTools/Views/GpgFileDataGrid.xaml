@@ -44,6 +44,27 @@
                         FontSize="12"
                         Foreground="#2E7D32"
                         Margin="6,0,0,0" />
+                <Button Content="备份选中"
+                        Command="{Binding BackupSelectedGpgFilesCommand}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        Padding="8,3"
+                        FontSize="12"
+                        Foreground="#6A1B9A"
+                        Margin="12,0,0,0" />
+                <Button Content="全部备份"
+                        Command="{Binding BackupAllGpgFilesCommand}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        Padding="8,3"
+                        FontSize="12"
+                        Foreground="#6A1B9A"
+                        Margin="6,0,0,0" />
+                <Button Content="恢复备份"
+                        Command="{Binding RestoreGpgBackupCommand}"
+                        Style="{StaticResource MaterialDesignFlatButton}"
+                        Padding="8,3"
+                        FontSize="12"
+                        Foreground="#6A1B9A"
+                        Margin="6,0,0,0" />
             </StackPanel>
         </Border>
 
