@@ -1,26 +1,16 @@
 using System.Collections.ObjectModel;
-using System.Data;
 using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using Microsoft.Win32;
-using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
 using PracticalTools.DuplicateFiles.service;
 using PracticalTools.DuplicateFiles.Wrapper;
-using PracticalTools.FileManager.Model;
-using PracticalTools.FileManager.Util;
-using PracticalTools.GPG;
-using PracticalTools.Sqlite;
 using PracticalTools.util;
 using PracticalTools.vo;
 using Serilog;
-using ColumnHeaderAttribute = PracticalTools.util.ColumnHeaderAttribute;
 using Window = System.Windows.Window;
 
 namespace PracticalTools;
@@ -30,19 +20,10 @@ namespace PracticalTools;
 /// </summary>
 public partial class MainWindow : Window
 {
-    // public MainWindow()
-    // {
-    //     var viewModel = ((App)Application.Current)._serviceProvider.GetRequiredService<MainViewModel>();
-    //     DataContext = viewModel;
-    //     InitializeComponent();
-    // }
-
-    private readonly SQLiteDemo _sqLiteDemo;
     private readonly MainViewModel _mainViewModel;
     private DuplicateFilesService _duplicateFilesService;
-    GpgFileService _gpgFileService;
 
-    public MainWindow(MainViewModel mainViewModel, SQLiteDemo sqLiteDemo, DuplicateFilesService duplicateFilesService, GpgFileService gpgFileService)
+    public MainWindow(MainViewModel mainViewModel, DuplicateFilesService duplicateFilesService)
     {
         InitializeComponent();
 
@@ -59,13 +40,9 @@ public partial class MainWindow : Window
 
         DataContext = mainViewModel;
         _mainViewModel = mainViewModel;
-        _sqLiteDemo = sqLiteDemo;
         _duplicateFilesService = duplicateFilesService;
-        _gpgFileService = gpgFileService;
-        SetupDataGridColumns();
         SetMessageText(_message1);
 
-        // ScanButton.Click += ScanTheFolder;   // 测试使用事件绑定 button上没有明写 click
         ScanButton.Click += SayHello;
     }
 
@@ -79,31 +56,8 @@ public partial class MainWindow : Window
 
     private static string _message0 = "";
     private string _message1 = "扫描文件夹下文件, 把重复的文件显示出来";
-    private string _message2 = "可管理所有文件";
 
     /*****************************************************************************************************************************/
-
-    public void SqliteTest(Object sender, EventArgs args)
-    {
-        // SQLiteDemo demo = new SQLiteDemo();
-        // demo.Open();
-        // demo.CreateTableBlackList();
-        // demo.InsertTheFile(null);
-        // demo.InsertBlackList();
-        //
-        // demo.Select();
-        // demo.Close();
-
-        // demo.List();
-
-        // _sqLiteDemo.InsertBlackList();
-    }
-
-    public void List(Object sender, EventArgs args)
-    {
-        List<BlacklistEntry> list = _mainViewModel.Blacklists.ToList();
-        Console.WriteLine(list.Count);
-    }
 
     private string _selectedFolder = "";
 
@@ -125,87 +79,6 @@ public partial class MainWindow : Window
             {
                 PickFileButton.Content = "再选择一个文件夹";
             }
-        }
-    }
-
-    // private void ScanTheFolder(object sender, RoutedEventArgs e)
-    // {
-    //     string theFilePath = "";
-    //     if (TheFilePath.Text.Length == 0)
-    //     {
-    //         MessageBoxResult messageBoxResult = MessageBox.Show("没有选择任何文件夹, 将扫描整个电脑",
-    //             "提示",
-    //             MessageBoxButton.OKCancel,
-    //             MessageBoxImage.Question);
-    //         if (messageBoxResult == MessageBoxResult.OK)
-    //         {
-    //             foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
-    //             {
-    //                 if (driveInfo.IsReady)
-    //                 {
-    //                     // Scan(driveInfo.RootDirectory.FullName);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     else
-    //     {
-    //         theFilePath = TheFilePath.Text;
-    //         Scan(theFilePath);
-    //     }
-    // }
-
-    /// <summary>
-    /// 可停止扫描
-    /// 扫描单个文件夹
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private async void ScanTheFolder(object sender, RoutedEventArgs e)
-    {
-        ScanButton.IsEnabled = false;
-        Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
-        string scanTypeText = ScanType.Text;
-        string[]? allowedExtensions = InitAllowedExtensions(scanTypeText);
-
-        _cts = new CancellationTokenSource();
-        string? theFilePath = TheFilePath.Text?.Trim();
-
-        try
-        {
-            if (string.IsNullOrEmpty(theFilePath))
-            {
-                MessageBoxResult messageBoxResult = MessageBox.Show("没有选择任何文件夹, 将扫描整个电脑",
-                    "提示",
-                    MessageBoxButton.OKCancel,
-                    MessageBoxImage.Question);
-                if (messageBoxResult == MessageBoxResult.OK)
-                {
-                    await ScanAll(allowedExtensions);
-                }
-            }
-            else
-            {
-                ScanMessageOfStart();
-                Log.Information($"开始扫描 [{theFilePath}] {scanTypeText}");
-                Task task = Task.Run(() => Scan(theFilePath, _cts.Token, allowedExtensions));
-                await ScanTaskMessageOfEnd(task);
-            }
-        }
-        catch (Exception exception)
-        {
-            _mainViewModel.FileList?.Clear();
-            MessageBox.Show("扫描已取消。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-            Log.Error("扫描已取消", exception.StackTrace);
-            SetMessageText("扫描已取消");
-        }
-        finally
-        {
-            ScanButton.IsEnabled = true;
-            ScanProgress.Visibility = Visibility.Collapsed;
-            ScanProgress.Value = 0;
-            _cts.Dispose();
-            Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
     }
 
@@ -267,7 +140,6 @@ public partial class MainWindow : Window
             ScanProgress.Visibility = Visibility.Collapsed;
             ScanProgress.Value = 0;
             _cts.Dispose();
-            // _cts.Cancel();
             _cts = null;
             Mouse.OverrideCursor = null; // 恢复默认鼠标样式
         }
@@ -314,50 +186,6 @@ public partial class MainWindow : Window
             SetMessageText("扫描取消");
         }
     }
-
-    // 过时, 改用 TryInitAllowedExtensions
-    public string[]? InitAllowedExtensions(string scanTypeText)
-    {
-        string cusText = Cus.Text;
-        if (scanTypeText == "自定义" && !string.IsNullOrWhiteSpace(cusText))
-        {
-            if (FileUtil.IsValidFileExtension(cusText))
-            {
-                return [cusText];
-            }
-            else
-            {
-                return FileUtil._nullExtensions;
-            }
-        }
-
-        if (string.IsNullOrWhiteSpace(scanTypeText))
-        {
-            return FileUtil._defaultAllowedExtensions;
-        }
-        else
-        {
-            return scanTypeText switch
-            {
-                "所有类型" => FileUtil._defaultAllowedExtensions,
-                "图片类" => FileUtil._phototExtensions,
-                "音频类" => FileUtil._audioExtensions,
-                "视频类" => FileUtil._videoExtensions,
-                "文字类" => FileUtil._wordExtensions,
-                "压缩类" => FileUtil._compressedFileExtensions,
-                "编程语言类" => FileUtil._programExtensions,
-                "无类型类" => FileUtil._nullExtensions,
-                "自定义" => FileUtil._nullExtensions,
-                _ => FileUtil._defaultAllowedExtensions
-            };
-        }
-    }
-
-    // private void Scan(string theFilePath)
-    // {
-    //     List<DuplicateFilesEntry> entries = _duplicateFilesService.GetAllFile(theFilePath);
-    //     _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntry>(entries);
-    // }
 
     public void Scan(string theFilePath, CancellationToken cancellationToken, string[]? allowedExtensions = null)
     {
@@ -460,9 +288,7 @@ public partial class MainWindow : Window
     /// <date>2025年4月28日</date>
     private void NoSearchDuplicateFile(object sender, RoutedEventArgs e)
     {
-        // SearchText.Text = "";
         SearchText.IsReadOnly = false;
-        // _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(_mainViewModel.DuplicateFilesEntries.Select(e => new DuplicateFilesEntryWrapper(e)));
         _mainViewModel.FileList =
             new ObservableCollection<DuplicateFilesEntryWrapper>(_scanResultDuplicateFileList ??=
                 new List<DuplicateFilesEntryWrapper>());
@@ -667,81 +493,8 @@ public partial class MainWindow : Window
             wrapper.Entry.FileName ?? "");
     }
 
-    private void GetSelectedAll(object sender, RoutedEventArgs e)
-    {
-        List<DuplicateFilesEntryWrapper> list = _mainViewModel.FileList.Where(e => e.IsSelected).ToList();
-        foreach (var item in list)
-        {
-            Console.WriteLine(item);
-        }
-    }
-
-    /// <summary>
-    /// 测试变色
-    /// </summary>
-    /// <author>wg</author>
-    /// <created>2025年4月29日</created>
-    /// <modified>2025年4月29日</modified>
     private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (MyTabControl.SelectedItem is TabItem selectedItem && MyTabControl.SelectedItem == ScanResult)
-        {
-            // 走到这了, 但背景色没变
-            // Console.WriteLine(222222);
-            // MyTabControl.Background = Brushes.Red;
-        }
-        else
-        {
-            // MyTabControl.ClearValue(Control.BackgroundProperty);
-        }
-    }
-
-    /// <summary>
-    /// 自动添加列, 管用
-    /// </summary>
-    /// <author>wg</author>
-    /// <created>2025年4月30日</created>
-    /// <modified>2025年4月30日</modified>
-    private void SetupDataGridColumns()
-    {
-        // var properties = typeof(DuplicateFilesEntry).GetProperties();
-        // foreach (var prop in properties)
-        // {
-        //     var attr = prop.GetCustomAttribute<ColumnHeaderAttribute>();
-        //     if (attr == null)
-        //         continue; // ❌ 没有注解，不添加这个列
-        //
-        //     var column = new DataGridTextColumn
-        //     {
-        //         Header = attr.DisplayName,
-        //         Binding = new Binding(prop.Name),
-        //         Width = ColumnWidth(prop.Name)
-        //     };
-        //     MyDataGrid.Columns.Add(column);
-        // }
-        //
-        // // 设置数据源
-        // MyDataGrid.ItemsSource = new ObservableCollection<DuplicateFilesEntry>
-        // {
-        //     new DuplicateFilesEntry { FileName = "EncryptFile.txt", FileSize = 1 },
-        //     new DuplicateFilesEntry { FileName = "hello.doc", FileSize = 1 }
-        // };
-    }
-
-    /// <summary>
-    /// 设置列宽
-    /// </summary>
-    /// <param name="propertyName"></param>
-    /// <returns></returns>
-    private DataGridLength ColumnWidth(string propertyName)
-    {
-        return propertyName switch
-        {
-            "FileName" => new DataGridLength(2, DataGridLengthUnitType.Star),
-            "FileSize" => new DataGridLength(1, DataGridLengthUnitType.Star),
-            "Id" => new DataGridLength(80), // 固定像素宽度
-            _ => new DataGridLength(1, DataGridLengthUnitType.Star),
-        };
     }
 
     /// <summary>
@@ -752,296 +505,6 @@ public partial class MainWindow : Window
     {
         MessageText.Text = message;
     }
-
-    /*private void AddNewItem(object sender, RoutedEventArgs e)
-    {
-        AddCardFormVisibility.Visibility = Visibility.Visible;
-    }
-
-    private void CancelNewItem(object sender, RoutedEventArgs e)
-    {
-        AddCardFormVisibility.Visibility = Visibility.Collapsed;
-    }*/
-
-    /// <summary>
-    /// 程序将在x秒后退出
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void Exit(object sender, RoutedEventArgs e)
-    {
-        Title = "5 秒后关闭";
-
-        // 创建DispatcherTimer（WPF 专用定时器）
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-        timer.Tick += (sender, e) =>
-        {
-            timer.Stop();
-            // Close(); // 关闭当前窗口
-            // 退出整个程序
-            Application.Current.Shutdown();
-        };
-        timer.Start();
-    }
-
-    // private async void OnEncryptClick(object sender, RoutedEventArgs e)
-    // {
-    //     try
-    //     {
-    //         string gpgFile = "H:\\wg\\gpg-key\\pub-9y.gpg";
-    //         OpenFileDialog openFileDialog = new OpenFileDialog();
-    //         if (openFileDialog.ShowDialog() == true)
-    //         {
-    //             SaveFileDialog saveFileDialog = new SaveFileDialog
-    //             {
-    //                 FileName = Path.GetFileNameWithoutExtension(openFileDialog.FileName) + ".gpg",
-    //                 Filter = "GPG Files (*.gpg)|*.gpg|All Files (*.*)|*.*"
-    //             };
-    //             if (saveFileDialog.ShowDialog() == true)
-    //             {
-    //                 EncryptButton.IsEnabled = false;
-    //                 StatusText.Text = "正在加密...";
-    //
-    //                 // 显示“处理中”状态，比如禁用按钮
-    //                 EncryptButton.IsEnabled = false;
-    //
-    //                 await Task.Run(() => { GpgHelper.EncryptFile(openFileDialog.FileName, saveFileDialog.FileName, "boniu-w@live.cn"); });
-    //
-    //                 StatusText.Text = "加密完成";
-    //             }
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         StatusText.Text = $"加密失败: {ex.Message}";
-    //     }
-    //     finally
-    //     {
-    //         EncryptButton.IsEnabled = true;
-    //     }
-    // }
-
-    /*private async void OnEncryptClick(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            string publicKeyFile = "H:\\wg\\gpg-key\\pub-9y.gpg";
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    FileName = Path.GetFileNameWithoutExtension(openFileDialog.FileName) + ".gpg",
-                    Filter = "GPG Files (*.gpg)|*.gpg|All Files (*.*)|*.*"
-                };
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    EncryptButton.IsEnabled = false;
-                    StatusText.Text = "正在加密...";
-
-                    // 显示“处理中”状态，比如禁用按钮
-                    EncryptButton.IsEnabled = false;
-
-                    await Task.Run(() => { GpgHelper.EncryptFile(openFileDialog.FileName, saveFileDialog.FileName, publicKeyFile); });
-
-                    StatusText.Text = "加密完成";
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = $"加密失败: {ex.Message}";
-        }
-        finally
-        {
-            EncryptButton.IsEnabled = true;
-        }
-    }
-    */
-
-    /// <summary>
-    /// 解密
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    // private async void OnDecryptClick(object sender, RoutedEventArgs e)
-    // {
-    //     try
-    //     {
-    //         OpenFileDialog openFileDialog = new OpenFileDialog();
-    //         if (openFileDialog.ShowDialog() == true)
-    //         {
-    //             SaveFileDialog saveFileDialog = new SaveFileDialog
-    //             {
-    //                 FileName = Path.GetFileNameWithoutExtension(openFileDialog.FileName),
-    //                 Filter = "All Files (*.*)|*.*"
-    //             };
-    //             if (saveFileDialog.ShowDialog() == true)
-    //             {
-    //                 DecryptButton.IsEnabled = false;
-    //                 StatusText.Text = "正在解密...";
-    //
-    //                 // 显示“处理中”状态，比如禁用按钮
-    //                 DecryptButton.IsEnabled = false;
-    //
-    //                 await Task.Run(() => { GpgHelper.DecryptFile(openFileDialog.FileName, saveFileDialog.FileName); });
-    //
-    //                 StatusText.Text = "解密完成";
-    //             }
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         StatusText.Text = $"解密失败: {ex.Message}";
-    //     }
-    //     finally
-    //     {
-    //         DecryptButton.IsEnabled = true;
-    //     }
-    // }
-    /*private async void OnDecryptClick(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            string privateKeyFile = "H:\\wg\\gpg-key\\pri-9y.gpg";
-            string passphrase = "Soccer0boy$";
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                SaveFileDialog saveFileDialog = new SaveFileDialog
-                {
-                    FileName = Path.GetFileNameWithoutExtension(openFileDialog.FileName),
-                    Filter = "All Files (*.*)|*.*"
-                };
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    DecryptButton.IsEnabled = false;
-                    StatusText.Text = "正在解密...";
-
-                    // 显示“处理中”状态，比如禁用按钮
-                    DecryptButton.IsEnabled = false;
-
-                    await Task.Run(() => { GpgHelper.DecryptFile(openFileDialog.FileName, saveFileDialog.FileName, privateKeyFile, passphrase); });
-
-                    StatusText.Text = "解密完成";
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = $"解密失败: {ex.Message}";
-        }
-        finally
-        {
-            DecryptButton.IsEnabled = true;
-        }
-    }*/
-
-    /// <summary>
-    /// 进度条真管用
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    /*public async void TestImport(object sender, RoutedEventArgs e)
-    {
-        DataTable data = FileHelper.ImportExcelFile("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*");
-        if (data == null || data.Rows.Count == 0)
-        {
-            MessageBox.Show("导入数据为空！");
-            return;
-        }
-
-        DataColumnCollection columns = data.Columns;
-        List<MyFile> myFiles = DataTableMapper.MapToMyFileList(data);
-        MyFileImportText.Text = myFiles.Count.ToString();
-        int total = myFiles.Count;
-        if (total == 0)
-        {
-            MessageBox.Show("未解析到任何有效数据！");
-            return;
-        }
-
-        if (myFiles.Count > 0)
-        {
-            Mouse.OverrideCursor = Cursors.Wait; // 设置鼠标为等待状态
-            MyFileImportProgressBar.Minimum = 0;
-            MyFileImportProgressBar.Maximum = total;
-            MyFileImportProgressBar.Value = 0;
-            MyFileImportProgressBar.Visibility = Visibility.Visible;
-            Progress<int> progress = new Progress<int>(value =>
-            {
-                MyFileImportProgressBar.Value = value;
-                // 你可以更新进度条，比如 progressBar.Value = value;
-            });
-
-            await Task.Run(() =>
-            {
-                for (int i = 0; i < myFiles.Count; i++)
-                {
-                    Application.Current.Dispatcher.Invoke(() => { _mainViewModel.AddMyFile(myFiles[i]); });
-
-                    ((IProgress<int>)progress).Report(i + 1);
-                }
-            });
-
-            MyFileImportProgressBar.Visibility = Visibility.Hidden;
-            MessageBox.Show($"导入完成, 共添加 {total} 条数据");
-            Mouse.OverrideCursor = null; // 恢复默认鼠标样式
-        }
-    }*/
-    /*private void PageSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (DataContext is MainViewModel vm && PageSizeComboBox.SelectedItem is ComboBoxItem item)
-        {
-            if (int.TryParse(item.Content.ToString(), out int newSize))
-            {
-                vm.PagedFileList.PageSize = newSize;
-                vm.PagedFileList.GoToPage(1);
-                vm.UpdatePageInfo();
-            }
-        }
-    }*/
-    private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainViewModel vm)
-        {
-            var checkBox = (CheckBox)sender;
-            bool isChecked = checkBox.IsChecked == true;
-
-            // 只控制当前分页列表（当前页的数据）
-            foreach (var item in vm.PagedFileList)
-            {
-                item.IsSelected = isChecked;
-            }
-
-            // 可选：同步更新 IsAllSelected（仅当前页）
-            // vm.UpdateIsAllSelectedForCurrentPageOnly();
-        }
-    }
-
-    // private void CheckBox_SelectAll_Click(object sender, RoutedEventArgs e)
-    // {
-    //     if (DataContext is MainViewModel vm)
-    //     {
-    //         if (sender is CheckBox cb)
-    //         {
-    //             bool isChecked = cb.IsChecked == true;
-    //
-    //             foreach (var item in vm.PagedFileList)
-    //             {
-    //                 var prop = item.GetType().GetProperty("IsSelected");
-    //                 if (prop != null && prop.CanWrite)
-    //                 {
-    //                     prop.SetValue(item, isChecked);
-    //                 }
-    //             }
-    //
-    //             // 选完之后更新分页状态（可选）
-    //             vm.PagedFileList.Refresh(); // 如果你希望刷新 UI/状态
-    //         }
-    //     }
-    // }
-
 
     private void SayHello(object sender, RoutedEventArgs e) => Console.WriteLine("hello");
 
@@ -1092,33 +555,4 @@ public partial class MainWindow : Window
         return true;
     }
 
-    public void GpgFileSaveDemo(object sender, RoutedEventArgs e)
-    {
-        _gpgFileService.SaveDemo();
-        _mainViewModel.LoadGpgFileList();
-    }
-
-    private void GetCurrentTime(object sender, RoutedEventArgs e)
-    {
-        // DateTime now = DateTime.Now;
-        //
-        // TimeSpan timeSpan = new TimeSpan(DateTime.Now.Ticks);
-        //
-        // Console.WriteLine(timeSpan.TotalMilliseconds);
-        // Console.WriteLine(timeSpan.TotalSeconds);
-
-        long milliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        Console.WriteLine(milliseconds);
-        DateTimeOffset dateTimeOffset = DateTimeOffset.Now;
-        Console.WriteLine(dateTimeOffset.ToString());
-
-        DateTime dateTime = DateTime.Now;
-        Console.WriteLine(dateTime.ToString());
-    }
-
-    public void IsSelectedGpgFile(object sender, RoutedEventArgs e)
-    {
-        List<GpgFileEntryWrapper> entryWrappers = _mainViewModel.GpgFileWrapperList?.Where(wrapper => wrapper.IsSelected).ToList();
-        Console.WriteLine(entryWrappers.Count > 0 ? entryWrappers[0].GpgFile?.Id : "null");
-    }
 }
