@@ -154,6 +154,7 @@
                                     <ColumnDefinition Width="50*" />
                                     <ColumnDefinition Width="50*" />
                                     <ColumnDefinition Width="50*" />
+                                    <ColumnDefinition Width="50*" />
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Row="0" Grid.Column="0"
                                          x:Name="SearchText"
@@ -178,6 +179,11 @@
                                 <Button Grid.Row="0" Grid.Column="4"
                                         Content="放入回收站"
                                         Click="MoveFileToRecycleBin"
+                                        Margin="5,0,0,0"
+                                        Padding="0" />
+                                <Button Grid.Row="0" Grid.Column="5"
+                                        Content="智能删除"
+                                        Click="SmartDeleteDuplicateFiles"
                                         Margin="5,0,0,0"
                                         Padding="0" />
                             </Grid>

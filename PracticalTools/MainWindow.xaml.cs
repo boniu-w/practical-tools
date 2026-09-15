@@ -571,6 +571,102 @@ public partial class MainWindow : Window
         _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list);
     }
 
+    /// <summary>
+    /// 智能删除: 每组重复文件自动保留 1 个, 其余放入回收站。
+    /// 如果勾选了文件, 只在勾选范围内处理; 否则处理当前扫描结果中的全部重复文件。
+    /// </summary>
+    /// <param name="sender">sender</param>
+    /// <param name="e">e</param>
+    private void SmartDeleteDuplicateFiles(object sender, RoutedEventArgs e)
+    {
+        List<DuplicateFilesEntryWrapper>? selectedList = _mainViewModel.FileList?.Where(e => e.IsSelected).ToList();
+        List<DuplicateFilesEntryWrapper>? sourceList = selectedList is { Count: > 0 }
+            ? selectedList
+            : _mainViewModel.FileList?.ToList();
+
+        if (sourceList == null || sourceList.Count == 0)
+        {
+            MessageBox.Show("当前没有可智能删除的文件", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        List<DuplicateFilesEntryWrapper> deleteList = sourceList
+            .Where(e => !string.IsNullOrWhiteSpace(e.Entry.Md5Value))
+            .GroupBy(e => e.Entry.Md5Value!, StringComparer.OrdinalIgnoreCase)
+            .Where(g => g.Count() > 1)
+            .SelectMany(g => g.OrderBy(SmartKeepSortKey).Skip(1))
+            .ToList();
+
+        if (deleteList.Count == 0)
+        {
+            MessageBox.Show("没有发现可智能删除的重复文件", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        MessageBoxResult result = MessageBox.Show(
+            $"智能删除会在每组重复文件中保留 1 个文件，其余文件放入回收站。\n\n" +
+            $"保留规则：优先保留创建时间最早、路径层级最浅的文件。\n" +
+            $"本次将删除 {deleteList.Count} 个文件到回收站。\n\n" +
+            $"确定继续吗？",
+            "提示",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.OK)
+        {
+            ExecuteSmartDelete(deleteList);
+        }
+    }
+
+    /// <summary>
+    /// 执行智能删除: 将不需要保留的重复文件放入回收站, 并刷新列表。
+    /// </summary>
+    /// <param name="deleteList">要删除的文件列表</param>
+    private void ExecuteSmartDelete(List<DuplicateFilesEntryWrapper> deleteList)
+    {
+        string[] filePaths = deleteList
+            .Select(e => e.Entry.FilePath)
+            .Where(filePath => !string.IsNullOrWhiteSpace(filePath))
+            .Select(filePath => filePath!)
+            .ToArray();
+        _duplicateFilesService.MoveFileToRecycleBin(filePaths);
+
+        HashSet<string> excludePaths = new HashSet<string>(filePaths, StringComparer.OrdinalIgnoreCase);
+
+        // 筛选 FileList 中不包含在 excludePaths 的条目
+        List<DuplicateFilesEntryWrapper> list = (_mainViewModel.FileList ?? new ObservableCollection<DuplicateFilesEntryWrapper>())
+            .Where(entry => entry?.Entry.FilePath is { } filePath && !excludePaths.Contains(filePath))
+            .ToList();
+
+        _mainViewModel.FileList = new ObservableCollection<DuplicateFilesEntryWrapper>(list);
+
+        // 同步更新“不搜索”时使用的原始扫描结果
+        _scanResultDuplicateFileList = (_scanResultDuplicateFileList ?? new List<DuplicateFilesEntryWrapper>())
+            .Where(entry => entry?.Entry.FilePath is { } filePath && !excludePaths.Contains(filePath))
+            .ToList();
+    }
+
+    /// <summary>
+    /// 智能删除保留文件的排序依据。
+    /// 排序越靠前越优先保留。
+    /// </summary>
+    /// <param name="wrapper">重复文件条目</param>
+    /// <returns>排序键</returns>
+    private static (DateTime CreateTime, int DirectoryDepth, int PathLength, string FileName) SmartKeepSortKey(
+        DuplicateFilesEntryWrapper wrapper)
+    {
+        string? directory = Path.GetDirectoryName(wrapper.Entry.FilePath);
+        int directoryDepth = string.IsNullOrWhiteSpace(directory)
+            ? 0
+            : directory.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length;
+
+        return (
+            wrapper.Entry.FileCreateTime ?? DateTime.MaxValue,
+            directoryDepth,
+            wrapper.Entry.FilePath?.Length ?? int.MaxValue,
+            wrapper.Entry.FileName ?? "");
+    }
+
     private void GetSelectedAll(object sender, RoutedEventArgs e)
     {
         List<DuplicateFilesEntryWrapper> list = _mainViewModel.FileList.Where(e => e.IsSelected).ToList();
