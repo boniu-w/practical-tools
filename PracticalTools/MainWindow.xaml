@@ -307,5 +307,11 @@
                 </StackPanel>
             </Grid>
         </TabItem>-->
+        
+        <TabItem Header="杂项">
+            <Grid Background="#f2f3f8">
+                <viewMessage:MoveFilePage></viewMessage:MoveFilePage>
+            </Grid>
+        </TabItem>
     </TabControl>
 </Window>

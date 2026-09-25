@@ -68,6 +68,10 @@ namespace PracticalTools.Views
             dc.WrapperSelectedChangedEvent();
             dc.GpgStatusMessage = "密钥对已生成";
             dc.GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
+
+            // 生成成功后清空输入框
+            dc.EmailText = "";
+            SelectKeytPassword.Password = "";
         }
     }
 }
