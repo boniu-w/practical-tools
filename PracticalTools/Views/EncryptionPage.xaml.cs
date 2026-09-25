@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
 using PracticalTools.GPG;
@@ -123,6 +124,12 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
             }
 
             var gpgFileWrapper = entryWrappers[0];
+
+            // 加密中提示 + 改变鼠标形状
+            dc.GpgStatusMessage = "加密中...";
+            dc.GpgStatusColor = new SolidColorBrush(Colors.DodgerBlue);
+            OutputPathText.Text = "加密中...";
+            Mouse.OverrideCursor = Cursors.Wait;
             await GpgHelper.EncryptFileByPublicString(dc.SelectedFilePath, outPath, gpgFileWrapper.GpgFile.PublicKey);
 
             dc.GpgStatusMessage = $"加密成功！输出: {outPath}";
@@ -133,6 +140,10 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
         {
             dc.GpgStatusMessage = $"加密失败：{ex.Message}";
             dc.GpgStatusColor = new SolidColorBrush(Colors.Red);
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
         }
     }
 }

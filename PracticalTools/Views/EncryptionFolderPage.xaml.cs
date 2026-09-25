@@ -5,6 +5,7 @@ using PracticalTools.util;
 using PracticalTools.vo;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace PracticalTools.Views;
@@ -85,6 +86,12 @@ public partial class EncryptionFolderPage : UserControl
                     return;
             }
 
+            // 加密中提示 + 改变鼠标形状
+            dc.GpgStatusMessage = "加密中...";
+            dc.GpgStatusColor = new SolidColorBrush(Colors.DodgerBlue);
+            OutputPathText.Text = "加密中...";
+            Mouse.OverrideCursor = Cursors.Wait;
+
             // 先打包成 zip，再用公钥加密
             FileUtil.ZipDirectory(_selectedFolderPath, tempZip);
             var gpgFileWrapper = entryWrappers[0];
@@ -101,6 +108,7 @@ public partial class EncryptionFolderPage : UserControl
         }
         finally
         {
+            Mouse.OverrideCursor = null;
             if (File.Exists(tempZip))
                 File.Delete(tempZip);
         }
