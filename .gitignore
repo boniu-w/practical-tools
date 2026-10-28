@@ -25,4 +25,5 @@ PracticalTools.sln.DotSettings.user
 .agents/
 
 publish/
+publish-*/
 build.log

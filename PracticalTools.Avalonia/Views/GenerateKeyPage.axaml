@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PracticalTools.Desktop.Views.GenerateKeyPage">
+  <ScrollViewer>
+    <StackPanel x:Name="Form" Margin="16" Spacing="12">
+      <TextBlock Text="生成 GPG 密钥对" FontSize="22" />
+      <TextBox x:Name="Identity" Watermark="身份，例如 姓名 &lt;email@example.com&gt;" />
+      <TextBox x:Name="Passphrase" PasswordChar="●" Watermark="设置私钥保护口令" />
+      <TextBox x:Name="ConfirmPassphrase" PasswordChar="●" Watermark="再次输入口令" />
+      <TextBlock Text="RSA 3072 位 · 无到期时间 · 密钥生成可能需要几秒钟" />
+      <Button Content="生成密钥对" Classes="accent" Click="Generate" />
+      <ProgressBar x:Name="Progress" IsVisible="False" IsIndeterminate="True" />
+      <TextBlock x:Name="Fingerprint" TextWrapping="Wrap" />
+      <TextBox x:Name="PublicKey" Height="150" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Watermark="生成后的公钥" />
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button x:Name="ExportPublic" Content="导出公钥" IsEnabled="False" Click="SavePublic" />
+        <Button x:Name="ExportSecret" Content="导出私钥" IsEnabled="False" Click="SaveSecret" />
+      </StackPanel>
+      <TextBlock Text="密钥只在当前会话中保存，请分别导出公钥和私钥并妥善保管口令。" TextWrapping="Wrap" />
+      <TextBlock x:Name="Status" TextWrapping="Wrap" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:PracticalTools.Desktop.Views"
+        x:Class="PracticalTools.Desktop.MainWindow"
+        Title="实用工具 · Avalonia" Width="1040" Height="760" MinWidth="760" MinHeight="600">
+  <Grid Margin="28" RowDefinitions="Auto,*" RowSpacing="20">
+    <StackPanel Spacing="6">
+      <TextBlock Text="实用工具" FontSize="28" FontWeight="SemiBold" />
+      <TextBlock Text="跨平台迁移预览 · Windows / macOS / Linux" Opacity="0.65" />
+    </StackPanel>
+    <TabControl Grid.Row="1">
+      <TabItem Header="首页">
+        <StackPanel Margin="16" Spacing="16">
+          <TextBlock Text="GPG 文件工具" FontSize="24" />
+          <TextBlock Text="文件加密、解密和密钥生成已接入共享 GPG 核心。选择对应页签开始使用。" TextWrapping="Wrap" />
+          <TextBlock Text="此版本为迁移预览。密钥库、激活、重复文件扫描、文件夹操作和解密预览尚未迁移，请使用原 Windows 版本。" TextWrapping="Wrap" />
+          <TextBlock Text="密钥仅保存在当前会话内存中。关闭应用前，请在生成密钥页分别导出公钥和私钥。" TextWrapping="Wrap" />
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="文件加密"><views:FileCryptoPage /></TabItem>
+      <TabItem Header="文件解密"><views:FileCryptoPage Decrypt="True" /></TabItem>
+      <TabItem Header="生成密钥"><views:GenerateKeyPage /></TabItem>
+    </TabControl>
+  </Grid>
+</Window>
