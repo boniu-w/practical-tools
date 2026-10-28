@@ -34,21 +34,27 @@ dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release
 
 ## Avalonia 跨平台迁移（ava 分支）
 
-目前采用两个桌面入口共用核心的渐进迁移方式：
+当前路线与待办见[迁移计划](迁移到Avalonia跨平台改造计划书.md)，各次验证结果见[迁移记录](docs/avalonia-migration.md)。目前采用两个桌面入口共用核心的渐进迁移方式：
 
 - `PracticalTools`：原 WPF 完整版，仍仅支持 Windows。
-- `PracticalTools.Core`：`net8.0` 共享 GPG 核心，保留原命名空间。
+- `PracticalTools.Core`：`net8.0` 共享 GPG 核心、数据模型、数据库上下文与激活服务，保留原命名空间。
 - `PracticalTools.Avalonia`：Avalonia 11.3 迁移预览，支持文件加密、解密和 RSA 密钥对生成、导出。
 - `PracticalTools.Core.Tests`：可跨平台运行的 GPG 往返与文件保护测试。
+- `PracticalTools.Avalonia.Tests`：激活窗口与主窗口的无界面自动化测试。
 
 ```powershell
 dotnet run --project PracticalTools.Avalonia/PracticalTools.Avalonia.csproj
 dotnet test PracticalTools.Core.Tests/PracticalTools.Core.Tests.csproj -c Release
+dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -c Release
 ```
 
 预览版从 ASCII armored 密钥文件导入或粘贴密钥，不读取原 Windows 数据库。生成的密钥只在当前会话内存中保留，关闭前需要分别导出公钥、私钥。输出文件须使用新文件名，避免误覆盖；操作失败时会清理临时输出。
 
-尚未迁移：密钥库 CRUD、数据库与 DPAPI 数据保护、激活检查、单实例管理、重复文件扫描、文件夹加解密、解密预览。预览版不是完整正式版。
+已迁移启动流程：首次运行输入原版激活码，之后从 SQLCipher 加密数据库读取激活记录；同一用户数据目录只允许运行一个 Avalonia 实例。数据库和日志位于系统当前用户的 LocalApplicationData 下的 `PracticalTools/Avalonia`，激活窗口和首页均显示实际路径。删除或更换发布目录不会清除激活记录。
+
+新版本使用独立数据库，不自动复制或覆盖原 WPF 安装目录中的旧库。旧版 DPAPI 密文只能在原 Windows 用户环境中恢复；目前继续通过 ASCII 密钥文件导入，不直接复用旧库。激活规则沿用原版，首次启动需重新输入激活码。
+
+尚未迁移：密钥库 CRUD、跨平台口令存储与旧库导入、重复文件扫描、文件夹加解密、解密预览。预览版不是完整正式版。
 
 macOS 发布目录目前为命令行可执行文件及运行依赖，尚未制作 `.app`、签名或公证。在 Mac 上可执行：
 

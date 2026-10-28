@@ -13,7 +13,8 @@
         <StackPanel Margin="16" Spacing="16">
           <TextBlock Text="GPG 文件工具" FontSize="24" />
           <TextBlock Text="文件加密、解密和密钥生成已接入共享 GPG 核心。选择对应页签开始使用。" TextWrapping="Wrap" />
-          <TextBlock Text="此版本为迁移预览。密钥库、激活、重复文件扫描、文件夹操作和解密预览尚未迁移，请使用原 Windows 版本。" TextWrapping="Wrap" />
+          <TextBlock Text="此版本为迁移预览。激活记录已持久化；密钥库、重复文件扫描、文件夹操作和解密预览尚未迁移，请使用原 Windows 版本。" TextWrapping="Wrap" />
+          <TextBlock x:Name="DataLocation" TextWrapping="Wrap" Opacity="0.65" />
           <TextBlock Text="密钥仅保存在当前会话内存中。关闭应用前，请在生成密钥页分别导出公钥和私钥。" TextWrapping="Wrap" />
         </StackPanel>
       </TabItem>

@@ -17,6 +17,9 @@ public static class CryptoHelper
         if (string.IsNullOrWhiteSpace(plainText))
             return plainText;
 
+        if (!OperatingSystem.IsWindows())
+            throw new PlatformNotSupportedException("旧版密钥口令使用 Windows DPAPI，跨平台口令存储尚未迁移。");
+
         byte[] plainBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
         // DataProtectionScope.CurrentUser: 只有当前 Windows 用户能解密
         byte[] encryptedBytes = ProtectedData.Protect(plainBytes, null, DataProtectionScope.CurrentUser);
@@ -31,6 +34,9 @@ public static class CryptoHelper
     {
         if (string.IsNullOrWhiteSpace(cipherText))
             return cipherText;
+
+        if (!OperatingSystem.IsWindows())
+            throw new PlatformNotSupportedException("旧版密钥口令仅能由原 Windows 用户解密，请使用密钥文件导入功能。");
 
         try
         {
