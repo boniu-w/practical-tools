@@ -13,6 +13,7 @@ namespace PracticalTools.Views;
 
 public partial class EncryptionPage : UserControl, INotifyPropertyChanged
 {
+    public event Action<string>? EncryptionCompleted;
     public EncryptionPage()
     {
         InitializeComponent();
@@ -128,6 +129,7 @@ public partial class EncryptionPage : UserControl, INotifyPropertyChanged
             dc.GpgStatusMessage = $"加密成功！输出: {outPath}";
             dc.GpgStatusColor = new SolidColorBrush(Colors.ForestGreen);
             OutputPathText.Text = $"加密成功！输出: {outPath}";
+            EncryptionCompleted?.Invoke(outPath);
         }
         catch (Exception ex)
         {

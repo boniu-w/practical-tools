@@ -653,28 +653,38 @@ public class GpgHelper
         string privateKeyString,
         string passphrase)
     {
+        DecryptFileStreaming(inputFile, outputFile, privateKeyString, passphrase, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// 流式解密预览文件，校验完整性后返回 PGP 中的原文件名。取消时由预览会话清理临时输出。
+    /// </summary>
+    public static Task<string> DecryptFileForPreviewAsync(string inputFile, string outputFile,
+        string privateKeyString, string passphrase, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() => DecryptFileStreaming(inputFile, outputFile, privateKeyString,
+            passphrase, cancellationToken), cancellationToken);
+    }
+
+    private static string DecryptFileStreaming(string inputFile, string outputFile,
+        string privateKeyString, string passphrase, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
         using var input = File.OpenRead(inputFile);
         using var decoderStream = PgpUtilities.GetDecoderStream(input);
+        var pgpObjFactory = new PgpObjectFactory(decoderStream);
 
-        using var memStream = new MemoryStream();
-        decoderStream.CopyTo(memStream);
-        memStream.Position = 0;
-
-        var pgpObjFactory = new PgpObjectFactory(memStream);
-
-        PgpEncryptedDataList encDataList = null;
         var obj = pgpObjFactory.NextPgpObject();
+        var encDataList = obj as PgpEncryptedDataList
+            ?? pgpObjFactory.NextPgpObject() as PgpEncryptedDataList
+            ?? throw new PgpException("文件不是有效的 PGP 加密文件。");
 
-        if (obj is PgpEncryptedDataList list)
-            encDataList = list;
-        else
-            encDataList = (PgpEncryptedDataList)pgpObjFactory.NextPgpObject();
-
-        PgpPrivateKey privateKey = null;
-        PgpPublicKeyEncryptedData encryptedData = null;
+        PgpPrivateKey? privateKey = null;
+        PgpPublicKeyEncryptedData? encryptedData = null;
 
         foreach (PgpPublicKeyEncryptedData data in encDataList.GetEncryptedDataObjects())
         {
+            cancellationToken.ThrowIfCancellationRequested();
             using var privateKeyStream = new MemoryStream(Encoding.UTF8.GetBytes(privateKeyString));
             privateKey = FindPrivateKey(privateKeyStream, data.KeyId, passphrase);
 
@@ -685,30 +695,41 @@ public class GpgHelper
             }
         }
 
-        if (privateKey == null)
+        if (privateKey == null || encryptedData == null)
             throw new ArgumentException("未找到匹配的私钥");
 
         using var clear = encryptedData.GetDataStream(privateKey);
         var plainFact = new PgpObjectFactory(clear);
         var message = plainFact.NextPgpObject();
 
-        if (message is PgpCompressedData compressedData)
+        while (message is PgpCompressedData compressedData)
         {
             var compFact = new PgpObjectFactory(compressedData.GetDataStream());
             message = compFact.NextPgpObject();
         }
 
+        string originalFileName;
         if (message is PgpLiteralData literalData)
         {
+            originalFileName = literalData.FileName;
             using var unc = literalData.GetInputStream();
             using var output = File.Create(outputFile);
-            Streams.PipeAll(unc, output);
+            var buffer = new byte[64 * 1024];
+            int read;
+            while ((read = unc.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                output.Write(buffer, 0, read);
+            }
         }
         else
             throw new PgpException("无法解析解密数据");
 
         if (encryptedData.IsIntegrityProtected() && !encryptedData.Verify())
             throw new PgpException("完整性校验失败");
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return originalFileName;
     }
 
     /// <summary>

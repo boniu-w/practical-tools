@@ -5,9 +5,22 @@ namespace PracticalTools.Views;
 
 public partial class GpgUniversal : UserControl
 {
+    private bool _previewExpanded;
+    private GridLength _keyListHeight;
+
     public GpgUniversal()
     {
         InitializeComponent();
+        FileEncryptPage.EncryptionCompleted += PreviewPage.SetEncryptedFile;
+        PreviewPage.ExpandedChanged += expanded =>
+        {
+            if (_previewExpanded == expanded) return;
+            _previewExpanded = expanded;
+            if (expanded) _keyListHeight = KeyListRow.Height;
+            KeyListPanel.Visibility = PreviewSplitter.Visibility = expanded ? Visibility.Collapsed : Visibility.Visible;
+            KeyListRow.Height = expanded ? new GridLength(0) : _keyListHeight;
+            PreviewSplitterRow.Height = new GridLength(expanded ? 0 : 6);
+        };
     }
 
     private void EncryptMode_Checked(object sender, RoutedEventArgs e)

@@ -31,7 +31,8 @@
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="60*" />
-                <RowDefinition Height="40*" />
+                <RowDefinition x:Name="PreviewSplitterRow" Height="6" />
+                <RowDefinition x:Name="KeyListRow" Height="40*" />
             </Grid.RowDefinitions>
 
             <!--标题-->
@@ -94,11 +95,18 @@
                     <TabItem Header="我要生成一个密钥对" Background="Chartreuse">
                         <local:GenerateKeyPair />
                     </TabItem>
+
+                    <TabItem Header="查看加密文件">
+                        <local:DecryptionPreviewPage x:Name="PreviewPage" />
+                    </TabItem>
                 </TabControl>
             </Grid>
 
+            <GridSplitter x:Name="PreviewSplitter" Grid.Row="1" Height="6" HorizontalAlignment="Stretch"
+                          ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"
+                          Background="#E0E0E0" />
             <!--表格-->
-            <Grid Grid.Row="1">
+            <Grid x:Name="KeyListPanel" Grid.Row="2">
                 <Grid>
                     <local:Message />
                 </Grid>

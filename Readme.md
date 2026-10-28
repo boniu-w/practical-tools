@@ -27,6 +27,9 @@
   # 发布 Release 版本（自包含单文件，无需安装 .NET）
   dotnet publish PracticalTools/PracticalTools.csproj -c Release -o ./publish
 
+# 发布 苹果版本
+ dotnet publish PracticalTools/PracticalTools.csproj -c Release -r osx-arm64 --self-contained true -o
+  ./publish-mac-arm64
 
 ```
 

@@ -4,6 +4,7 @@
         <TargetFramework>net8.0-windows</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
@@ -11,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Using Include="System.IO" />
         <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
         <PackageReference Include="MSTest.TestAdapter" Version="3.0.4" />

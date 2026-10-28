@@ -129,6 +129,7 @@ public partial class App : Application
         }
 
         Log.Information("应用启动");
+        DecryptedPreviewSession.CleanupPreviousSessions();
 
         // 确保数据库目录存在（SQLite 不会自动创建父目录）
         var dbDir = Path.GetDirectoryName(DbFullPath);
