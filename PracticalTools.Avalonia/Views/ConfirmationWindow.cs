@@ -8,18 +8,20 @@ public sealed class ConfirmationWindow : Window
     public ConfirmationWindow(string message)
     {
         Title = "确认删除";
-        Width = 560; Height = 260;
+        Width = 680; Height = 360;
         var yes = new Button { Name = "ConfirmButton", Content = "确认删除" };
         var cancel = new Button { Name = "CancelButton", Content = "取消" };
         yes.Click += (_, _) => Close(true);
         cancel.Click += (_, _) => Close(false);
-        Content = new StackPanel
+        var buttons = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 12, Children = { cancel, yes } };
+        Grid.SetRow(buttons, 1);
+        Content = new Grid
         {
-            Margin = new Thickness(24), Spacing = 20,
+            Margin = new Thickness(24), RowDefinitions = new RowDefinitions("*,Auto"), RowSpacing = 20,
             Children =
             {
-                new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
-                new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 12, Children = { cancel, yes } }
+                new ScrollViewer { Content = new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap } },
+                buttons
             }
         };
     }

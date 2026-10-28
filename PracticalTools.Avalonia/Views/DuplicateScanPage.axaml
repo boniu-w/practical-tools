@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PracticalTools.Desktop.Views.DuplicateScanPage">
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="10">
+      <TextBlock Text="重复文件扫描" FontSize="22" />
+      <StackPanel x:Name="Inputs" Spacing="8">
+        <TextBox x:Name="Roots" AcceptsReturn="True" Height="70" Watermark="扫描目录，每行一个；或点击选择多个目录" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Content="选择目录" Click="PickFolders" />
+          <TextBox x:Name="Extensions" Width="310" Watermark="扩展名，如 .txt;.pdf，留空为全部" />
+          <Button x:Name="ScanButton" Content="开始扫描" Classes="accent" Click="Start" />
+        </StackPanel>
+      </StackPanel>
+      <Button x:Name="CancelButton" Content="取消扫描" IsEnabled="False" Click="Cancel" />
+      <ProgressBar x:Name="Progress" IsVisible="False" IsIndeterminate="True" />
+      <TextBlock x:Name="Status" Text="按大小和 SHA-256 比较内容，不仅比较名称。扫描完成后自动保存记录。" TextWrapping="Wrap" />
+      <StackPanel x:Name="Actions" Spacing="8" IsEnabled="False">
+        <TextBox x:Name="Search" Watermark="筛选文件名或路径" TextChanged="Filter" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button x:Name="SuggestButton" Content="智能选择（每组保留一份）" Click="Suggest" />
+          <ComboBox x:Name="RemovalMode" SelectedIndex="0">
+            <ComboBoxItem x:Name="RecycleChoice" Content="移入 Windows 回收站" />
+            <ComboBoxItem Content="永久删除（不可恢复）" />
+          </ComboBox>
+          <Button x:Name="RemoveButton" Content="移除所选…" Click="Remove" />
+        </StackPanel>
+      </StackPanel>
+      <TextBlock Text="支持多选。移除前将显示完整路径并再次检查文件与保留副本；每组至少保留一份。非 Windows 暂未接入系统回收站，永久删除需明确确认。" TextWrapping="Wrap" FontSize="12" />
+      <DataGrid x:Name="Results" Height="280" IsReadOnly="True" AutoGenerateColumns="False" SelectionMode="Extended">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="重复组" Binding="{Binding Group}" Width="115" />
+          <DataGridTextColumn Header="文件名" Binding="{Binding Name}" Width="170" />
+          <DataGridTextColumn Header="字节数" Binding="{Binding Length}" Width="90" />
+          <DataGridTextColumn Header="完整路径" Binding="{Binding FilePath}" Width="480" />
+        </DataGrid.Columns>
+      </DataGrid>
+      <TextBlock x:Name="Warnings" TextWrapping="Wrap" FontSize="12" />
+      <Expander Header="扫描记录（最近 500 条，只读，不用于删除）">
+        <StackPanel Spacing="8">
+          <Button x:Name="HistoryButton" Content="加载记录" Click="LoadHistory" />
+          <DataGrid x:Name="History" Height="230" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="文件名" Binding="{Binding FileName}" Width="170" />
+              <DataGridTextColumn Header="原路径" Binding="{Binding FilePath}" Width="430" />
+              <DataGridTextColumn Header="记录时间" Binding="{Binding ScanTime}" Width="170" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </StackPanel>
+      </Expander>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

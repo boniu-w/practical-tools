@@ -2,12 +2,14 @@ using Avalonia.Controls;
 using PracticalTools.Storage;
 using PracticalTools.GPG;
 using PracticalTools.Migration;
+using PracticalTools.DuplicateFiles.Scanning;
 
 namespace PracticalTools.Desktop;
 
 public partial class MainWindow : Window
 {
-    public MainWindow(AppDataPaths paths, KeyLibrary? library = null, MigrationPackageService? migration = null)
+    public MainWindow(AppDataPaths paths, KeyLibrary? library = null, MigrationPackageService? migration = null,
+        IDuplicateScanner? scanner = null, ScanHistoryStore? scanHistory = null)
     {
         InitializeComponent();
         DataLocation.Text = $"数据和日志目录：{paths.Root}";
@@ -19,5 +21,6 @@ public partial class MainWindow : Window
             LibraryPage.Configure(library);
         }
         if (migration != null) MigrationPage.Configure(migration);
+        if (scanner != null) ScanPage.Configure(scanner, scanHistory);
     }
 }

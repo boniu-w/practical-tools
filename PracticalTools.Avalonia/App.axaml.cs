@@ -11,6 +11,7 @@ using PracticalTools.Storage;
 using PracticalTools.Security;
 using PracticalTools.GPG;
 using PracticalTools.Migration;
+using PracticalTools.DuplicateFiles.Scanning;
 using Serilog;
 
 namespace PracticalTools.Desktop;
@@ -75,6 +76,8 @@ public partial class App : Application
             services.AddSingleton<ActivationService>();
             services.AddSingleton<KeyLibrary>();
             services.AddSingleton<MigrationPackageService>();
+            services.AddSingleton<IDuplicateScanner, DuplicateScanner>();
+            services.AddSingleton<ScanHistoryStore>();
             services.AddTransient<MainWindow>();
             _services = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
             var activated = await Task.Run(() =>

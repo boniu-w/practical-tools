@@ -38,7 +38,7 @@ dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release
 
 - `PracticalTools`：原 WPF 完整版，仍仅支持 Windows。
 - `PracticalTools.Core`：`net8.0` 共享 GPG 核心、数据模型、数据库上下文与激活服务，保留原命名空间。
-- `PracticalTools.Avalonia`：Avalonia 11.3 迁移预览，支持密钥库、文件加解密、RSA 密钥生成及导入导出。
+- `PracticalTools.Avalonia`：Avalonia 11.3 迁移预览，支持密钥库、数据迁移、文件加解密及重复文件扫描。
 - `PracticalTools.Core.Tests`：可跨平台运行的 GPG 往返与文件保护测试。
 - `PracticalTools.Avalonia.Tests`：激活窗口与主窗口的无界面自动化测试。
 
@@ -58,7 +58,9 @@ dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -
 
 密钥库的口令存储使用 AES-256-GCM，保护密钥位于用户数据目录的 `secret-protection.key`，原 WPF 继续使用 DPAPI。请退出应用后成套备份数据库和密钥文件；缺失保护密钥时无法恢复已有口令。格式、权限及恢复规则见[口令保护说明](docs/secret-protection.md)。
 
-尚未迁移界面：重复文件扫描、文件管理、黑名单、文件夹加解密、解密预览。其中三类已有记录可先随迁移包保存到库。密钥库暂只编辑名称和说明，尚无私钥口令修改或已有密钥有效期修改功能。预览版不是完整正式版。
+“重复扫描”已支持多目录、扩展名过滤、大小 + SHA-256 判重、进度与取消、筛选、多选和每组保留一份的智能选择。完成后保存扫描记录，可只读查看最近 500 条；历史记录不能直接用来删除。移除前展示完整路径并复查内容，失败项保留。Windows 提供系统回收站选项；非 Windows 当前仅提供明确确认的永久删除。详见[扫描说明与验证边界](docs/duplicate-scanning.md)。
+
+尚未迁移界面：文件管理、黑名单、文件夹加解密、解密预览。文件管理和黑名单的记录可先随迁移包保存到库。密钥库暂只编辑名称和说明，尚无私钥口令修改或已有密钥有效期修改功能。预览版不是完整正式版。
 
 Windows 新版自包含入口为 `publish-win-x64/PracticalTools.Avalonia.exe`，可用于在原账户下读取旧库并创建迁移包。不要在其他 Windows 用户或 Mac 上尝试直接解开旧 DPAPI 口令。
 
