@@ -7,15 +7,16 @@ namespace PracticalTools.Desktop.Views;
 
 public partial class GenerateKeyPage : UserControl
 {
-    private string? _secretKey;
+    private KeyLibrary? _library;
+    private long? _generatedId;
+    public void Configure(KeyLibrary library) => _library = library;
     public GenerateKeyPage() => InitializeComponent();
 
     private async void Generate(object? sender, RoutedEventArgs e)
     {
         try
         {
-            if (_secretKey != null)
-                throw new InvalidOperationException("当前会话已生成密钥，请先导出保存；需要新密钥时重新打开应用。");
+            if (_library == null) throw new InvalidOperationException("密钥库尚未初始化。");
             var identity = Identity.Text?.Trim();
             var passphrase = Passphrase.Text ?? "";
             if (string.IsNullOrWhiteSpace(identity) || string.IsNullOrWhiteSpace(passphrase))
@@ -24,30 +25,24 @@ public partial class GenerateKeyPage : UserControl
             Form.IsEnabled = false;
             Progress.IsVisible = true;
             Status.Text = "正在生成密钥…";
-            var keys = await Task.Run(() =>
-            {
-                var pair = GpgHelper.GeneratePgpKeyPair(identity, passphrase, 3072);
-                return (Public: GpgHelper.ExportPublicKey(pair.pubRing),
-                    Secret: GpgHelper.ExportPrivateKey(pair.secRing),
-                    Fingerprint: GpgHelper.GetFingerprint(pair.pubRing));
-            });
-            PublicKey.Text = keys.Public;
-            _secretKey = keys.Secret;
+            var keys = await _library.GenerateAsync(identity, passphrase, (int)(KeyBits.Value ?? 3072), (int)(ValidDays.Value ?? 365));
+            _generatedId = keys.Id;
+            PublicKey.Text = await _library.GetPublicKeyAsync(keys.Id);
             Fingerprint.Text = $"公钥指纹：{keys.Fingerprint}";
             ExportPublic.IsEnabled = ExportSecret.IsEnabled = true;
             Passphrase.Text = ConfirmPassphrase.Text = "";
-            Status.Text = "生成成功，请分别导出公钥和私钥。";
+            Status.Text = "生成成功并已保存到密钥库，重启后可继续使用。";
         }
         catch (Exception ex) { Status.Text = ex.Message; }
         finally { Form.IsEnabled = true; Progress.IsVisible = false; }
     }
 
-    private async void SavePublic(object? sender, RoutedEventArgs e) => await SaveAsync(PublicKey.Text, "public.asc");
-    private async void SaveSecret(object? sender, RoutedEventArgs e) => await SaveAsync(_secretKey, "secret.asc");
+    private async void SavePublic(object? sender, RoutedEventArgs e) => await SaveAsync(false, "public.asc");
+    private async void SaveSecret(object? sender, RoutedEventArgs e) => await SaveAsync(true, "secret.asc");
 
-    private async Task SaveAsync(string? content, string name)
+    private async Task SaveAsync(bool secret, string name)
     {
-        if (string.IsNullOrEmpty(content)) return;
+        if (_library == null || !_generatedId.HasValue) return;
         try
         {
             using var file = await TopLevel.GetTopLevel(this)!.StorageProvider.SaveFilePickerAsync(new()
@@ -56,15 +51,7 @@ public partial class GenerateKeyPage : UserControl
             });
             if (file == null) return;
             var path = file.TryGetLocalPath() ?? throw new IOException("请选择本地保存位置。");
-            var options = new FileStreamOptions
-            {
-                Mode = FileMode.CreateNew, Access = FileAccess.Write
-            };
-            if (!OperatingSystem.IsWindows())
-                options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
-            await using var stream = new FileStream(path, options);
-            await using var writer = new StreamWriter(stream);
-            await writer.WriteAsync(content);
+            await _library.ExportAsync(_generatedId.Value, path, secret);
             Status.Text = $"已导出：{path}";
         }
         catch (Exception ex) { Status.Text = $"导出失败：{ex.Message}"; }

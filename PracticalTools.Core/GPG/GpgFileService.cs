@@ -6,6 +6,7 @@ namespace PracticalTools.GPG;
 
 public class GpgFileService
 {
+    private static readonly SnowflakeId IdGenerator = new(1, 1);
     private readonly MyDbContext _myDbContext;
 
     public GpgFileService(MyDbContext myDbContext)
@@ -104,7 +105,7 @@ public class GpgFileService
     )
     {
         GpgFile gpgFile = new GpgFile();
-        long id = new SnowflakeId(1, 1).NextId();
+        long id = IdGenerator.NextId();
         DateTimeOffset dateTimeOffset = DateTimeOffset.Now;
         long milliseconds = dateTimeOffset.ToUnixTimeMilliseconds();
         DateTime now = dateTimeOffset.DateTime;

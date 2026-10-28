@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PracticalTools.Desktop.Views.KeyLibraryPage">
+  <ScrollViewer>
+    <StackPanel x:Name="Form" Margin="16" Spacing="10">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Content="刷新" Click="Refresh" />
+        <Button Content="导入密钥" Click="Import" />
+        <Button Content="导出公钥" Click="ExportPublic" />
+        <Button Content="导出私钥" Click="ExportSecret" />
+        <Button x:Name="DeleteButton" Content="删除…" Click="Delete" />
+      </StackPanel>
+      <DataGrid x:Name="Keys" Height="230" AutoGenerateColumns="False" IsReadOnly="True"
+                SelectionMode="Single" SelectionChanged="Selected">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="220" />
+          <DataGridTextColumn Header="类型" Binding="{Binding Kind}" Width="90" />
+          <DataGridTextColumn Header="位数" Binding="{Binding KeySize}" Width="70" />
+          <DataGridTextColumn Header="到期时间（空为永久）" Binding="{Binding EndsOn}" Width="190" />
+        </DataGrid.Columns>
+      </DataGrid>
+      <TextBlock x:Name="Details" Text="选择密钥查看详情。" TextWrapping="Wrap" />
+      <TextBox x:Name="KeyName" Watermark="显示名称" />
+      <TextBox x:Name="Description" Watermark="说明" />
+      <Button x:Name="SaveButton" Content="保存名称和说明" Click="SaveMetadata" />
+      <TextBlock Text="私钥和口令默认隐藏。公钥可用于加密，只有含私钥的记录可用于解密。" TextWrapping="Wrap" />
+      <TextBlock x:Name="Status" TextWrapping="Wrap" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

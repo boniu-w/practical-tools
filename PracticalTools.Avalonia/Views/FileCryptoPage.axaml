@@ -4,6 +4,11 @@
   <ScrollViewer>
     <StackPanel x:Name="Form" Margin="16" Spacing="12">
       <TextBlock x:Name="Heading" Text="使用公钥加密文件" FontSize="22" />
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+        <ComboBox x:Name="LibraryKeys" PlaceholderText="从密钥库选择（可选）" HorizontalAlignment="Stretch" SelectionChanged="LibrarySelected" />
+        <Button Grid.Column="1" Content="刷新密钥" Click="RefreshLibrary" />
+        <Button Grid.Column="2" Content="手工输入" Click="UseManualKey" />
+      </Grid>
       <TextBlock Text="输入文件" />
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
         <TextBox x:Name="InputPath" Watermark="选择需要处理的文件" />

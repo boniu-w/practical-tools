@@ -8,6 +8,32 @@ namespace PracticalTools.Desktop.Views;
 
 public partial class FileCryptoPage : UserControl
 {
+    private KeyLibrary? _library;
+    private Task? _reloadTask;
+    public void Configure(KeyLibrary library) => _library = library;
+
+    public Task ReloadKeysAsync() => _reloadTask is { IsCompleted: false } ? _reloadTask : _reloadTask = ReloadKeysCoreAsync();
+
+    private async Task ReloadKeysCoreAsync()
+    {
+        if (_library == null) return;
+        try
+        {
+            var items = await _library.ListAsync();
+            LibraryKeys.ItemsSource = Decrypt ? items.Where(k => k.HasSecret).ToList() : items;
+        }
+        catch (Exception ex) { Status.Text = ex.Message; }
+    }
+
+    private async void RefreshLibrary(object? sender, RoutedEventArgs e) => await ReloadKeysAsync();
+    private void UseManualKey(object? sender, RoutedEventArgs e) => LibraryKeys.SelectedItem = null;
+    private void LibrarySelected(object? sender, SelectionChangedEventArgs e)
+    {
+        if (KeyText == null || Passphrase == null) return;
+        var selected = LibraryKeys.SelectedItem is KeySummary;
+        KeyText.IsEnabled = Passphrase.IsEnabled = !selected;
+        if (selected) { KeyText.Text = Passphrase.Text = ""; }
+    }
     public static readonly StyledProperty<bool> DecryptProperty =
         AvaloniaProperty.Register<FileCryptoPage, bool>(nameof(Decrypt));
 
@@ -16,12 +42,14 @@ public partial class FileCryptoPage : UserControl
     public FileCryptoPage()
     {
         InitializeComponent();
-        AttachedToVisualTree += (_, _) =>
+        AttachedToVisualTree += async (_, _) =>
         {
             Heading.Text = Decrypt ? "使用私钥解密文件" : "使用公钥加密文件";
             KeyLabel.Text = Decrypt ? "ASCII 私钥" : "ASCII 公钥";
             Passphrase.IsVisible = Decrypt;
             RunButton.Content = Decrypt ? "开始解密" : "开始加密";
+            if (Decrypt) KeyText.PasswordChar = '●';
+            await ReloadKeysAsync();
         };
     }
 
@@ -50,6 +78,7 @@ public partial class FileCryptoPage : UserControl
             using var file = files[0];
             await using var stream = await file.OpenReadAsync();
             using var reader = new StreamReader(stream);
+            LibraryKeys.SelectedItem = null;
             KeyText.Text = await reader.ReadToEndAsync();
         }
         catch (Exception ex) { Status.Text = $"导入失败：{ex.Message}"; }
@@ -77,14 +106,32 @@ public partial class FileCryptoPage : UserControl
         {
             var input = InputPath.Text?.Trim();
             var output = OutputPath.Text?.Trim();
+            Form.IsEnabled = false;
+            Progress.IsVisible = true;
             var key = KeyText.Text;
+            var passphrase = Passphrase.Text ?? "";
+            if (_library != null && LibraryKeys.SelectedItem is KeySummary selected)
+            {
+                if (Decrypt)
+                {
+                    var material = await _library.GetSecretAsync(selected.Id);
+                    key = material.Key;
+                    passphrase = material.Passphrase;
+                }
+                else
+                {
+                    if (selected.EndsOn.HasValue && selected.EndsOn.Value.ToUniversalTime() <= DateTime.UtcNow)
+                        throw new InvalidOperationException("该密钥已过期，请选择有效密钥加密。");
+                    key = await _library.GetPublicKeyAsync(selected.Id);
+                }
+            }
             if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(output) || string.IsNullOrWhiteSpace(key))
                 throw new ArgumentException("请选择输入、输出文件并提供密钥。");
             Form.IsEnabled = false;
             Progress.IsVisible = true;
             Status.Text = Decrypt ? "正在解密…" : "正在加密…";
             if (Decrypt)
-                await GpgFileOperations.DecryptAsync(input, output, key, Passphrase.Text ?? "");
+                await GpgFileOperations.DecryptAsync(input, output, key, passphrase);
             else
                 await GpgFileOperations.EncryptAsync(input, output, key);
             Status.Text = $"处理成功：{output}";

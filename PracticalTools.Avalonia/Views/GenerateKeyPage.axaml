@@ -7,8 +7,11 @@
       <TextBox x:Name="Identity" Watermark="身份，例如 姓名 &lt;email@example.com&gt;" />
       <TextBox x:Name="Passphrase" PasswordChar="●" Watermark="设置私钥保护口令" />
       <TextBox x:Name="ConfirmPassphrase" PasswordChar="●" Watermark="再次输入口令" />
-      <TextBlock Text="RSA 3072 位 · 无到期时间 · 密钥生成可能需要几秒钟" />
-      <Button Content="生成密钥对" Classes="accent" Click="Generate" />
+      <TextBlock Text="RSA 位数（2048 / 3072 / 4096）" />
+      <NumericUpDown x:Name="KeyBits" Minimum="2048" Maximum="4096" Increment="1024" Value="3072" />
+      <TextBlock Text="有效天数（0 表示永不过期）" />
+      <NumericUpDown x:Name="ValidDays" Minimum="0" Maximum="36500" Increment="1" Value="365" />
+      <Button x:Name="GenerateButton" Content="生成密钥对" Classes="accent" Click="Generate" />
       <ProgressBar x:Name="Progress" IsVisible="False" IsIndeterminate="True" />
       <TextBlock x:Name="Fingerprint" TextWrapping="Wrap" />
       <TextBox x:Name="PublicKey" Height="150" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Watermark="生成后的公钥" />
@@ -16,7 +19,7 @@
         <Button x:Name="ExportPublic" Content="导出公钥" IsEnabled="False" Click="SavePublic" />
         <Button x:Name="ExportSecret" Content="导出私钥" IsEnabled="False" Click="SaveSecret" />
       </StackPanel>
-      <TextBlock Text="密钥只在当前会话中保存，请分别导出公钥和私钥并妥善保管口令。" TextWrapping="Wrap" />
+      <TextBlock Text="生成成功后自动保存到密钥库，重启可继续使用。也可分别导出公私钥。" TextWrapping="Wrap" />
       <TextBlock x:Name="Status" TextWrapping="Wrap" />
     </StackPanel>
   </ScrollViewer>
