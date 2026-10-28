@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using PracticalTools.Storage;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using Org.BouncyCastle.Bcpg.Sig;
@@ -488,7 +489,15 @@ public class GpgHelper
     /// <param name="inputFile">要加密的源文件路径。</param>
     /// <param name="outputFile">密文输出文件路径。</param>
     /// <param name="pubKeyStream">公钥流。</param>
-    private static void EncryptFileBy(string inputFile, string outputFile, Stream pubKeyStream)
+    internal static void EncryptFileForArchive(string inputFile, string outputFile, string publicKey,
+        CancellationToken cancellationToken, IProgress<long>? progress)
+    {
+        using var key = new MemoryStream(Encoding.UTF8.GetBytes(publicKey));
+        EncryptFileBy(inputFile, outputFile, key, cancellationToken, progress);
+    }
+
+    private static void EncryptFileBy(string inputFile, string outputFile, Stream pubKeyStream,
+        CancellationToken cancellationToken = default, IProgress<long>? progress = null)
     {
         var pubKey = ReadPublicKey(pubKeyStream);
 
@@ -512,7 +521,20 @@ public class GpgHelper
             DateTime.UtcNow);
 
         using var input = File.OpenRead(inputFile);
-        Streams.PipeAll(input, literalOut);
+        var buffer = new byte[65536];
+        long copied = 0;
+        var timer = Stopwatch.StartNew();
+        int read;
+        while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            literalOut.Write(buffer, 0, read);
+            copied += read;
+            if (timer.ElapsedMilliseconds >= 100) { progress?.Report(copied); timer.Restart(); }
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        progress?.Report(copied);
+        cancellationToken.ThrowIfCancellationRequested();
     }
 
     /// <summary>
@@ -666,11 +688,17 @@ public class GpgHelper
             passphrase, cancellationToken), cancellationToken);
     }
 
+    internal static string DecryptFileForArchive(string inputFile, string outputFile, string secretKey, string passphrase,
+        CancellationToken token, IProgress<long>? progress, long maxOutputBytes) =>
+        DecryptFileStreaming(inputFile, outputFile, secretKey, passphrase, token, progress, maxOutputBytes, requireIntegrity: true);
+
     private static string DecryptFileStreaming(string inputFile, string outputFile,
-        string privateKeyString, string passphrase, CancellationToken cancellationToken)
+        string privateKeyString, string passphrase, CancellationToken cancellationToken,
+        IProgress<long>? progress = null, long maxOutputBytes = long.MaxValue, bool requireIntegrity = false)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using var input = File.OpenRead(inputFile);
+        using var input = requireIntegrity ? LocalFileAccess.Open(inputFile) : File.OpenRead(inputFile);
+        if (requireIntegrity && !input.CanSeek) throw new InvalidDataException("文件夹归档输入必须是可定位的普通文件。");
         using var decoderStream = PgpUtilities.GetDecoderStream(input);
         var pgpObjFactory = new PgpObjectFactory(decoderStream);
 
@@ -698,12 +726,18 @@ public class GpgHelper
         if (privateKey == null || encryptedData == null)
             throw new ArgumentException("未找到匹配的私钥");
 
+        if (requireIntegrity && !encryptedData.IsIntegrityProtected())
+            throw new PgpException("文件夹归档必须包含 PGP 完整性保护。");
+
         using var clear = encryptedData.GetDataStream(privateKey);
         var plainFact = new PgpObjectFactory(clear);
         var message = plainFact.NextPgpObject();
 
+        var compressionDepth = 0;
         while (message is PgpCompressedData compressedData)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (requireIntegrity && ++compressionDepth > 8) throw new PgpException("PGP 压缩嵌套层数超过限制。");
             var compFact = new PgpObjectFactory(compressedData.GetDataStream());
             message = compFact.NextPgpObject();
         }
@@ -715,12 +749,18 @@ public class GpgHelper
             using var unc = literalData.GetInputStream();
             using var output = File.Create(outputFile);
             var buffer = new byte[64 * 1024];
+            long copied = 0;
+            var timer = Stopwatch.StartNew();
             int read;
             while ((read = unc.Read(buffer, 0, buffer.Length)) > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                if (read > maxOutputBytes - copied) throw new InvalidDataException("解密出的 ZIP 超过大小限制。");
                 output.Write(buffer, 0, read);
+                copied += read;
+                if (timer.ElapsedMilliseconds >= 100) { progress?.Report(copied); timer.Restart(); }
             }
+            progress?.Report(copied);
         }
         else
             throw new PgpException("无法解析解密数据");

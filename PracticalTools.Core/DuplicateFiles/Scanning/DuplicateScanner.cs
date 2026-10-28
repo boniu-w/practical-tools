@@ -1,3 +1,4 @@
+using PracticalTools.Storage;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
@@ -16,13 +17,13 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
         IProgress<ScanProgress>? progress, CancellationToken token)
     {
         var roots = inputRoots.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => Path.TrimEndingDirectorySeparator(Path.GetFullPath(p.Trim())))
-            .DistinctBy(ScanFileAccess.Identity).ToList();
+            .DistinctBy(LocalFileAccess.Identity).ToList();
         if (roots.Count == 0) throw new ArgumentException("请选择至少一个目录。");
         foreach (var root in roots)
         {
             token.ThrowIfCancellationRequested();
             if (!Directory.Exists(root)) throw new DirectoryNotFoundException($"目录不存在：{root}");
-            ScanFileAccess.NoLinks(root);
+            LocalFileAccess.NoLinks(root);
         }
         var filter = ParseExtensions(extensions);
         var files = new Dictionary<string, ScannedFile>(StringComparer.Ordinal);
@@ -36,10 +37,10 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
         while (pending.TryPop(out var directory))
         {
             token.ThrowIfCancellationRequested();
-            if (!visited.Add(ScanFileAccess.Identity(directory.Path))) continue;
+            if (!visited.Add(LocalFileAccess.Identity(directory.Path))) continue;
             try
             {
-                ScanFileAccess.NoLinks(directory.Path);
+                LocalFileAccess.NoLinks(directory.Path);
                 foreach (var path in Directory.EnumerateFileSystemEntries(directory.Path))
                 {
                     token.ThrowIfCancellationRequested();
@@ -50,7 +51,7 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
                         if ((attributes & FileAttributes.Directory) != 0) { pending.Push((path, directory.Root)); continue; }
                         if (filter.Count > 0 && !filter.Contains(Path.GetExtension(path))) continue;
                         var info = new FileInfo(path);
-                        var identity = ScanFileAccess.Identity(path);
+                        var identity = LocalFileAccess.Identity(path);
                         if (files.TryGetValue(identity, out var previous) && previous.FilePath != path)
                             Warn(path, "路径仅大小写或 Unicode 形式不同，已保守跳过，避免别名被当作两份文件。");
                         else files.TryAdd(identity, new(path, directory.Root, info.Length, info.CreationTimeUtc, info.LastWriteTimeUtc));
@@ -76,8 +77,8 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
             token.ThrowIfCancellationRequested();
             try
             {
-                ScanFileAccess.CheckSnapshot(file);
-                using var stream = ScanFileAccess.Open(file.FilePath);
+                CheckSnapshot(file);
+                using var stream = LocalFileAccess.Open(file.FilePath);
                 if (!stream.CanSeek) throw new IOException("不是可定位的普通文件，已跳过。");
                 using var sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
                 using var md5 = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
@@ -97,8 +98,8 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
                     }
                 }
                 if (stream.ReadByte() != -1) throw new IOException("读取期间文件长度变化，已跳过。");
-                ScanFileAccess.CheckSnapshot(file);
-                files[ScanFileAccess.Identity(file.FilePath)] = file with
+                CheckSnapshot(file);
+                files[LocalFileAccess.Identity(file.FilePath)] = file with
                 { Sha256 = Convert.ToHexString(sha.GetHashAndReset()), Md5 = Convert.ToHexString(md5.GetHashAndReset()) };
                 hashed++;
             }
@@ -132,7 +133,7 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
     private FileRemovalReport Remove(DuplicateScan scan, IReadOnlyList<ScannedFile> selected, FileRemovalMode mode)
     {
         if (mode == FileRemovalMode.Recycle && !CanRecycle) throw new PlatformNotSupportedException("当前平台尚未接入回收站，不会自动降级为永久删除。");
-        var requested = selected.DistinctBy(f => ScanFileAccess.Identity(f.FilePath)).ToList();
+        var requested = selected.DistinctBy(f => LocalFileAccess.Identity(f.FilePath)).ToList();
         if (requested.Count == 0) throw new ArgumentException("请先选择要移除的文件。");
         if (requested.Any(f => !scan.Duplicates.Contains(f))) throw new ArgumentException("所选文件不属于本次完整扫描的重复结果。");
         var paths = requested.Select(f => f.FilePath).ToHashSet(StringComparer.Ordinal);
@@ -159,11 +160,11 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
                     try
                     {
                         using var candidate = OpenVerified(file, true);
-                        ScanFileAccess.CheckSnapshot(keeperFile!);
+                        CheckSnapshot(keeperFile!);
                         keeper.Position = candidate.Position = 0;
                         if (!EqualBytes(keeper, candidate, file.Length)) throw new IOException("文件内容已不同，请重新扫描。");
-                        ScanFileAccess.CheckSnapshot(file);
-                        ScanFileAccess.CheckSnapshot(keeperFile!);
+                        CheckSnapshot(file);
+                        CheckSnapshot(keeperFile!);
                         _removal.Remove(file.FilePath, mode);
                         if (File.Exists(file.FilePath)) throw new IOException("系统未移除该文件。");
                         outcomes.Add(new(file.FilePath, true, null));
@@ -183,10 +184,13 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
         return new(outcomes, cancelled);
     }
 
+    private static void CheckSnapshot(ScannedFile file) => LocalFileAccess.CheckSnapshot(
+        file.FilePath, file.Root, file.Length, file.CreationUtc, file.LastWriteUtc);
+
     private static FileStream OpenVerified(ScannedFile file, bool allowDelete)
     {
-        ScanFileAccess.CheckSnapshot(file);
-        var stream = ScanFileAccess.Open(file.FilePath, allowDelete);
+        CheckSnapshot(file);
+        var stream = LocalFileAccess.Open(file.FilePath, allowDelete);
         try
         {
             if (!stream.CanSeek || stream.Length != file.Length)
@@ -202,7 +206,7 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
             }
             if (stream.ReadByte() != -1 || Convert.ToHexString(sha.GetHashAndReset()) != file.Sha256)
                 throw new IOException("文件内容在扫描后已变化，请重新扫描。");
-            ScanFileAccess.CheckSnapshot(file);
+            CheckSnapshot(file);
             return stream;
         }
         catch { stream.Dispose(); throw; }

@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PracticalTools.Desktop.Views.FolderCryptoPage">
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="12">
+      <TextBlock x:Name="Heading" Text="加密整个文件夹" FontSize="22" />
+      <TextBlock Text="保留相对目录结构和空目录。输出必须是新名称；不覆盖、合并或修改源数据。" TextWrapping="Wrap" />
+      <StackPanel x:Name="Inputs" Spacing="12">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <ComboBox x:Name="LibraryKeys" HorizontalAlignment="Stretch" PlaceholderText="从密钥库选择一个密钥" />
+          <Button Grid.Column="1" Content="刷新密钥" Click="RefreshKeys" />
+        </Grid>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBox x:Name="InputPath" Watermark="输入目录" />
+          <Button Grid.Column="1" Content="选择输入" Click="PickInput" />
+        </Grid>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBox x:Name="OutputPath" Watermark="完整的新输出路径" />
+          <Button Grid.Column="1" Content="保存到…" Click="PickOutput" />
+        </Grid>
+        <Button x:Name="RunButton" Content="打包并加密" Classes="accent" Click="Run" />
+      </StackPanel>
+      <Button x:Name="CancelButton" Content="取消" IsEnabled="False" Click="Cancel" />
+      <ProgressBar x:Name="Progress" IsVisible="False" IsIndeterminate="True" Maximum="100" />
+      <TextBlock x:Name="Status" TextWrapping="Wrap" />
+      <TextBlock Text="默认最多 100000 个归档条目，展开数据与明文 ZIP 各限 20 GiB。链接、特殊文件及不可移植/冲突名称会拒绝整个操作。" FontSize="12" TextWrapping="Wrap" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

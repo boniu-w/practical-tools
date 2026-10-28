@@ -2,9 +2,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
-namespace PracticalTools.DuplicateFiles.Scanning;
+namespace PracticalTools.Storage;
 
-internal static class ScanFileAccess
+internal static class LocalFileAccess
 {
     // Conservative path identity avoids treating case/Unicode aliases as two independent copies.
     // On case-sensitive volumes this may omit case-only/normalization-only distinct paths.
@@ -40,14 +40,14 @@ internal static class ScanFileAccess
     [DllImport("libc", EntryPoint = "open", SetLastError = true)]
     private static extern int OpenUnix([MarshalAs(UnmanagedType.LPUTF8Str)] string path, int flags);
 
-    internal static void CheckSnapshot(ScannedFile file)
+    internal static void CheckSnapshot(string filePath, string root, long length, DateTime creationUtc, DateTime lastWriteUtc)
     {
-        var relative = Path.GetRelativePath(file.Root, file.FilePath);
+        var relative = Path.GetRelativePath(root, filePath);
         if (Path.IsPathRooted(relative) || relative == ".." || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
             throw new IOException("文件不在扫描目录内。");
-        NoLinks(file.FilePath);
-        var info = new FileInfo(file.FilePath);
-        if (info.Length != file.Length || info.LastWriteTimeUtc != file.LastWriteUtc || info.CreationTimeUtc != file.CreationUtc)
-            throw new IOException("文件在扫描后发生变化，请重新扫描。");
+        NoLinks(filePath);
+        var info = new FileInfo(filePath);
+        if (info.Length != length || info.LastWriteTimeUtc != lastWriteUtc || info.CreationTimeUtc != creationUtc)
+            throw new IOException("文件状态已变化，请重新执行操作。");
     }
 }
