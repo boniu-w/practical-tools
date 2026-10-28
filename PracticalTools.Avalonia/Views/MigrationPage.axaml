@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PracticalTools.Desktop.Views.MigrationPage">
+  <ScrollViewer>
+    <StackPanel x:Name="Form" Margin="16" Spacing="10">
+      <TextBlock Text="加密数据迁移" FontSize="22" />
+      <TextBlock Text="迁移密钥、黑名单、扫描与文件记录。激活记录不迁移。重复指纹或同类记录 ID 跳过，不覆盖目标数据；导入失败全部回滚。" TextWrapping="Wrap" />
+      <TextBox x:Name="Password" PasswordChar="●" Watermark="迁移口令（至少 12 字符）" />
+      <TextBox x:Name="Confirmation" PasswordChar="●" Watermark="导出时再次输入迁移口令（导入不需要）" />
+      <TextBlock Text="1. 在原 Windows 用户下创建迁移包，或导出当前新版数据" FontWeight="SemiBold" />
+      <TextBlock Text="请先关闭原 WPF 程序并备份旧库。旧库只读，不执行格式升级或替换。包含 DPAPI 的旧库必须在原 Windows 用户下解开。" TextWrapping="Wrap" />
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBox x:Name="LegacyPath" IsReadOnly="True" Watermark="旧版 sqlite-PracticalTools.db" />
+        <Button x:Name="ChooseLegacyButton" Grid.Column="1" Content="选择旧库" Click="ChooseLegacy" />
+      </Grid>
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <Button x:Name="ExportLegacyButton" Content="旧库 → 迁移包" Click="ExportLegacy" />
+        <Button Content="当前数据 → 迁移包" Click="ExportCurrent" />
+      </StackPanel>
+      <TextBlock Text="2. 在目标电脑选择迁移包，输入同一迁移口令并预览" FontWeight="SemiBold" />
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBox x:Name="PackagePath" IsReadOnly="True" Watermark=".ptmigration 文件" />
+        <Button Grid.Column="1" Content="选择迁移包" Click="ChoosePackage" />
+      </Grid>
+      <Button x:Name="PreviewButton" Content="验证并预览" Click="Preview" />
+      <TextBlock x:Name="PreviewText" TextWrapping="Wrap" />
+      <Button x:Name="ConfirmImportButton" Content="确认导入（重复项跳过）" IsEnabled="False" Classes="accent" Click="Import" />
+      <TextBlock x:Name="Status" TextWrapping="Wrap" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

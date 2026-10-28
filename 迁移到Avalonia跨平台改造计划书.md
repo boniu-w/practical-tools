@@ -1,6 +1,6 @@
 # 实用工具：WPF → Avalonia 跨平台迁移计划
 
-更新日期：2026-10-28 · 工作分支：`ava` · 当前进度：前四步已实现，第五步旧 Windows 数据迁移待开始。
+更新日期：2026-10-28 · 工作分支：`ava` · 当前进度：前五步已实现，第六步优先推进重复文件扫描。
 
 本文件维护当前架构、待办顺序与验收条件；[迁移记录](docs/avalonia-migration.md)保存各次实施与验证历史。两者出现差异时先核对代码与最近验证结果，再同步文档。历史测试通过不等于所有平台实机通过。
 
@@ -15,8 +15,8 @@
 | `PracticalTools` | 原 WPF 完整版，`net8.0-windows` | 保留，仅 Windows |
 | `PracticalTools.Core` | `net8.0`：GPG 核心、数据模型、EF 上下文、激活服务、存储基础设施 | 已抽取一部分，仍保留 Windows DPAPI 兼容路径 |
 | `PracticalTools.Avalonia` | `net8.0`：新桌面入口、首页、GPG 操作页、激活窗口 | 迁移预览版 |
-| `PracticalTools.Core.Tests` | GPG、密钥库、存储与口令保护集成测试 | 最近验证 33/33 通过 |
-| `PracticalTools.Avalonia.Tests` | 无界面窗口测试 | 最近验证 5/5 通过 |
+| `PracticalTools.Core.Tests` | GPG、密钥库、存储、口令保护与数据迁移测试 | 最近验证 44/44 通过 |
+| `PracticalTools.Avalonia.Tests` | 无界面窗口测试 | 最近验证 6/6 通过 |
 | `TestProject` | 原 Windows 测试项目 | 保留，尚未整体跨平台迁移 |
 
 当前实际选用 Avalonia 11.3.21、Fluent 主题、Inter 字体、异步 StorageProvider 文件选择器；密钥库使用兼容的 DataGrid 11.3.13（该包没有 11.3.21 版本）。没有安装 Semi.Avalonia。WPF 原有 MaterialDesign 包继续留在原项目中。
@@ -27,15 +27,16 @@
 |---|---|---|
 | 应用入口、首页、导航 | 已实现 | 后续功能按需接入 |
 | 文件加密、解密 | 共享核心，支持库中选钥与手工输入 | 各平台实机验收 |
-| 密钥输入 | 可导入公钥/私钥到库，也可手工粘贴用于文件操作 | 旧库与迁移包导入 |
+| 密钥输入 | 单钥文件、旧库迁移包、新版迁移包均可导入；文件操作可手工粘贴 | 实机验收 |
 | 密钥生成 | RSA 2048/3072/4096、有效天数、自动入库、公私钥导出 | 已有密钥的过期签名修改未迁移 |
 | 生成密钥保存 | 自动持久化，重启后可选用 | 密钥轮换与迁移包 |
 | 输出文件保护 | 拒绝覆盖和同路径，成功后才提交临时输出 | 持续覆盖异常与平台差异 |
-| 数据库初始化 | 用户目录中的 SQLCipher 数据库 | 完整版本化升级、旧库导入 |
-| 跨平台口令存储 | AES-GCM、私有密钥文件、保护器注入与模型缓存隔离，已接入密钥库 | 旧库导入、轮换未实现 |
+| 数据库初始化 | 用户目录中的 SQLCipher 数据库，支持旧数据显式导入 | 完整版本化升级 |
+| 跨平台口令存储 | AES-GCM、本地保护密钥、转换器隔离、旧口令通过包迁移并重新加密 | 轮换未实现 |
 | 激活 | 原规则、新库记录、激活窗口 | 原平台实机启动验收 |
 | DI、日志、单实例 | 已接入启动与退出流程 | 跨进程及各平台验收 |
 | 密钥库列表、编辑、详情、删除 | 已实现，编辑名称和说明、删除需确认 | 私钥口令修改等扩展能力 |
+| 旧库与跨机器迁移 | 四类记录的加密包导出、预览、事务导入；重复跳过，不迁移激活 | 其他表/实际文件不迁移，平台实测待完成 |
 | 重复文件扫描、文件管理、黑名单 | 原 WPF 入口保留 | 服务梳理与 Avalonia UI |
 | 文件夹加解密、解密预览 | 原 WPF 入口保留 | 批量流程、预览容器、临时数据生命周期 |
 | Excel、签名、验签等其余能力 | 尚未完成 Avalonia 对应入口梳理 | 按原版实际调用清单逐项验收 |
@@ -52,6 +53,7 @@
 | `ActivationWindow` | `Views/ActivationWindow.axaml` |
 | 密钥管理表格及详情/元数据编辑 | `Views/KeyLibraryPage.axaml` |
 | 密钥文件导入 | `Views/KeyImportWindow.axaml` |
+| 旧数据库迁移/跨机器迁移 | `Views/MigrationPage.axaml` |
 
 不要求逐个复制原 WPF 文件。新页面按职责组织；原 MainViewModel 尚未拆分，新功能不继续依赖这个 WPF ViewModel。
 
@@ -102,18 +104,18 @@
 
 验收通过：生成→保存→服务容器重建→选用密钥加解密；导入、编辑、删除、取消与导出保护有集成测试。编辑范围为名称和说明，现有密钥的口令及过期签名修改尚未迁移。
 
-### 第五步：旧 Windows 数据迁移（下一次改造起点）
+### 第五步：旧 Windows 数据迁移（已完成）
 
-依赖第三步；与第四步接口协同设计，完整库导入在密钥库验收后交付。
+已交付已知四类数据的显式迁移，不等同于复制任意完整数据库。详见[迁移说明](docs/data-migration.md)，未映射表与实际文件不在包内。
 
-- [ ] 提供显式导入入口，不自动覆盖当前库或改写旧库。
-- [ ] 在原 Windows 用户环境中解开旧 DPAPI 口令，再写入新保护格式；复制数据库到 Mac 不代表口令已迁移。
-- [ ] 设计跨机器迁移包的加密、口令和元数据版本；失败回滚、重复导入与冲突策略必须明确。
-- [ ] 区分未加密 SQLite、SQLCipher 和不同口令格式，不盲目复用原就地迁移代码。
+- [x] 显式迁移页与预览/确认流程，旧库只读，目标重复项跳过不覆盖。
+- [x] 在原 Windows 用户下严格解开 DPAPI 并验证私钥口令，通过加密包传输，在目标重新加密。
+- [x] v1 包格式、至少 12 字符迁移口令、PBKDF2-SHA256 + AES-GCM；四类记录统一事务、失败回滚、重复指纹/同类 ID 跳过。
+- [x] 完整文件头识别明文库/SQLCipher；严格区分旧明文、DPAPI 和新版 AES 格式，不调用原就地迁移助手。
 
-验收：旧库保留、数据数量与密钥指纹一致、失败不产生半成品、原 Windows 用户解密后可在新平台正常使用。
+已验证当前 Windows 账户下旧库主文件哈希不变、四类数据数量与密钥指纹一致、损坏 DPAPI 拒绝、错误迁移口令/篡改拒绝、预览后包变化拒绝、重复导入、事务回滚和激活保留。跨平台迁移包实现不依赖 DPAPI，Mac/Linux 实机导入仍待第七步。
 
-### 第六步：剩余工具功能
+### 第六步：剩余工具功能（下一次改造起点：重复文件扫描）
 
 - [ ] 重复文件扫描：梳理服务，迁移目录选择、进度、取消、结果及删除确认。
 - [ ] 明确各平台回收站策略；永久删除与移入回收站要在界面上准确区分，不能默认静默降级。
@@ -138,21 +140,22 @@
 
 - Avalonia 数据根目录：系统 `LocalApplicationData/PracticalTools/Avalonia`，实际值由 `AppDataPaths` 计算，窗口内可查看。
 - 数据库为 `sqlite-PracticalTools.db`，保护密钥为 `secret-protection.key`，日志在 `logs/`，实例锁为 `app.lock`；不依赖发布目录，替换发布文件不会清除数据。数据库和保护密钥必须配套备份。
-- 新数据库独立于原 WPF 安装目录，当前首次启动需要原激活码；不自动迁移旧激活记录。
+- 新数据库独立于原 WPF 安装目录，首次启动需要原激活码；迁移包也不导入旧激活记录。
 - 激活和密钥库均已接入数据库，生成密钥自动持久化；也可手工导出公私钥作为额外备份。
-- 当前 Core 含平台专用兼容路径，不代表所有公开方法已跨平台。Avalonia 密钥库已使用新保护器；旧 Windows 库导入仍依赖第五步。
+- 当前 Core 含平台专用兼容路径，不代表所有公开方法已跨平台。旧库导出需原 Windows 账户，其他平台使用加密迁移包导入，目标使用自己的保护密钥。
 - 保留 WPF 入口及其依赖，达到功能对等和平台验收后再决定是否移除。
 
 ## 6. 验证基线与操作命令
 
-最近一次验证（2026-10-28，第四步完成时）：
+最近一次验证（2026-10-28，第五步完成时）：
 
 | 检查 | 结果 | 边界 |
 |---|---|---|
-| Core 测试 | 33/33 通过 | 当前 Windows 环境执行，覆盖密钥库与口令保护 |
-| Avalonia 无界面窗口测试 | 5/5 通过 | 不替代真实平台交互测试 |
+| Core 测试 | 44/44 通过 | 当前 Windows 用户执行，覆盖数据迁移和事务回滚 |
+| Avalonia 无界面窗口测试 | 6/6 通过 | 不替代真实平台交互测试 |
 | WPF Release 构建 | 通过，116 条警告 | 未在本次执行完整旧版功能测试 |
 | Avalonia Mac ARM64 自包含发布 | 通过 | 未在 Mac 实机启动验收 |
+| Avalonia Windows x64 自包含发布 | 通过 | 可在原账户运行并创建旧库迁移包；原生界面流程待实机验收 |
 | Avalonia 动态资源加载警告 | 三处 AVLN3001 | DI 构造的窗口加载有测试覆盖，警告仍待处理 |
 
 运行与检查：
@@ -163,6 +166,7 @@ dotnet test PracticalTools.Core.Tests/PracticalTools.Core.Tests.csproj -c Releas
 dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -c Release
 dotnet build PracticalTools/PracticalTools.csproj -c Release
 dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -o ./publish-mac-arm64
+dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release -r win-x64 --self-contained true -o ./publish-win-x64
 ```
 
 在 Mac 上保留整个发布目录，并运行：

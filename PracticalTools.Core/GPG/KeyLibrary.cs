@@ -16,7 +16,7 @@ public sealed record KeySummary(long Id, string Name, string Fingerprint, bool H
 public sealed record KeyMaterial(string Key, string Passphrase);
 
 /// <summary>One scope per operation; lists/details never materialize passwords or private keys.</summary>
-public sealed class KeyLibrary(IServiceScopeFactory scopeFactory)
+public sealed partial class KeyLibrary(IServiceScopeFactory scopeFactory)
 {
     private readonly SemaphoreSlim _writes = new(1, 1);
 
@@ -57,36 +57,10 @@ public sealed class KeyLibrary(IServiceScopeFactory scopeFactory)
     public Task<KeySummary> ImportAsync(string armoredKey, string passphrase, string name, string description,
         bool imported = true) => WriteAsync(db =>
     {
-        using var input = new MemoryStream(Encoding.UTF8.GetBytes(armoredKey));
-        using var decoder = PgpUtilities.GetDecoderStream(input);
-        var factory = new PgpObjectFactory(decoder);
-        var ring = factory.NextPgpObject();
-        if (factory.NextPgpObject() != null) throw new ArgumentException("请每次导入一个完整的密钥环。");
-        PgpPublicKeyRing publicRing;
-        string secret = "";
-        if (ring is PgpSecretKeyRing secretRing)
-        {
-            var keys = secretRing.GetSecretKeys().Cast<PgpSecretKey>().ToList();
-            if (keys.Count == 0 || keys.Any(k => k.IsPrivateKeyEmpty))
-                throw new ArgumentException("不支持缺少私钥材料的密钥环。");
-            try
-            {
-                foreach (var key in keys)
-                    if (key.ExtractPrivateKey(passphrase.ToCharArray()) == null)
-                        throw new ArgumentException("无法解锁私钥。");
-            }
-            catch (PgpException) { throw new ArgumentException("私钥口令不正确，或私钥已损坏。"); }
-            using var publicBytes = new MemoryStream();
-            foreach (var key in secretRing.GetPublicKeys()) key.Encode(publicBytes);
-            publicRing = new PgpPublicKeyRing(publicBytes.ToArray());
-            secret = GpgHelper.ExportPrivateKey(secretRing);
-        }
-        else if (ring is PgpPublicKeyRing pub)
-        {
-            publicRing = pub;
-            passphrase = "";
-        }
-        else throw new ArgumentException("请选择 ASCII armored GPG 公钥或私钥文件。");
+        var parsed = KeyImportValidator.Parse(armoredKey, passphrase);
+        var publicRing = parsed.PublicRing;
+        var secret = parsed.SecretKey;
+        passphrase = parsed.Passphrase;
 
         var primary = publicRing.GetPublicKey();
         var fingerprint = GpgHelper.GetFingerprint(publicRing);

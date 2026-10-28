@@ -22,6 +22,7 @@
       <TabItem Header="文件解密"><views:FileCryptoPage x:Name="DecryptPage" Decrypt="True" /></TabItem>
       <TabItem Header="生成密钥"><views:GenerateKeyPage x:Name="GeneratePage" /></TabItem>
       <TabItem Header="密钥库"><views:KeyLibraryPage x:Name="LibraryPage" /></TabItem>
+      <TabItem Header="数据迁移"><views:MigrationPage x:Name="MigrationPage" /></TabItem>
     </TabControl>
   </Grid>
 </Window>
