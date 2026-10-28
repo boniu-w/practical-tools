@@ -4,6 +4,7 @@ using PracticalTools.GPG;
 using PracticalTools.vo;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace PracticalTools.Views;
@@ -108,6 +109,12 @@ public partial class DencryptionPage : UserControl
             GpgFile file = gpgFileWrapper.GpgFile;
             string passphrase = file.Passphrase;
             string privateKey = file.SecretKey;
+
+            // 解密中提示 + 改变鼠标形状
+            dc.GpgStatusMessage = "解密中...";
+            dc.GpgStatusColor = new SolidColorBrush(Colors.DodgerBlue);
+            OutputPathText.Text = "解密中...";
+            Mouse.OverrideCursor = Cursors.Wait;
             await GpgHelper.DecryptFileByPublicString(dc.SelectedFilePath, outPath, privateKey, passphrase);
 
             dc.GpgStatusMessage = $"解密成功！输出: {outPath}";
@@ -118,6 +125,10 @@ public partial class DencryptionPage : UserControl
         {
             dc.GpgStatusMessage = $"解密失败：{ex.Message}";
             dc.GpgStatusColor = new SolidColorBrush(Colors.Red);
+        }
+        finally
+        {
+            Mouse.OverrideCursor = null;
         }
     }
 }

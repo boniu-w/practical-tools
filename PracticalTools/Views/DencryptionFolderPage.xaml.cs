@@ -5,6 +5,7 @@ using PracticalTools.util;
 using PracticalTools.vo;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace PracticalTools.Views;
@@ -84,6 +85,12 @@ public partial class DencryptionFolderPage : UserControl
 
         try
         {
+            // 解密中提示 + 改变鼠标形状
+            dc.GpgStatusMessage = "解密中...";
+            dc.GpgStatusColor = new SolidColorBrush(Colors.DodgerBlue);
+            OutputPathText.Text = "解密中...";
+            Mouse.OverrideCursor = Cursors.Wait;
+
             // 先解密出 zip，再解压到目标目录
             var gpgFileWrapper = entryWrappers[0];
             GpgFile file = gpgFileWrapper.GpgFile;
@@ -102,6 +109,7 @@ public partial class DencryptionFolderPage : UserControl
         }
         finally
         {
+            Mouse.OverrideCursor = null;
             if (File.Exists(tempZip))
                 File.Delete(tempZip);
         }

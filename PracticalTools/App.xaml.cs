@@ -31,7 +31,24 @@ public partial class App : Application
     /// </summary>
     private static readonly Mutex AppMutex = new(false, @"Global\PracticalTools");
 
-    private static readonly bool IsFirstInstance = AppMutex.WaitOne(TimeSpan.Zero, true);
+    private static readonly bool IsFirstInstance = TryAcquireMutex();
+
+    /// <summary>
+    /// 尝试获取全局互斥体，判断是否为第一个实例。
+    /// 若之前的实例异常退出导致互斥体被遗弃，则视为获取成功。
+    /// </summary>
+    private static bool TryAcquireMutex()
+    {
+        try
+        {
+            return AppMutex.WaitOne(TimeSpan.Zero, true);
+        }
+        catch (AbandonedMutexException)
+        {
+            // 之前的实例异常退出，遗弃了互斥体；当前进程已成功获取，视为第一个实例
+            return true;
+        }
+    }
 
     public App()
     {
