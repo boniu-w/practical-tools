@@ -8,6 +8,7 @@ using PracticalTools.Activation.Service;
 using PracticalTools.Desktop.Views;
 using PracticalTools.Sqlite;
 using PracticalTools.Storage;
+using PracticalTools.Security;
 using Serilog;
 
 namespace PracticalTools.Desktop;
@@ -66,6 +67,8 @@ public partial class App : Application
             SQLitePCL.Batteries_V2.Init();
             var services = new ServiceCollection();
             services.AddSingleton(paths);
+            services.AddSingleton<LocalAesSecretProtector>(_ => new LocalAesSecretProtector(paths.SecretKeyPath));
+            services.AddSingleton<ISecretProtector>(provider => provider.GetRequiredService<LocalAesSecretProtector>());
             services.AddDbContext<MyDbContext>(options => options.UseSqlite(DatabaseInitializer.ConnectionString(paths.DatabasePath)));
             services.AddSingleton<ActivationService>();
             services.AddTransient<MainWindow>();
@@ -73,7 +76,9 @@ public partial class App : Application
             var activated = await Task.Run(() =>
             {
                 using var scope = _services.CreateScope();
-                DatabaseInitializer.Initialize(scope.ServiceProvider.GetRequiredService<MyDbContext>());
+                var database = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+                DatabaseInitializer.InitializeProtectedStore(database,
+                    _services.GetRequiredService<LocalAesSecretProtector>());
                 return _services.GetRequiredService<ActivationService>().IsActivated();
             });
             if (_exiting) return;

@@ -54,7 +54,9 @@ dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -
 
 新版本使用独立数据库，不自动复制或覆盖原 WPF 安装目录中的旧库。旧版 DPAPI 密文只能在原 Windows 用户环境中恢复；目前继续通过 ASCII 密钥文件导入，不直接复用旧库。激活规则沿用原版，首次启动需重新输入激活码。
 
-尚未迁移：密钥库 CRUD、跨平台口令存储与旧库导入、重复文件扫描、文件夹加解密、解密预览。预览版不是完整正式版。
+跨平台口令存储基础已接入数据库：Avalonia 使用 AES-256-GCM，保护密钥位于用户数据目录的 `secret-protection.key`，原 WPF 继续使用 DPAPI。请退出应用后成套备份数据库和密钥文件；缺失保护密钥时无法恢复已有口令。格式、权限及恢复规则见[口令保护说明](docs/secret-protection.md)。密钥库页面尚未接入，此项不会改变当前生成页面的手动导出流程。
+
+尚未迁移：密钥库 CRUD、旧库导入、重复文件扫描、文件夹加解密、解密预览。预览版不是完整正式版。
 
 macOS 发布目录目前为命令行可执行文件及运行依赖，尚未制作 `.app`、签名或公证。在 Mac 上可执行：
 

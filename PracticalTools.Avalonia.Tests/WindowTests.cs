@@ -11,6 +11,7 @@ using PracticalTools.Desktop;
 using PracticalTools.Desktop.Views;
 using PracticalTools.Sqlite;
 using PracticalTools.Storage;
+using PracticalTools.Security;
 using Xunit;
 
 [assembly: AvaloniaTestApplication(typeof(PracticalTools.Desktop.Tests.TestAppBuilder))]
@@ -35,11 +36,14 @@ public class WindowTests
         try
         {
             var services = new ServiceCollection();
+            services.AddSingleton<LocalAesSecretProtector>(_ => new LocalAesSecretProtector(paths.SecretKeyPath));
+            services.AddSingleton<ISecretProtector>(p => p.GetRequiredService<LocalAesSecretProtector>());
             services.AddDbContext<MyDbContext>(o => o.UseSqlite(DatabaseInitializer.ConnectionString(paths.DatabasePath)));
             services.AddSingleton<ActivationService>();
             using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
             using (var scope = provider.CreateScope())
-                DatabaseInitializer.Initialize(scope.ServiceProvider.GetRequiredService<MyDbContext>());
+                DatabaseInitializer.InitializeProtectedStore(scope.ServiceProvider.GetRequiredService<MyDbContext>(),
+                    provider.GetRequiredService<LocalAesSecretProtector>());
             var service = provider.GetRequiredService<ActivationService>();
             var window = new ActivationWindow(service, paths);
             var succeeded = false;

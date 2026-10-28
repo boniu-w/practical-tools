@@ -7,6 +7,7 @@ public sealed class AppDataPaths
     public string DatabasePath => Path.Combine(Root, "sqlite-PracticalTools.db");
     public string LogsDirectory => Path.Combine(Root, "logs");
     public string InstanceLockPath => Path.Combine(Root, "app.lock");
+    public string SecretKeyPath => Path.Combine(Root, "secret-protection.key");
 
     public AppDataPaths(string? root = null)
     {

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PracticalTools.Blacklist.Model;
 using PracticalTools.DuplicateFiles.Model;
@@ -6,11 +7,13 @@ using PracticalTools.FileManager.Model;
 using PracticalTools.GPG;
 using PracticalTools.Activation.Model;
 using PracticalTools.util;
+using PracticalTools.Security;
 
 namespace PracticalTools.Sqlite;
 
 public class MyDbContext : DbContext
 {
+    internal ISecretProtector SecretProtector { get; }
     public DbSet<DuplicateFilesEntry> DuplicateFiles { get; set; }
 
     public DbSet<BlacklistEntry> Blacklist { get; set; }
@@ -21,10 +24,14 @@ public class MyDbContext : DbContext
 
     public DbSet<ActivationRecord> ActivationRecord { get; set; }
 
-    public MyDbContext(DbContextOptions<MyDbContext> options)
+    public MyDbContext(DbContextOptions<MyDbContext> options, ISecretProtector? secretProtector = null)
         : base(options)
     {
+        SecretProtector = secretProtector ?? LegacyDpapiSecretProtector.Instance;
     }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
+        optionsBuilder.ReplaceService<IModelCacheKeyFactory, SecretProtectionModelCacheKeyFactory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,11 +53,12 @@ public class MyDbContext : DbContext
             }
         }
 
-        // GpgFile.Passphrase 使用 DPAPI 加密存储
+        // WPF keeps DPAPI by default; Avalonia explicitly injects its versioned local protector.
+        var protector = SecretProtector;
         modelBuilder.Entity<GpgFile>()
             .Property(e => e.Passphrase)
             .HasConversion(
-                v => CryptoHelper.Encrypt(v),  // 写入 DB 前加密
-                v => CryptoHelper.Decrypt(v));  // 从 DB 读取后解密
+                v => protector.Protect(v),
+                v => protector.Unprotect(v));
     }
 }
