@@ -10,6 +10,11 @@
     <Compile Include="../PracticalTools.Core.Tests/XlsxFixture.cs" Link="Fixtures/XlsxFixture.cs" />
     <Compile Include="../PracticalTools.Core.Tests/PdfFixture.cs" Link="Fixtures/PdfFixture.cs" />
     <Compile Include="../PracticalTools.Core.Tests/MediaFixture.cs" Link="Fixtures/MediaFixture.cs" />
+    <Compile Include="../PracticalTools.Core.Tests/ImageFixture.cs" Link="Fixtures/ImageFixture.cs" />
+    <EmbeddedResource Include="../PracticalTools.Core.Tests/Fixtures/PreviewAac.aac" Link="Fixtures/PreviewAac.aac" LogicalName="PracticalTools.TestFixtures.PreviewAac.aac" />
+    <EmbeddedResource Include="../PracticalTools.Core.Tests/Fixtures/PreviewWmv.wmv" Link="Fixtures/PreviewWmv.wmv" LogicalName="PracticalTools.TestFixtures.PreviewWmv.wmv" />
+    <EmbeddedResource Include="../PracticalTools.Core.Tests/Fixtures/PreviewAvif.avif" Link="Fixtures/PreviewAvif.avif" LogicalName="PracticalTools.TestFixtures.PreviewAvif.avif" />
+    <EmbeddedResource Include="../PracticalTools.Core.Tests/Fixtures/PreviewAnimatedGif.gif" Link="Fixtures/PreviewAnimatedGif.gif" LogicalName="PracticalTools.TestFixtures.PreviewAnimatedGif.gif" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="Avalonia.Headless.XUnit" Version="11.3.21" />
     <PackageReference Include="xunit" Version="2.9.3" />

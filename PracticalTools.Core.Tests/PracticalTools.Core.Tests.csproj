@@ -11,5 +11,9 @@
     <PackageReference Include="MSTest.TestAdapter" Version="3.0.4" />
     <PackageReference Include="MSTest.TestFramework" Version="3.0.4" />
     <ProjectReference Include="../PracticalTools.Core/PracticalTools.Core.csproj" />
+    <EmbeddedResource Include="Fixtures/PreviewAac.aac" LogicalName="PracticalTools.TestFixtures.PreviewAac.aac" />
+    <EmbeddedResource Include="Fixtures/PreviewWmv.wmv" LogicalName="PracticalTools.TestFixtures.PreviewWmv.wmv" />
+    <EmbeddedResource Include="Fixtures/PreviewAvif.avif" LogicalName="PracticalTools.TestFixtures.PreviewAvif.avif" />
+    <EmbeddedResource Include="Fixtures/PreviewAnimatedGif.gif" LogicalName="PracticalTools.TestFixtures.PreviewAnimatedGif.gif" />
   </ItemGroup>
 </Project>

@@ -29,8 +29,71 @@ public class PreviewTests
     [DataRow("mp3", "494433", "mpga")]
     [DataRow("flac", "664c6143", "flac")]
     [DataRow("ogg", "4f676753", "ogg")]
+    [DataRow("aac", "fff1000000e000", "aac")]
+    [DataRow("wmv", "3026b2758e66cf11a6d900aa0062ce6c", "asf")]
     public void MediaSignaturesSelectExplicitDemux(string extension, string hex, string expected) =>
         Assert.AreEqual(expected, MediaPreviewFormats.Validate("test." + extension, Convert.FromHexString(hex)));
+
+    [DataTestMethod]
+    [DataRow("aac", "41444946000000")]
+    [DataRow("aac", "fff16c40489ffcde0200")]
+    [DataRow("wmv", "3026b2758e66cf11a6d900aa0062ce00")]
+    public void MediaSignaturesRejectWrongContainer(string extension, string hex) =>
+        Assert.ThrowsException<InvalidDataException>(() => MediaPreviewFormats.Validate("test." + extension, Convert.FromHexString(hex)));
+
+    [TestMethod]
+    public async Task AacAndWmvPreviewUseExplicitDemux()
+    {
+        foreach (var (name, bytes, demux) in new[]
+                 {
+                     ("audio.aac", PracticalTools.TestFixtures.MediaFixture.Aac(), "aac"),
+                     ("video.wmv", PracticalTools.TestFixtures.MediaFixture.Wmv(), "asf")
+                 })
+        {
+            var input = await Encrypt(name, bytes);
+            var result = await new PreviewService(_root).OpenAsync(input, _secret, "password");
+            Assert.AreEqual(demux, result.MediaDemux); CollectionAssert.AreEqual(bytes, result.Media!); Clean();
+            result.Dispose(); Assert.IsTrue(result.Media!.All(b => b == 0));
+        }
+    }
+
+    [TestMethod]
+    public async Task AvifAndAnimatedGifAreRoutedAsImageBytes()
+    {
+        foreach (var (name, bytes) in new[]
+                 {
+                     ("image.avif", PracticalTools.TestFixtures.ImageFixture.Avif()),
+                     ("animation.gif", PracticalTools.TestFixtures.ImageFixture.AnimatedGif())
+                 })
+        {
+            var input = await Encrypt(name, bytes);
+            var result = await new PreviewService(_root).OpenAsync(input, _secret, "password");
+            CollectionAssert.AreEqual(bytes, result.Image!); Assert.IsNull(result.Media); Clean();
+            result.Dispose(); Assert.IsTrue(result.Image!.All(b => b == 0));
+        }
+    }
+
+    [TestMethod]
+    public void StaleWorkspacesAreCleanedWithoutTouchingOtherEntries()
+    {
+        string stale = Path.Combine(_root, ".practical-tools-folder-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(stale);
+        File.WriteAllText(Path.Combine(stale, "payload"), "secret");
+        string notGuid = Path.Combine(_root, ".practical-tools-folder-not-a-guid");
+        Directory.CreateDirectory(notGuid);
+        string other = Path.Combine(_root, "other");
+        Directory.CreateDirectory(other);
+        string file = Path.Combine(_root, ".practical-tools-folder-" + Guid.NewGuid().ToString("N"));
+        File.WriteAllText(file, "x");
+
+        int removed = PreviewService.CleanupStaleWorkspaces(_root);
+
+        Assert.AreEqual(1, removed);
+        Assert.IsFalse(Directory.Exists(stale));
+        Assert.IsTrue(Directory.Exists(notGuid));
+        Assert.IsTrue(Directory.Exists(other));
+        Assert.IsTrue(File.Exists(file));
+    }
     [TestMethod]
     public async Task PdfBytesAreReturnedAfterCleanupAndClearedOnDispose()
     {

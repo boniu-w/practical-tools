@@ -62,7 +62,7 @@ dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -
 
 “文件夹加密/解密”保留原 WPF 的 ZIP + GPG 格式：整个目录加密成 `.zip.gpg`，恢复相对目录与空目录。支持阶段进度、取消和私有暂存；拒绝覆盖现有文件/目录，失败不发布半成品。已验证新旧版本互读，限制与权限说明见[文件夹加解密](docs/folder-crypto.md)。
 
-“解密预览”现支持文本、PNG/JPEG、DOCX 正文、XLSX 工作表内容、PDF 分页/缩放和常见音视频播放，支持取消与关闭清理。XLSX 可切换工作表，按单元格地址显示原始值，公式只读取缓存、不重算，日期/百分比等格式暂不还原。明文最多 64 MiB，文本与工作簿内容显示最多 20 万字符。PDF 使用 PDFium 静态渲染，支持 50%–200% 缩放；不运行脚本、表单动作或外部链接，带 PDF 打开口令的文件暂不支持。音视频可播放/暂停/停止、跳转及调节音量，默认不自动播放；支持 MP4/MOV/M4A、MKV/WebM、AVI、WAV/MP3/FLAC/OGG 等，AAC/WMV 尚未接入。Windows/Mac 发布目录包含 LibVLC，Linux 需另装兼容 LibVLC 3 与解码/输出插件。详见[预览说明](docs/decryption-preview.md)。
+“解密预览”现支持文本、图片、DOCX 正文、XLSX 工作表内容、PDF 分页/缩放和常见音视频播放，支持取消与关闭清理。图片支持 PNG/JPEG/BMP/GIF/ICO/WebP/AVIF；多帧 GIF 自动播放动画，AVIF 显示首帧。XLSX 可切换工作表，按单元格地址显示原始值，公式只读取缓存、不重算，日期/百分比等格式暂不还原。明文最多 64 MiB，文本与工作簿内容显示最多 20 万字符。PDF 使用 PDFium 静态渲染，支持 50%–200% 缩放；不运行脚本、表单动作或外部链接，带 PDF 打开口令的文件暂不支持。音视频可播放/暂停/停止、跳转及调节音量，默认不自动播放；支持 MP4/MOV/M4A、MKV/WebM、AVI/WMV、WAV/MP3/FLAC/OGG/AAC 等。Windows/Mac 发布目录包含 LibVLC、Magick.NET（AVIF）和 GIF 动画控件，Linux 需另装兼容 LibVLC 3 与解码/输出插件。详见[预览说明](docs/decryption-preview.md)。
 
 尚未迁移界面：文件管理、黑名单。文件管理和黑名单的记录可先随迁移包保存到库。密钥库暂只编辑名称和说明，尚无私钥口令修改或已有密钥有效期修改功能。预览版不是完整正式版。
 

@@ -10,6 +10,7 @@ using PracticalTools.Sqlite;
 using PracticalTools.Storage;
 using PracticalTools.Security;
 using PracticalTools.GPG;
+using PracticalTools.GPG.Preview;
 using PracticalTools.Migration;
 using PracticalTools.DuplicateFiles.Scanning;
 using PracticalTools.GPG.Folders;
@@ -68,6 +69,15 @@ public partial class App : Application
                 .WriteTo.File(Path.Combine(paths.LogsDirectory, "log-.txt"), rollingInterval: RollingInterval.Day)
                 .CreateLogger();
             Log.Information("Avalonia 应用启动，数据目录：{DataDirectory}", paths.Root);
+            try
+            {
+                int removed = PreviewService.CleanupStaleWorkspaces(paths.Root);
+                if (removed > 0) Log.Information("已清理 {Count} 个遗留预览工作区", removed);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "清理遗留预览工作区失败");
+            }
             SQLitePCL.Batteries_V2.Init();
             var services = new ServiceCollection();
             services.AddSingleton(paths);

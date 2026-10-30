@@ -2,7 +2,18 @@
 
 当前架构、里程碑和后续验收条件统一维护在[迁移计划](../迁移到Avalonia跨平台改造计划书.md)。本文件保留实施历史；后面的“第一步”描述当时状态，不代表当前仍未接入数据库和激活。
 
-## 2026-10-30：第六步之六（当前状态：常见音视频预览）
+## 2026-10-30：第六步之七（当前状态：图片/音视频格式补齐与遗留清理）
+
+工作分支 `ava`。在常见音视频预览基础上补齐剩余格式并接入崩溃遗留清理；下一项回到文件管理、黑名单等剩余入口盘点。
+
+- 图片：新增 BMP/GIF/ICO/WebP/AVIF；静态图继续用 SkiaSharp，AVIF 用 Magick.NET-Q8-AnyCPU 14.17.2（首帧，显式格式与内存/磁盘/尺寸/线程上限），多帧 GIF 用 Avalonia.Labs.Gif 11.3.1 动画控件；单帧 GIF 仍静态显示。动画帧数/画布/总像素在交给控件前用 SkiaSharp 预检。
+- 音视频：新增 AAC（ADTS）与 WMV（ASF），强制 `:demux=aac`/`:demux=asf`；MediaPlayback 白名单同步。AAC/WMV 样本由 VLC 转码生成并作为嵌入测试夹具，不下载外部媒体。
+- 崩溃遗留：PrivateWorkspace 增加受限清理，只删除应用数据目录下 `.practical-tools-folder-<32位GUID>` 目录；App 取得单实例锁后执行，失败项跳过并记日志。文件夹加解密在任意输出目录的遗留仍不扫描。
+- 依赖：Magick.NET 增加约 25–30 MB 发布体积（Windows 251 MB、Mac 234 MB）；ThirdParty 增加 Magick.NET/ImageMagick/aom 声明和 Avalonia.Labs.Gif MIT 许可。资源限制不是完整原生沙箱。
+- 验证：Core 123（122 通过/1 跳过）、Avalonia 30/30；原生冒烟 AVI/WMV/WAV/AAC 各 2 轮；可见窗口截图确认 GIF 红/蓝帧交替、AVI 视频窗口与音频预览 UI；WPF Release 116 警告通过；Windows/Mac 自包含发布通过并确认对应 Magick 原生库。
+- 未完成：真实扬声器/声音设备听音（自动化使用静音）、Mac/Linux 实机窗口/声音/文件选择器、动画 WebP/动画 AVIF、文件夹加解密任意目录的崩溃遗留清理。
+
+## 2026-10-30：第六步之六（历史记录：常见音视频预览）
 
 工作分支 `ava`。常见音视频内嵌预览已接入；下一项转向文件管理、黑名单等剩余入口盘点与迁移。预览仍有 AAC/WMV、其他图片类型、崩溃遗留及实机验收待办，并未标记整个第六步完成。
 

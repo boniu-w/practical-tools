@@ -41,6 +41,37 @@ internal sealed class PrivateWorkspace : IDisposable
         return new FileStream(path, options);
     }
 
+    /// <summary>Deletes only directories this class could have created under <paramref name="parent"/>.</summary>
+    internal static int CleanupStale(string parent)
+    {
+        parent = Path.GetFullPath(parent);
+        if (!Directory.Exists(parent)) return 0;
+        string[] directories;
+        try { directories = Directory.GetDirectories(parent, Prefix + "*", SearchOption.TopDirectoryOnly); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return 0; }
+
+        int removed = 0;
+        foreach (string directory in directories)
+        {
+            if (!IsOwnedName(Path.GetFileName(directory))) continue;
+            try
+            {
+                LocalFileAccess.NoLinks(directory);
+                Directory.Delete(directory, recursive: true);
+                removed++;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Keep going: one locked leftover must not block the rest.
+            }
+        }
+        return removed;
+    }
+
+    private static bool IsOwnedName(string name) =>
+        name.StartsWith(Prefix, StringComparison.Ordinal) &&
+        Guid.TryParseExact(name.AsSpan(Prefix.Length), "N", out _);
+
     public void Dispose()
     {
         // Recursive cleanup is restricted to the exact workspace allocated by this instance.

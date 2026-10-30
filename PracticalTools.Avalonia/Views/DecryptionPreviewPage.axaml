@@ -4,7 +4,7 @@
   <Grid Margin="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
     <StackPanel x:Name="Inputs" Spacing="8">
       <TextBlock Text="解密预览" FontSize="22" />
-      <TextBlock Text="支持文本、PNG/JPEG、DOCX/XLSX 内容、PDF 和常见音视频预览；单文件明文上限 64 MiB。" TextWrapping="Wrap" />
+      <TextBlock Text="支持文本、PNG/JPEG/BMP/GIF/ICO/WebP/AVIF 图片、DOCX/XLSX 内容、PDF 和常见音视频（含 AAC/WMV）预览；单文件明文上限 64 MiB。" TextWrapping="Wrap" />
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
         <ComboBox x:Name="LibraryKeys" HorizontalAlignment="Stretch" PlaceholderText="选择包含私钥的密钥" />
         <Button Grid.Column="1" Content="刷新密钥" Click="RefreshKeys" />
@@ -32,7 +32,12 @@
       </StackPanel>
       <TextBox Grid.Row="1" x:Name="TextPreview" IsReadOnly="True" IsUndoEnabled="False" AcceptsReturn="True" TextWrapping="Wrap" IsVisible="False" />
       <views:MediaPreviewView Grid.Row="1" x:Name="MediaView" IsVisible="False" />
-      <ScrollViewer Grid.Row="1" x:Name="ImageHost" IsVisible="False" HorizontalScrollBarVisibility="Auto"><Image x:Name="ImagePreview" Stretch="Uniform" /></ScrollViewer>
+      <ScrollViewer Grid.Row="1" x:Name="ImageHost" IsVisible="False" HorizontalScrollBarVisibility="Auto">
+        <Grid>
+          <Image x:Name="ImagePreview" Stretch="Uniform" />
+          <Grid x:Name="GifHost" IsVisible="False" />
+        </Grid>
+      </ScrollViewer>
     </Grid>
   </Grid>
 </UserControl>

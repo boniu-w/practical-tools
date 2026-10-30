@@ -14,7 +14,7 @@ public sealed class MediaPlayback : IDisposable
     public MediaPlayer Player => _player ?? throw new ObjectDisposedException(nameof(MediaPlayback));
     public MediaPlayback(byte[] bytes, string demux, bool silent = false)
     {
-        if (demux is not ("mp4" or "mkv" or "avi" or "wav" or "mpga" or "flac" or "ogg")) throw new ArgumentException("不支持的媒体格式。");
+        if (demux is not ("mp4" or "mkv" or "avi" or "wav" or "mpga" or "flac" or "ogg" or "aac" or "asf")) throw new ArgumentException("不支持的媒体格式。");
         if (bytes.Length == 0 || bytes.Length > 64 * 1024 * 1024) throw new InvalidDataException("媒体超过预览大小限制。");
         try
         {

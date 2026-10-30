@@ -18,6 +18,10 @@ public sealed record PreviewContent(string Name, string? Text, byte[]? Image, bo
 public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 1024 * 1024)
 {
     public const int MaxCharacters = 200_000;
+
+    /// <summary>Removes preview workspaces left behind by a crashed or killed process.</summary>
+    public static int CleanupStaleWorkspaces(string workspaceParent) => PrivateWorkspace.CleanupStale(workspaceParent);
+
     public Task<PreviewContent> OpenAsync(string input, string secret, string password, CancellationToken token = default) =>
         Task.Run(() => Open(input, secret, password, token), token);
 
@@ -37,7 +41,7 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
             token.ThrowIfCancellationRequested();
             return new(name, null, null, workbook.Truncated) { Sheets = workbook.Sheets };
         }
-        if (extension is ".png" or ".jpg" or ".jpeg" or ".pdf" || MediaPreviewFormats.Supports(extension))
+        if (ImagePreviewFormats.Supports(extension) || extension == ".pdf" || MediaPreviewFormats.Supports(extension))
         {
             var bytes = File.ReadAllBytes(payload);
             try
@@ -55,7 +59,7 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
         {
             ".docx" => ReadWord(payload, token),
             ".txt" or ".md" or ".csv" or ".json" or ".xml" or ".html" or ".htm" or ".log" or ".yaml" or ".yml" or ".ini" or ".cs" or ".sql" => ReadText(payload, token),
-            _ => throw new NotSupportedException("此格式尚未接入预览。支持文本、PNG/JPEG、DOCX 正文、XLSX、PDF 和常见音视频；其他格式请使用文件解密。")
+            _ => throw new NotSupportedException("此格式尚未接入预览。支持文本、图片（PNG/JPEG/BMP/GIF/ICO/WebP/AVIF）、DOCX 正文、XLSX、PDF 和常见音视频；其他格式请使用文件解密。")
         };
         token.ThrowIfCancellationRequested();
         return new(name, text[..Math.Min(text.Length, MaxCharacters)], null, text.Length > MaxCharacters);

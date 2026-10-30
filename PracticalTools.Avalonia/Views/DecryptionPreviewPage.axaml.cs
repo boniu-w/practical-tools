@@ -1,10 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Labs.Gif;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using PracticalTools.GPG;
 using PracticalTools.GPG.Preview;
-using SkiaSharp;
 using PracticalTools.Desktop.Preview;
 
 namespace PracticalTools.Desktop.Views;
@@ -16,6 +17,8 @@ public partial class DecryptionPreviewPage : UserControl
     private Task? _reload;
     private CancellationTokenSource? _cancellation;
     private Bitmap? _bitmap;
+    private Stream? _gifStream;
+    private GifImage? _gifView;
     private readonly PdfRenderer _pdfRenderer = new();
     private byte[]? _pdf;
     private int _pdfPage, _pdfCount, _pdfZoom = 100;
@@ -53,6 +56,7 @@ public partial class DecryptionPreviewPage : UserControl
         Release();
         using var cancellation = new CancellationTokenSource();
         _cancellation = cancellation; Inputs.IsEnabled = false; Status.Text = "正在解密并校验…";
+        string? imageNotice = null;
         try
         {
             if (_library == null || _service == null || LibraryKeys.SelectedItem is not KeySummary key)
@@ -65,7 +69,7 @@ public partial class DecryptionPreviewPage : UserControl
             {
                 var extension = Path.GetExtension(content.Name).ToLowerInvariant();
                 MediaView.IsVisible = true;
-                MediaView.Open(content.Media, content.MediaDemux!, extension is ".mp4" or ".m4v" or ".mov" or ".mkv" or ".webm" or ".avi" or ".ogv");
+                MediaView.Open(content.Media, content.MediaDemux!, extension is ".mp4" or ".m4v" or ".mov" or ".mkv" or ".webm" or ".avi" or ".ogv" or ".wmv");
             }
             else if (content.Pdf != null)
             {
@@ -80,18 +84,40 @@ public partial class DecryptionPreviewPage : UserControl
             }
             else if (content.Image != null)
             {
-                using var stream = new MemoryStream(content.Image, writable: false);
-                using var codec = SKCodec.Create(stream) ?? throw new InvalidDataException("图片格式无效。");
-                var info = codec.Info;
-                if (info.Width <= 0 || info.Height <= 0 || (long)info.Width * info.Height > 16_000_000)
-                    throw new InvalidDataException("图片超过 1600 万像素预览限制。");
-                using var bitmapStream = new MemoryStream(content.Image, writable: false);
-                _bitmap = Bitmap.DecodeToWidth(bitmapStream, Math.Min(1600, info.Width));
-                ImagePreview.Source = _bitmap; ImageHost.IsVisible = true;
+                var extension = Path.GetExtension(content.Name).ToLowerInvariant();
+                var image = await Task.Run(() => PreviewImageLoader.Load(content.Image, extension, cancellation.Token),
+                    cancellation.Token);
+                imageNotice = image.Notice;
+                if (image.IsAnimated)
+                {
+                    var stream = image.GifStream!;
+                    _gifStream = stream;
+                    _gifView = new GifImage
+                    {
+                        Source = stream,
+                        Stretch = Stretch.Uniform,
+                        Width = image.Size.Width,
+                        Height = image.Size.Height
+                    };
+                    GifHost.Children.Add(_gifView);
+                    GifHost.IsVisible = true;
+                    ImagePreview.Source = null;
+                    ImageHost.IsVisible = true;
+                }
+                else
+                {
+                    _bitmap = image.Bitmap ?? throw new InvalidDataException("图片格式无效。");
+                    ImagePreview.Source = _bitmap;
+                    ImagePreview.Width = ImagePreview.Height = double.NaN;
+                    GifHost.Children.Clear();
+                    GifHost.IsVisible = false;
+                    ImageHost.IsVisible = true;
+                }
             }
             else { TextPreview.Text = content.Text; TextPreview.IsVisible = true; }
             Status.Text = $"{content.Name} — 临时明文已清理。" + (content.Truncated ?
-                content.Sheets == null ? "仅显示前 20 万字符。" : "工作簿超过预览范围或容量限制，部分内容未显示。" : "");
+                content.Sheets == null ? "仅显示前 20 万字符。" : "工作簿超过预览范围或容量限制，部分内容未显示。" : "")
+                + (imageNotice is null ? "" : " " + imageNotice);
         }
         catch (OperationCanceledException) { Status.Text = "已取消预览。"; }
         catch (Exception ex) { ClearContent(); Status.Text = $"无法预览：{ex.Message}"; }
@@ -100,6 +126,8 @@ public partial class DecryptionPreviewPage : UserControl
     private void ClearContent()
     {
         MediaView.Close(); MediaView.IsVisible = false;
+        GifHost.Children.Clear(); GifHost.IsVisible = false; _gifView = null;
+        _gifStream?.Dispose(); _gifStream = null;
         if (_pdf != null) Array.Clear(_pdf);
         _pdf = null; _pdfPage = _pdfCount = 0; _pdfZoom = 100;
         PdfControls.IsVisible = false; PdfPosition.Text = PdfZoom.Text = null;

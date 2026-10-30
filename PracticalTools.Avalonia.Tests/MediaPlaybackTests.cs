@@ -41,6 +41,31 @@ public class MediaPlaybackTests
         finally { session.Stop(); Marshal.FreeHGlobal(buffer); }
     }
     [Fact]
+    public async Task NativeAacPlaysFromMemory()
+    {
+        using var session = new MediaPlayback(MediaFixture.Aac(), "aac", silent: true);
+        session.Play();
+        await Until(() => session.Player.Time > 100);
+        session.Stop();
+        Assert.Equal(VLCState.Stopped, session.Player.State);
+    }
+
+    [Fact]
+    public async Task NativeWmvDecodesFramesFromMemory()
+    {
+        using var session = new MediaPlayback(MediaFixture.Wmv(), "asf", silent: true);
+        var buffer = Marshal.AllocHGlobal(1920 * 1080 * 4); int frames = 0;
+        try
+        {
+            session.Player.SetVideoCallbacks((_, planes) => { Marshal.WriteIntPtr(planes, buffer); return IntPtr.Zero; }, null,
+                (_, _) => Interlocked.Increment(ref frames));
+            session.Play(); await Until(() => Volatile.Read(ref frames) > 0);
+            session.Stop(); Assert.True(frames > 0);
+        }
+        finally { session.Stop(); Marshal.FreeHGlobal(buffer); }
+    }
+
+    [Fact]
     public async Task MalformedMediaReportsErrorAndDisposalIsRepeatable()
     {
         var session = new MediaPlayback(new byte[] { 1, 2, 3 }, "wav", silent: true);

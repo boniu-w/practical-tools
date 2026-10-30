@@ -137,6 +137,57 @@ public class PreviewUiTests
         finally { window.Close(); }
     }
 
+    [AvaloniaFact]
+    public async Task AdditionalImageFormatsAndAnimatedGifRender()
+    {
+        using var store = new FolderCryptoUiTests.Store();
+        await store.Library.GenerateAsync("images", "password", 2048, 0);
+        var key = (await store.Library.ListAsync()).Single();
+        var publicKey = await store.Library.GetPublicKeyAsync(key.Id);
+        var page = new DecryptionPreviewPage(); page.Configure(store.Library, store.Source);
+        var window = new Window { Content = page }; window.Show();
+        try
+        {
+            await page.ReloadKeysAsync(); page.FindControl<ComboBox>("LibraryKeys")!.SelectedIndex = 0;
+            foreach (var (name, bytes) in new[]
+                     {
+                         ("preview.bmp", PracticalTools.TestFixtures.ImageFixture.Bmp()),
+                         ("preview.gif", PracticalTools.TestFixtures.ImageFixture.Gif()),
+                         ("preview.ico", PracticalTools.TestFixtures.ImageFixture.Ico()),
+                         ("preview.webp", PracticalTools.TestFixtures.ImageFixture.Webp()),
+                         ("preview.avif", PracticalTools.TestFixtures.ImageFixture.Avif())
+                     })
+            {
+                var source = store.Output(name); File.WriteAllBytes(source, bytes);
+                var input = store.Output("preview.gpg");
+                await GpgHelper.EncryptFileByPublicString(source, input, publicKey);
+                page.FindControl<TextBox>("InputPath")!.Text = input;
+                Click(page, "RunButton"); await Finished(page);
+                Assert.NotNull(page.FindControl<Image>("ImagePreview")!.Source);
+                Assert.True(page.FindControl<ScrollViewer>("ImageHost")!.IsVisible);
+                Assert.False(page.FindControl<Grid>("GifHost")!.IsVisible);
+            }
+
+            var gifSource = store.Output("animated.gif");
+            File.WriteAllBytes(gifSource, PracticalTools.TestFixtures.ImageFixture.AnimatedGif());
+            var gifInput = store.Output("preview.gpg");
+            await GpgHelper.EncryptFileByPublicString(gifSource, gifInput, publicKey);
+            page.FindControl<TextBox>("InputPath")!.Text = gifInput;
+            Click(page, "RunButton"); await Finished(page);
+            Assert.Null(page.FindControl<Image>("ImagePreview")!.Source);
+            Assert.True(page.FindControl<Grid>("GifHost")!.IsVisible);
+            Assert.Single(page.FindControl<Grid>("GifHost")!.Children);
+            Assert.True(page.FindControl<ScrollViewer>("ImageHost")!.IsVisible);
+
+            Click(page, "CloseButton");
+            Assert.Null(page.FindControl<Image>("ImagePreview")!.Source);
+            Assert.False(page.FindControl<Grid>("GifHost")!.IsVisible);
+            Assert.Empty(page.FindControl<Grid>("GifHost")!.Children);
+            Assert.Single(Directory.GetDirectories(store.Source));
+        }
+        finally { window.Close(); }
+    }
+
     private static void Click(Control page, string name) => page.FindControl<Button>(name)!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
     private static async Task Finished(DecryptionPreviewPage page)
     {

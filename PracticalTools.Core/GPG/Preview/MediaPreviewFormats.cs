@@ -2,7 +2,13 @@ namespace PracticalTools.GPG.Preview;
 
 public static class MediaPreviewFormats
 {
-    public static bool Supports(string extension) => extension is ".mp4" or ".m4v" or ".mov" or ".m4a" or ".mkv" or ".webm" or ".avi" or ".wav" or ".mp3" or ".flac" or ".ogg" or ".ogv";
+    private static ReadOnlySpan<byte> AsfGuid =>
+        [0x30, 0x26, 0xb2, 0x75, 0x8e, 0x66, 0xcf, 0x11, 0xa6, 0xd9, 0x00, 0xaa, 0x00, 0x62, 0xce, 0x6c];
+
+    public static bool Supports(string extension) =>
+        extension is ".mp4" or ".m4v" or ".mov" or ".m4a" or ".mkv" or ".webm" or ".avi" or ".wav"
+            or ".mp3" or ".flac" or ".ogg" or ".ogv" or ".aac" or ".wmv";
+
     public static string Validate(string name, ReadOnlySpan<byte> bytes)
     {
         string extension = Path.GetExtension(name).ToLowerInvariant();
@@ -17,8 +23,17 @@ public static class MediaPreviewFormats
             ".mp3" when Starts(bytes, "ID3"u8) || bytes.Length >= 2 && bytes[0] == 255 && (bytes[1] & 0xe0) == 0xe0 => "mpga",
             ".flac" when Starts(bytes, "fLaC"u8) => "flac",
             ".ogg" or ".ogv" when Starts(bytes, "OggS"u8) => "ogg",
+            ".aac" when IsAdts(bytes) => "aac",
+            ".wmv" when Starts(bytes, AsfGuid) => "asf",
             _ => null
         };
         return demux ?? throw new InvalidDataException("媒体文件头与支持的格式不匹配；不接受播放列表或网络地址。");
+    }
+
+    private static bool IsAdts(ReadOnlySpan<byte> bytes)
+    {
+        if (bytes.Length < 7 || bytes[0] != 0xff || (bytes[1] & 0xf6) != 0xf0) return false;
+        int frameLength = ((bytes[3] & 0x03) << 11) | (bytes[4] << 3) | (bytes[5] >> 5);
+        return frameLength >= 7 && frameLength <= bytes.Length;
     }
 }

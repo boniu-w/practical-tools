@@ -14,6 +14,19 @@ internal static class MediaFixture
         for (int i = 0; i < samples; i++) w.Write((short)(Math.Sin(i * 2 * Math.PI * 440 / 8000) * 1000));
         return stream.ToArray();
     }
+    public static byte[] Aac() => Embedded("PracticalTools.TestFixtures.PreviewAac.aac");
+
+    public static byte[] Wmv() => Embedded("PracticalTools.TestFixtures.PreviewWmv.wmv");
+
+    private static byte[] Embedded(string name)
+    {
+        using var stream = typeof(MediaFixture).Assembly.GetManifestResourceStream(name)
+            ?? throw new InvalidOperationException($"Missing fixture {name}.");
+        using var copy = new MemoryStream();
+        stream.CopyTo(copy);
+        return copy.ToArray();
+    }
+
     public static byte[] Avi()
     {
         static byte[] Build(Action<BinaryWriter> write) { using var s = new MemoryStream(); using var w = new BinaryWriter(s); write(w); return s.ToArray(); }
