@@ -20,6 +20,12 @@ public partial class MediaPreviewView : UserControl
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _timer.Tick += (_, _) => Update();
         DetachedFromVisualTree += (_, _) => Close();
+        DisableHardwareDecoding.PropertyChanged += (_, e) =>
+        {
+            if (e.Property != ToggleButton.IsCheckedProperty || _session == null) return;
+            Act(s => { s.Stop(); s.Player.EnableHardwareDecoding = DisableHardwareDecoding.IsChecked != true; });
+            PlaybackStatus.Text = "解码模式已切换，点击播放将从头开始。";
+        };
         Volume.PropertyChanged += (_, e) => { if (e.Property == RangeBase.ValueProperty && _session != null) _session.Player.Volume = (int)Volume.Value; };
     }
     public void Open(byte[] bytes, string demux, bool video)
@@ -28,6 +34,7 @@ public partial class MediaPreviewView : UserControl
         try
         {
             _session = CreatePlayback(bytes, demux);
+            _session.Player.EnableHardwareDecoding = DisableHardwareDecoding.IsChecked != true;
             _session.Player.Volume = (int)Volume.Value;
             if (video) { _video = new VideoView { MediaPlayer = _session.Player }; VideoHost.Content = _video; }
             else VideoHost.Content = new TextBlock { Text = "音频预览", FontSize = 24 };

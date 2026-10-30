@@ -19,14 +19,14 @@ public sealed class MediaPlayback : IDisposable
         try
         {
             LibVLCSharp.Shared.Core.Initialize();
-            var options = new List<string> { "--ignore-config", "--no-video-title-show", "--no-sub-autodetect-file", "--no-lua", "--no-metadata-network-access", "--no-media-library", "--no-osd", "--avcodec-hw=none" };
+            var options = new List<string> { "--ignore-config", "--no-video-title-show", "--no-sub-autodetect-file", "--no-lua", "--no-metadata-network-access", "--no-media-library", "--no-osd" };
             if (silent) { options.Add("--aout=dummy"); options.Add("--vout=dummy"); }
             _engine = new LibVLC(options.ToArray());
             _bytes = bytes.ToArray(); _stream = new MemoryStream(_bytes, writable: false);
             _input = new StreamMediaInput(_stream);
             _media = new Media(_engine, _input);
             _media.AddOption(":demux=" + demux);
-            _player = new MediaPlayer(_media); _player.Volume = 50;
+            _player = new MediaPlayer(_media) { EnableHardwareDecoding = true }; _player.Volume = 50;
         }
         catch { Dispose(); throw; }
     }

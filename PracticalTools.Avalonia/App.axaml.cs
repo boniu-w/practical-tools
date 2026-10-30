@@ -86,6 +86,7 @@ public partial class App : Application
             services.AddDbContext<MyDbContext>(options => options.UseSqlite(DatabaseInitializer.ConnectionString(paths.DatabasePath)));
             services.AddSingleton<ActivationService>();
             services.AddSingleton<KeyLibrary>();
+            services.AddSingleton<ToolRecords>();
             services.AddSingleton<MigrationPackageService>();
             services.AddSingleton<IDuplicateScanner, DuplicateScanner>();
             services.AddSingleton<ScanHistoryStore>();

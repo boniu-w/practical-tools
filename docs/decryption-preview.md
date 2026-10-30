@@ -22,7 +22,7 @@
 
 LibVLC 从内存回调读取，磁盘明文在显示播放页前已经删除。播放器持有独立字节副本，直至停止并释放所有输入回调，之后关闭流、清零副本。关闭预览、改输入或离开页面会停止播放，解绑原生视频窗口，释放媒体和引擎；没有后台继续播放。原生 Stop/Dispose 可能耗时，未实现硬超时或独立进程隔离。
 
-使用 LibVLCSharp.Avalonia 3.10.2、VideoLAN.LibVLC.Windows 3.0.24、VideoLAN.LibVLC.Mac 3.1.3.2（包版本）。忽略用户 VLC 配置，禁用 Lua、字幕自动搜索、网络元数据、媒体库及硬件解码。不提供流媒体、字幕加载或外部播放列表入口；这些设置不是操作系统网络/文件访问沙箱，复杂原生媒体解析也没有解码内存硬上限。
+使用 LibVLCSharp.Avalonia 3.10.2、VideoLAN.LibVLC.Windows 3.0.24、VideoLAN.LibVLC.Mac 3.1.3.2（包版本）。忽略用户 VLC 配置，禁用 Lua、字幕自动搜索、网络元数据、媒体库。默认允许 VLC 自动选择硬件解码；可勾选“禁用硬件加速”使用软件解码，切换会停止当前播放，再点击播放从头开始。该选择在当前预览控件生命周期内保留，重启应用恢复默认，不写入数据库。不提供流媒体、字幕加载或外部播放列表入口；这些设置不是操作系统网络/文件访问沙箱，复杂原生媒体解析也没有解码内存硬上限。
 
 Windows x64 与 Mac ARM64 发布目录含完整 `libvlc/<RID>` 原生库和插件层级，不能只复制主 DLL/dylib。Linux 需由选定发行版提供兼容 LibVLC 3、解码与音视频输出插件；视频宿主使用 X11 窗口接口，Wayland 环境需另行确认 XWayland 路径。Mac/Linux 和真实视频窗口/声音设备均未实机验收。Windows 可执行文件通过项目中的 `app.manifest` 声明 supportedOS（Win7–Win11）；Avalonia 的 `NativeControlHost` 依赖该清单创建视频子窗口，缺失时 `VideoView` 挂载会抛出 `Unable to create child window for native control host` 并终止进程，构建/发布时不要移除 `ApplicationManifest` 设置。
 

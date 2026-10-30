@@ -13,6 +13,7 @@
         <Slider x:Name="SeekPosition" Minimum="0" Maximum="100" Value="0" />
         <Button Grid.Column="1" x:Name="SeekButton" Content="跳转到所选位置" Click="Seek" />
       </Grid>
+      <CheckBox x:Name="DisableHardwareDecoding" Content="禁用硬件加速（兼容模式；切换后需重新播放）" IsChecked="False" />
       <ProgressBar x:Name="PlaybackProgress" Minimum="0" Maximum="100" />
     </StackPanel>
     <TextBlock Grid.Row="1" x:Name="PlaybackStatus" TextWrapping="Wrap" />

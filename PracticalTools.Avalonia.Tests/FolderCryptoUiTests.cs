@@ -23,6 +23,7 @@ public class FolderCryptoUiTests
         public string Source { get; }
         public string Output(string name) => Path.Combine(_root, name);
         public KeyLibrary Library => _provider.GetRequiredService<KeyLibrary>();
+        public ToolRecords Records => new(_provider.GetRequiredService<IServiceScopeFactory>());
         public Store()
         {
             Source = Directory.CreateDirectory(Path.Combine(_root, "source")).FullName;

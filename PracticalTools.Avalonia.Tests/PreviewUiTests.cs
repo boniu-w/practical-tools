@@ -34,6 +34,16 @@ public class PreviewUiTests
             var end = DateTime.UtcNow.AddSeconds(10);
             while (session.Player.State != LibVLCSharp.Shared.VLCState.Playing)
             { if (DateTime.UtcNow > end) throw new TimeoutException(); await Task.Delay(30); }
+            Assert.True(session.Player.EnableHardwareDecoding);
+            media.FindControl<CheckBox>("DisableHardwareDecoding")!.IsChecked = true;
+            Assert.False(session.Player.EnableHardwareDecoding);
+            Assert.Equal(LibVLCSharp.Shared.VLCState.Stopped, session.Player.State);
+            Click(media, "PlayButton");
+            end = DateTime.UtcNow.AddSeconds(10);
+            while (session.Player.State != LibVLCSharp.Shared.VLCState.Playing)
+            { if (DateTime.UtcNow > end) throw new TimeoutException(); await Task.Delay(30); }
+            media.FindControl<CheckBox>("DisableHardwareDecoding")!.IsChecked = false;
+            Assert.True(session.Player.EnableHardwareDecoding);
             Click(media, "PauseButton"); Click(media, "StopButton");
             Assert.Equal(LibVLCSharp.Shared.VLCState.Stopped, session.Player.State);
             window.Content = null;

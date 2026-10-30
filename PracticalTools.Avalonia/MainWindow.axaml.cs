@@ -10,7 +10,7 @@ namespace PracticalTools.Desktop;
 public partial class MainWindow : Window
 {
     public MainWindow(AppDataPaths paths, KeyLibrary? library = null, MigrationPackageService? migration = null,
-        IDuplicateScanner? scanner = null, ScanHistoryStore? scanHistory = null, IFolderCryptoService? folders = null)
+        IDuplicateScanner? scanner = null, ScanHistoryStore? scanHistory = null, IFolderCryptoService? folders = null, ToolRecords? records = null)
     {
         InitializeComponent();
         DataLocation.Text = $"数据和日志目录：{paths.Root}";
@@ -26,5 +26,10 @@ public partial class MainWindow : Window
         }
         if (migration != null) MigrationPage.Configure(migration);
         if (scanner != null) ScanPage.Configure(scanner, scanHistory);
+        if (records != null)
+        {
+            FilesTab.Content = new Views.ToolRecordsPage(records, false);
+            BlacklistTab.Content = new Views.ToolRecordsPage(records, true);
+        }
     }
 }

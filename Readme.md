@@ -38,7 +38,7 @@ dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release
 
 - `PracticalTools`：原 WPF 完整版，仍仅支持 Windows。
 - `PracticalTools.Core`：`net8.0` 共享 GPG 核心、数据模型、数据库上下文与激活服务，保留原命名空间。
-- `PracticalTools.Avalonia`：Avalonia 11.3 迁移预览，支持密钥库、数据迁移、文件/文件夹加解密、重复扫描及基础解密预览。
+- `PracticalTools.Avalonia`：Avalonia 11.3 迁移预览，支持密钥库、数据迁移、文件/文件夹加解密、重复扫描、解密预览、文件整理、文件记录与黑名单。
 - `PracticalTools.Core.Tests`：可跨平台运行的 GPG 往返与文件保护测试。
 - `PracticalTools.Avalonia.Tests`：激活窗口与主窗口的无界面自动化测试。
 
@@ -62,9 +62,11 @@ dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -
 
 “文件夹加密/解密”保留原 WPF 的 ZIP + GPG 格式：整个目录加密成 `.zip.gpg`，恢复相对目录与空目录。支持阶段进度、取消和私有暂存；拒绝覆盖现有文件/目录，失败不发布半成品。已验证新旧版本互读，限制与权限说明见[文件夹加解密](docs/folder-crypto.md)。
 
-“解密预览”现支持文本、图片、DOCX 正文、XLSX 工作表内容、PDF 分页/缩放和常见音视频播放，支持取消与关闭清理。图片支持 PNG/JPEG/BMP/GIF/ICO/WebP/AVIF；多帧 GIF 自动播放动画，AVIF 显示首帧。XLSX 可切换工作表，按单元格地址显示原始值，公式只读取缓存、不重算，日期/百分比等格式暂不还原。明文最多 64 MiB，文本与工作簿内容显示最多 20 万字符。PDF 使用 PDFium 静态渲染，支持 50%–200% 缩放；不运行脚本、表单动作或外部链接，带 PDF 打开口令的文件暂不支持。音视频可播放/暂停/停止、跳转及调节音量，默认不自动播放；支持 MP4/MOV/M4A、MKV/WebM、AVI/WMV、WAV/MP3/FLAC/OGG/AAC 等。Windows/Mac 发布目录包含 LibVLC、Magick.NET（AVIF）和 GIF 动画控件，Linux 需另装兼容 LibVLC 3 与解码/输出插件。详见[预览说明](docs/decryption-preview.md)。
+“解密预览”现支持文本、图片、DOCX 正文、XLSX 工作表内容、PDF 分页/缩放和常见音视频播放，支持取消与关闭清理。图片支持 PNG/JPEG/BMP/GIF/ICO/WebP/AVIF；多帧 GIF 自动播放动画，AVIF 显示首帧。XLSX 可切换工作表，按单元格地址显示原始值，公式只读取缓存、不重算，日期/百分比等格式暂不还原。明文最多 64 MiB，文本与工作簿内容显示最多 20 万字符。PDF 使用 PDFium 静态渲染，支持 50%–200% 缩放；不运行脚本、表单动作或外部链接，带 PDF 打开口令的文件暂不支持。音视频可播放/暂停/停止、跳转及调节音量，默认不自动播放，硬件解码自动选择；可勾选“禁用硬件加速”使用兼容模式，切换后点击播放从头开始；支持 MP4/MOV/M4A、MKV/WebM、AVI/WMV、WAV/MP3/FLAC/OGG/AAC 等。Windows/Mac 发布目录包含 LibVLC、Magick.NET（AVIF）和 GIF 动画控件，Linux 需另装兼容 LibVLC 3 与解码/输出插件。详见[预览说明](docs/decryption-preview.md)。
 
-尚未迁移界面：文件管理、黑名单。文件管理和黑名单的记录可先随迁移包保存到库。密钥库暂只编辑名称和说明，尚无私钥口令修改或已有密钥有效期修改功能。预览版不是完整正式版。
+“文件整理”支持当前目录按后缀分类：先预览全路径，确认后移动，不覆盖目标；失败项保留，取消不回滚已完成的移动。“文件记录”支持添加本地文件元数据/MD5、搜索、修改类别及删除记录（不删除磁盘文件）；“黑名单”支持搜索、新建、编辑和删除人工备注。列表最多显示 1000 条，已有迁移记录可直接管理。详见[入口清单与限制](docs/remaining-tools.md)。
+
+第六步实际入口迁移收尾完成，后续进入平台验收；通用 Excel 导入导出、签名/验签界面及动画 WebP/AVIF 暂缓。密钥库暂只编辑名称和说明，尚无私钥口令修改或已有密钥有效期修改功能。预览版不是完整正式版。
 
 Windows 新版自包含入口为 `publish-win-x64/PracticalTools.Avalonia.exe`，可用于在原账户下读取旧库并创建迁移包。不要在其他 Windows 用户或 Mac 上尝试直接解开旧 DPAPI 口令。
 
