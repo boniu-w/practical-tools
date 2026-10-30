@@ -62,7 +62,7 @@ dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -
 
 “文件夹加密/解密”保留原 WPF 的 ZIP + GPG 格式：整个目录加密成 `.zip.gpg`，恢复相对目录与空目录。支持阶段进度、取消和私有暂存；拒绝覆盖现有文件/目录，失败不发布半成品。已验证新旧版本互读，限制与权限说明见[文件夹加解密](docs/folder-crypto.md)。
 
-“解密预览”现支持文本、PNG/JPEG 和 DOCX 正文，支持取消与关闭清理；明文最多 64 MiB，文本显示前 20 万字符。PDF、XLSX、音视频仍待迁移，详见[预览说明](docs/decryption-preview.md)。
+“解密预览”现支持文本、PNG/JPEG、DOCX 正文和 XLSX 工作表内容，支持取消与关闭清理。XLSX 可切换工作表，按单元格地址显示原始值，公式只读取缓存、不重算，日期/百分比等格式暂不还原。明文最多 64 MiB，文本与工作簿内容显示最多 20 万字符。PDF、音视频仍待迁移，详见[预览说明](docs/decryption-preview.md)。
 
 尚未迁移界面：文件管理、黑名单。文件管理和黑名单的记录可先随迁移包保存到库。密钥库暂只编辑名称和说明，尚无私钥口令修改或已有密钥有效期修改功能。预览版不是完整正式版。
 

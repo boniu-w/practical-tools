@@ -7,6 +7,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../PracticalTools.Core.Tests/XlsxFixture.cs" Link="Fixtures/XlsxFixture.cs" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="Avalonia.Headless.XUnit" Version="11.3.21" />
     <PackageReference Include="xunit" Version="2.9.3" />

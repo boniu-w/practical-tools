@@ -7,6 +7,7 @@ namespace PracticalTools.GPG.Preview;
 
 public sealed record PreviewContent(string Name, string? Text, byte[]? Image, bool Truncated) : IDisposable
 {
+    public IReadOnlyList<PreviewSheet>? Sheets { get; init; }
     public void Dispose() { if (Image != null) Array.Clear(Image); }
 }
 
@@ -27,6 +28,12 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
         if (string.IsNullOrWhiteSpace(name)) name = Path.GetFileNameWithoutExtension(input);
         var extension = Path.GetExtension(name).ToLowerInvariant();
         token.ThrowIfCancellationRequested();
+        if (extension == ".xlsx")
+        {
+            var workbook = SpreadsheetPreview.Read(payload, token);
+            token.ThrowIfCancellationRequested();
+            return new(name, null, null, workbook.Truncated) { Sheets = workbook.Sheets };
+        }
         if (extension is ".png" or ".jpg" or ".jpeg")
         {
             var bytes = File.ReadAllBytes(payload);
@@ -43,7 +50,7 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
         {
             ".docx" => ReadWord(payload, token),
             ".txt" or ".md" or ".csv" or ".json" or ".xml" or ".html" or ".htm" or ".log" or ".yaml" or ".yml" or ".ini" or ".cs" or ".sql" => ReadText(payload, token),
-            _ => throw new NotSupportedException("此格式尚未接入预览。支持文本、PNG/JPEG 和 DOCX 正文；其他格式请使用文件解密。")
+            _ => throw new NotSupportedException("此格式尚未接入预览。支持文本、PNG/JPEG、DOCX 正文和 XLSX；其他格式请使用文件解密。")
         };
         token.ThrowIfCancellationRequested();
         return new(name, text[..Math.Min(text.Length, MaxCharacters)], null, text.Length > MaxCharacters);

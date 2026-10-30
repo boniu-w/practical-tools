@@ -57,7 +57,13 @@ public partial class DecryptionPreviewPage : UserControl
             var material = await _library.GetSecretAsync(key.Id);
             using var content = await _service.OpenAsync(path, material.Key, material.Passphrase, cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
-            if (content.Image != null)
+            if (content.Sheets != null)
+            {
+                SheetSelector.ItemsSource = content.Sheets;
+                WorkbookHeader.IsVisible = true;
+                SheetSelector.SelectedIndex = 0;
+            }
+            else if (content.Image != null)
             {
                 using var stream = new MemoryStream(content.Image, writable: false);
                 using var codec = SKCodec.Create(stream) ?? throw new InvalidDataException("图片格式无效。");
@@ -69,7 +75,8 @@ public partial class DecryptionPreviewPage : UserControl
                 ImagePreview.Source = _bitmap; ImageHost.IsVisible = true;
             }
             else { TextPreview.Text = content.Text; TextPreview.IsVisible = true; }
-            Status.Text = $"{content.Name} — 临时明文已清理。" + (content.Truncated ? "仅显示前 20 万字符。" : "");
+            Status.Text = $"{content.Name} — 临时明文已清理。" + (content.Truncated ?
+                content.Sheets == null ? "仅显示前 20 万字符。" : "工作簿超过预览范围或容量限制，部分内容未显示。" : "");
         }
         catch (OperationCanceledException) { Status.Text = "已取消预览。"; }
         catch (Exception ex) { ClearContent(); Status.Text = $"无法预览：{ex.Message}"; }
@@ -77,8 +84,14 @@ public partial class DecryptionPreviewPage : UserControl
     }
     private void ClearContent()
     {
+        SheetSelector.ItemsSource = null; WorkbookHeader.IsVisible = false;
         TextPreview.Text = null; TextPreview.IsVisible = ImageHost.IsVisible = false;
         ImagePreview.Source = null; _bitmap?.Dispose(); _bitmap = null;
+    }
+    private void SelectSheet(object? sender, SelectionChangedEventArgs e)
+    {
+        TextPreview.Text = (SheetSelector.SelectedItem as PreviewSheet)?.Text;
+        TextPreview.IsVisible = SheetSelector.SelectedItem is PreviewSheet;
     }
     private void Release() { _cancellation?.Cancel(); ClearContent(); Status.Text = "预览已关闭。"; }
     private void ClosePreview(object? sender, RoutedEventArgs e) => Release();

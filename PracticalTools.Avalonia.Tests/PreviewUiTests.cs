@@ -9,6 +9,36 @@ namespace PracticalTools.Desktop.Tests;
 
 public class PreviewUiTests
 {
+    [AvaloniaFact]
+    public async Task WorkbookSwitchesSheetsAndClearsAllSheetContentOnCloseAndDetach()
+    {
+        using var store = new FolderCryptoUiTests.Store();
+        await store.Library.GenerateAsync("workbook", "password", 2048, 0);
+        var key = (await store.Library.ListAsync()).Single();
+        var source = store.Output("book.xlsx");
+        File.WriteAllBytes(source, PracticalTools.TestFixtures.XlsxFixture.Build());
+        var input = store.Output("renamed.gpg");
+        await GpgHelper.EncryptFileByPublicString(source, input, await store.Library.GetPublicKeyAsync(key.Id));
+        var page = new DecryptionPreviewPage(); page.Configure(store.Library, store.Source);
+        var window = new Window { Content = page }; window.Show();
+        try
+        {
+            await page.ReloadKeysAsync(); page.FindControl<ComboBox>("LibraryKeys")!.SelectedIndex = 0;
+            page.FindControl<TextBox>("InputPath")!.Text = input;
+            Click(page, "RunButton"); await Finished(page);
+            var selector = page.FindControl<ComboBox>("SheetSelector")!;
+            var text = page.FindControl<TextBox>("TextPreview")!;
+            Assert.Equal(2, selector.ItemCount); Assert.Contains("A1\t中文内容", text.Text);
+            selector.SelectedIndex = 1; Assert.Equal("空工作表", text.Text);
+            selector.SelectedIndex = 0; Assert.Contains("公式缓存值", text.Text);
+            Click(page, "CloseButton"); Assert.Null(selector.ItemsSource); Assert.True(string.IsNullOrEmpty(text.Text));
+            Click(page, "RunButton"); await Finished(page);
+            window.Content = null; Assert.Null(selector.ItemsSource); Assert.True(string.IsNullOrEmpty(text.Text));
+            Assert.Single(Directory.GetDirectories(store.Source));
+        }
+        finally { window.Close(); }
+    }
+
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
