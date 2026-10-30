@@ -1,6 +1,6 @@
 # 实用工具：WPF → Avalonia 跨平台迁移计划
 
-更新日期：2026-10-30 · 工作分支：`ava` · 当前进度：前五步、重复扫描、文件夹加解密及解密预览（文本、图片含 GIF 动画与 AVIF、Office、PDF、音视频含 AAC/WMV）已实现；崩溃遗留工作区清理已接入；文件整理、文件记录与黑名单已接入，第六步入口迁移收尾完成；下一步为第七步平台实测与发布。暂缓扩展项见下文。
+更新日期：2026-10-30 · 工作分支：`ava` · 当前进度：第 1–6 步已完成；第七步进行中：AVLN3001 已消除，`--data-dir` 与 Windows 启动/退出/单实例/新页面/原生回收站已验证，三平台发布打包已执行并核对校验和。剩余 Windows 真实扬声器听音、macOS/Linux 实机验收、Mac 签名/公证与 `.app` 实机运行。暂缓扩展项见下文。
 
 本文件维护当前架构、待办顺序与验收条件；[迁移记录](docs/avalonia-migration.md)保存各次实施与验证历史。两者出现差异时先核对代码与最近验证结果，再同步文档。历史测试通过不等于所有平台实机通过。
 
@@ -8,15 +8,15 @@
 
 目标平台为 Windows、macOS（优先 Apple Silicon / `osx-arm64`）和 Linux。Linux 发行版与最低版本尚未确定；如需 CentOS，必须明确具体版本并验证 .NET、Avalonia 和原生依赖兼容性。
 
-采用两个桌面入口共用 Core 的渐进迁移方式，当前没有将原 WPF 项目直接转换为 Avalonia：
+采用两个桌面入口共用 Core 的渐进迁移方式，当前没有将原 WPF 项目直接转换为 Avalonia；已确定 WPF 仅作迁移参照并计划淘汰：
 
 | 项目 | 当前职责 | 状态 |
 |---|---|---|
-| `PracticalTools` | 原 WPF 完整版，`net8.0-windows` | 保留，仅 Windows |
+| `PracticalTools` | 原 WPF 完整版，`net8.0-windows` | 仅作迁移参照，计划淘汰；暂保留仅 Windows |
 | `PracticalTools.Core` | `net8.0`：GPG 核心、数据模型、EF 上下文、激活服务、存储基础设施 | 已抽取一部分，仍保留 Windows DPAPI 兼容路径 |
 | `PracticalTools.Avalonia` | `net8.0`：新桌面入口、首页、GPG 操作页、激活窗口 | 迁移预览版 |
 | `PracticalTools.Core.Tests` | GPG、存储、迁移、扫描与文件夹归档测试 | 131 项：130 通过、1 因权限跳过 |
-| `PracticalTools.Avalonia.Tests` | 无界面窗口测试 | 最近验证 32/32 通过 |
+| `PracticalTools.Avalonia.Tests` | 无界面窗口测试 | 最近验证 33/33 通过 |
 | `TestProject` | 原 Windows 测试项目 | 保留，尚未整体跨平台迁移 |
 
 当前实际选用 Avalonia 11.3.21、Fluent 主题、Inter 字体、异步 StorageProvider 文件选择器；密钥库使用兼容的 DataGrid 11.3.13（该包没有 11.3.21 版本）。图片使用 SkiaSharp 2.88.9，AVIF 使用 Magick.NET-Q8-AnyCPU 14.17.2，GIF 动画使用 Avalonia.Labs.Gif 11.3.1。没有安装 Semi.Avalonia。WPF 原有 MaterialDesign 包继续留在原项目中。
@@ -42,7 +42,7 @@
 | 文件夹加解密 | ZIP + GPG、相对结构/空目录、新旧互读、进度/取消、私有暂存及安全解压 | 平台实测，完整文件系统元数据不在范围内 |
 | 解密预览 | 文本、PNG/JPEG/BMP/GIF（动画）/ICO/WebP/AVIF、DOCX 正文、XLSX 工作表内容、PDF 分页/缩放、MP4/MKV/AVI/WMV/WAV/MP3/FLAC/OGG/AAC 播放；限制/取消、正常清理及启动遗留工作区清理 | 真实声音输出与 Mac/Linux 实机验收 |
 | Excel、签名、验签等其余能力 | 尚未完成 Avalonia 对应入口梳理 | 按原版实际调用清单逐项验收 |
-| Mac 发布 | `osx-arm64` 自包含目录发布通过 | 实机运行、`.app`、签名、公证 |
+| 发布与打包 | 三平台自包含发布与打包均已执行：Windows zip、未签名 Mac `.app`、Linux tar.gz、SHA256SUMS、release.json；校验和一致且无 PDB | Mac `.app` 实机、签名、公证与安装体验；Linux 发行版运行时验证 |
 
 已采用的页面映射：
 
@@ -149,49 +149,61 @@
 
 文件夹子项见[归档说明](docs/folder-crypto.md)：整个目录打包后加密，不是逐文件批次；单项失败拒绝整次归档，不支持覆盖/合并或跳过失败项。只保留文件字节、相对结构与空目录，不承诺源 ACL、执行位和时间等完整元数据。正常取消会清理临时内容；应用数据目录内的符合命名规则的遗留在取得单实例锁后清理，任意输出目录的遗留尚不自动清理。
 
-### 第七步：平台实测与发布交付
+### 第七步：平台实测与发布交付（进行中）
 
-- [ ] Windows：真实窗口、首次/再次启动、退出及重复启动；新整理/记录页面、原生回收站及真实扬声器听音。
+- [x] 消除 AVLN3001 动态资源加载警告：为主窗口、激活窗口和密钥导入窗口增加供 XAML 运行时加载的无参构造，并加入加载器测试；Release 构建已无该警告。
+- [x] `--data-dir <绝对路径>` 启动实测：空目录首次启动创建数据文件并显示激活窗口；非法相对路径显示用法错误；激活后同一目录复启直接进入主窗口；复制真实数据库与保护密钥后密钥库可读取既有记录；测试前后原数据目录哈希不变。
+- [x] 发布打包脚本产出验收：`publish-release.ps1` 成功发布三平台并打包；Windows zip 110.2 MiB、未签名 Mac `.app` zip 92.5 MiB、Linux tar.gz 64.0 MiB；SHA256SUMS 全部一致，无 PDB，Mac 可执行位 0755，release.json 标记未签名/未公证。
+- [x] Windows：真实窗口、首次/再次启动、退出及重复启动；文件整理、文件记录、黑名单、重复扫描页面；原生回收站探测文件移入并还原。
+- [ ] Windows：真实扬声器听音（自动化仅静音输出，需人工确认）。
 - [ ] macOS ARM64：文件选择器、字体、SQLCipher/Skia 原生库、路径权限、单实例锁及 GPG 往返。
-- [ ] Linux：明确发行版、架构和最低版本，再验证系统依赖、文件选择器、权限、锁和 GPG。
-- [ ] 制作 Mac `.app`；确定分发方式后完成签名、公证与安装体验。
-- [ ] 处理 AVLN3001 警告及其他本次迁移引入的问题，复查旧版兼容性。
+- [ ] Linux：候选目标 Ubuntu 24.04 x64 尚未实机验证；需确认发行版、架构和最低版本，再验证系统依赖、文件选择器、权限、锁和 GPG。
+- [ ] Mac `.app` 实机运行：已生成未签名 `.app`；确定分发方式后完成签名、公证与安装体验。
+- [ ] 复查其他本次迁移引入的问题；WPF 已确定淘汰，不做完整旧版功能回归，仅保留编译检查。
 
 不再沿用原计划“10–15 天”的固定估算。后续按上述里程碑及验收结果推进；密钥恢复、剩余功能范围和目标 Linux 版本明确后再估算工期。
 
 ## 5. 数据与兼容性约束
 
-- Avalonia 数据根目录：系统 `LocalApplicationData/PracticalTools/Avalonia`，实际值由 `AppDataPaths` 计算，窗口内可查看。
+- Avalonia 数据根目录：系统 `LocalApplicationData/PracticalTools/Avalonia`，实际值由 `AppDataPaths` 计算，窗口内可查看；启动参数 `--data-dir <绝对路径>` 可覆盖，用于隔离测试与验收。
 - 数据库为 `sqlite-PracticalTools.db`，保护密钥为 `secret-protection.key`，日志在 `logs/`，实例锁为 `app.lock`；不依赖发布目录，替换发布文件不会清除数据。数据库和保护密钥必须配套备份。
 - 新数据库独立于原 WPF 安装目录，首次启动需要原激活码；迁移包也不导入旧激活记录。
 - 激活和密钥库均已接入数据库，生成密钥自动持久化；也可手工导出公私钥作为额外备份。
 - 当前 Core 含平台专用兼容路径，不代表所有公开方法已跨平台。旧库导出需原 Windows 账户，其他平台使用加密迁移包导入，目标使用自己的保护密钥。
-- 保留 WPF 入口及其依赖，达到功能对等和平台验收后再决定是否移除。
+- WPF 入口及其依赖暂保留作迁移参照；已确定后续只使用 Avalonia，准备淘汰 WPF。完整 WPF 功能回归不再作为发布门槛，删除项目需另行确认。具体步骤见[WPF 淘汰清理清单](docs/wpf-retirement.md)。
 
 ## 6. 验证基线与操作命令
 
-最近一次验证（2026-10-30，第六步剩余入口收尾；原生冒烟沿用本日上一轮结果，本轮未重跑）：
+最近一次验证（2026-10-30，第七步 Windows 实机验收与三平台发布打包；音视频原生冒烟未重跑）：
 
 | 检查 | 结果 | 边界 |
 |---|---|---|
 | Core 测试 | 130 通过 / 1 跳过，共 131 | 链接用例因 Windows 账户缺少权限跳过 |
-| Avalonia 无界面窗口测试 | 32/32 通过 | 不替代真实平台交互测试和原生回收站 |
-| Windows 原生冒烟 | AVI/WMV/WAV/AAC 各 2 轮通过 | 真实 VideoView/D3D11 与默认音频输出；静音，不验证扬声器可听性 |
-| WPF Release 构建 | 通过，116 条警告 | 未在本次执行完整旧版功能测试 |
-| Avalonia Mac ARM64 自包含发布 | 通过，含 Magick.NET arm64 原生库 | 未在 Mac 实机启动验收 |
-| Avalonia Windows x64 自包含发布 | 通过，含 Magick.NET x64 原生库 | 可在原账户运行并创建旧库迁移包；原生界面流程待实机验收 |
-| Avalonia 动态资源加载警告 | 三处 AVLN3001 | DI 构造的窗口加载有测试覆盖，警告仍待处理 |
+| Avalonia 无界面窗口测试 | 33/33 通过 | 含运行时 XAML 加载器测试；不替代真实平台交互测试 |
+| Avalonia Release 构建 | 通过，0 警告 | AVLN3001 已消除 |
+| WPF Release 构建 | 通过，116 条警告，0 错误 | 仅编译检查；WPF 已确定淘汰，不要求完整功能回归 |
+| Windows 启动/退出/单实例 | 通过 | 空目录首次启动显示激活窗口；非法参数显示用法；复启直接进主窗口；第二实例提示运行锁；正常退出后锁可重取 |
+| Windows 数据目录隔离 | 通过 | 复制真实库与保护密钥后密钥库可读取；原数据目录数据库与保护密钥 SHA-256 不变 |
+| Windows 新页面渲染 | 通过 | 文件整理、文件记录、黑名单、重复扫描真实窗口截图；未覆盖全部交互回归 |
+| Windows 原生回收站 | 探测文件移入并还原通过 | 直接调用 `PlatformFileRemoval`，未走完整扫描 UI |
+| Windows 原生音视频冒烟 | AVI/WMV/WAV/AAC 各 2 轮通过（沿用本日上一轮，未重跑） | 真实 VideoView/D3D11 与默认音频输出；静音，不验证扬声器可听性 |
+| 三平台自包含发布 | win-x64、osx-arm64、linux-x64 通过 | Mac/Linux 未实机运行；Linux 发行版与最低版本未确定 |
+| 三平台发布打包 | 3 个压缩包与 SHA256SUMS 校验一致；无 PDB；Mac 可执行位 0755 | Mac 未签名/未公证；未在 Mac/Linux 解包运行 |
 
 运行与检查：
 
 ```powershell
 dotnet run --project PracticalTools.Avalonia/PracticalTools.Avalonia.csproj
+dotnet run --project PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -- --data-dir C:\temp\pt-data
 dotnet test PracticalTools.Core.Tests/PracticalTools.Core.Tests.csproj -c Release
 dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -c Release
 dotnet build PracticalTools/PracticalTools.csproj -c Release
 dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -o ./publish-mac-arm64
 dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release -r win-x64 --self-contained true -o ./publish-win-x64
+./scripts/publish-release.ps1 -Version 0.7.0
 ```
+
+`publish-release.ps1` 依次发布 win-x64 / osx-arm64 / linux-x64，再调用 `package-release.py`（需要 Python 3.11+）输出到新的 `publish-release-<时间>` 目录，不覆盖已有发布。产物包含 Windows zip、未签名 Mac `.app`、Linux tar.gz、`SHA256SUMS.txt` 与 `release.json`；`release.json` 明确标记未签名、未公证。2026-10-30 已用 0.7.0 完整执行并核对产物与校验和（输出目录 `publish-release-20261030-210138`）；Mac/Linux 发布物尚未在对应系统解包运行。
 
 在 Mac 上保留整个发布目录，并运行：
 
