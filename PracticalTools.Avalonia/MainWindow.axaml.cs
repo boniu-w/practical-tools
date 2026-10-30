@@ -22,6 +22,7 @@ public partial class MainWindow : Window
             LibraryPage.Configure(library);
             FolderEncryptPage.Configure(library, folders);
             FolderDecryptPage.Configure(library, folders);
+            PreviewPage.Configure(library, paths.Root);
         }
         if (migration != null) MigrationPage.Configure(migration);
         if (scanner != null) ScanPage.Configure(scanner, scanHistory);

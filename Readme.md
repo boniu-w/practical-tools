@@ -38,7 +38,7 @@ dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release
 
 - `PracticalTools`：原 WPF 完整版，仍仅支持 Windows。
 - `PracticalTools.Core`：`net8.0` 共享 GPG 核心、数据模型、数据库上下文与激活服务，保留原命名空间。
-- `PracticalTools.Avalonia`：Avalonia 11.3 迁移预览，支持密钥库、数据迁移、文件/文件夹加解密及重复扫描。
+- `PracticalTools.Avalonia`：Avalonia 11.3 迁移预览，支持密钥库、数据迁移、文件/文件夹加解密、重复扫描及基础解密预览。
 - `PracticalTools.Core.Tests`：可跨平台运行的 GPG 往返与文件保护测试。
 - `PracticalTools.Avalonia.Tests`：激活窗口与主窗口的无界面自动化测试。
 
@@ -62,7 +62,9 @@ dotnet test PracticalTools.Avalonia.Tests/PracticalTools.Avalonia.Tests.csproj -
 
 “文件夹加密/解密”保留原 WPF 的 ZIP + GPG 格式：整个目录加密成 `.zip.gpg`，恢复相对目录与空目录。支持阶段进度、取消和私有暂存；拒绝覆盖现有文件/目录，失败不发布半成品。已验证新旧版本互读，限制与权限说明见[文件夹加解密](docs/folder-crypto.md)。
 
-尚未迁移界面：文件管理、黑名单、解密预览。文件管理和黑名单的记录可先随迁移包保存到库。密钥库暂只编辑名称和说明，尚无私钥口令修改或已有密钥有效期修改功能。预览版不是完整正式版。
+“解密预览”现支持文本、PNG/JPEG 和 DOCX 正文，支持取消与关闭清理；明文最多 64 MiB，文本显示前 20 万字符。PDF、XLSX、音视频仍待迁移，详见[预览说明](docs/decryption-preview.md)。
+
+尚未迁移界面：文件管理、黑名单。文件管理和黑名单的记录可先随迁移包保存到库。密钥库暂只编辑名称和说明，尚无私钥口令修改或已有密钥有效期修改功能。预览版不是完整正式版。
 
 Windows 新版自包含入口为 `publish-win-x64/PracticalTools.Avalonia.exe`，可用于在原账户下读取旧库并创建迁移包。不要在其他 Windows 用户或 Mac 上尝试直接解开旧 DPAPI 口令。
 
@@ -74,4 +76,3 @@ chmod +x ./publish-mac-arm64/PracticalTools.Avalonia
 ```
 
 macOS/Linux 的实际界面和系统文件选择器仍需在对应系统验收。后续迁移状态见 [迁移记录](docs/avalonia-migration.md)。
-

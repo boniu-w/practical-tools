@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PracticalTools.Desktop.Views.DecryptionPreviewPage">
+  <Grid Margin="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
+    <StackPanel x:Name="Inputs" Spacing="8">
+      <TextBlock Text="解密预览" FontSize="22" />
+      <TextBlock Text="支持文本、PNG/JPEG、DOCX 正文（不保留版式）；PDF、XLSX、音视频暂未接入。" TextWrapping="Wrap" />
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <ComboBox x:Name="LibraryKeys" HorizontalAlignment="Stretch" PlaceholderText="选择包含私钥的密钥" />
+        <Button Grid.Column="1" Content="刷新密钥" Click="RefreshKeys" />
+      </Grid>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <TextBox x:Name="InputPath" Watermark="加密文件路径" />
+        <Button Grid.Column="1" Content="选择文件" Click="PickInput" />
+      </Grid>
+      <Button x:Name="RunButton" Content="查看加密文件" Click="Run" />
+    </StackPanel>
+    <Button Grid.Row="1" x:Name="CloseButton" Content="关闭预览 / 取消" Click="ClosePreview" />
+    <TextBlock Grid.Row="2" x:Name="Status" TextWrapping="Wrap" />
+    <Grid Grid.Row="3">
+      <TextBox x:Name="TextPreview" IsReadOnly="True" IsUndoEnabled="False" AcceptsReturn="True" TextWrapping="Wrap" IsVisible="False" />
+      <ScrollViewer x:Name="ImageHost" IsVisible="False"><Image x:Name="ImagePreview" Stretch="Uniform" /></ScrollViewer>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -1,0 +1,92 @@
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
+using Avalonia.Interactivity;
+using PracticalTools.Desktop.Views;
+using PracticalTools.GPG;
+using Xunit;
+
+namespace PracticalTools.Desktop.Tests;
+
+public class PreviewUiTests
+{
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ImagePreviewAndInvalidImageRestoreControls(bool invalid)
+    {
+        using var store = new FolderCryptoUiTests.Store();
+        await store.Library.GenerateAsync("image", "password", 2048, 0);
+        var key = (await store.Library.ListAsync()).Single();
+        var source = store.Output("preview.png");
+        using (var image = new SkiaSharp.SKBitmap(2, 2))
+        using (var data = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100))
+            File.WriteAllBytes(source, invalid ? [1, 2, 3] : data.ToArray());
+        var input = store.Output("preview.gpg");
+        await GpgHelper.EncryptFileByPublicString(source, input, await store.Library.GetPublicKeyAsync(key.Id));
+        var page = new DecryptionPreviewPage(); page.Configure(store.Library, store.Source);
+        var window = new Window { Content = page }; window.Show();
+        try
+        {
+            await page.ReloadKeysAsync(); page.FindControl<ComboBox>("LibraryKeys")!.SelectedIndex = 0;
+            page.FindControl<TextBox>("InputPath")!.Text = input;
+            Click(page, "RunButton"); await Finished(page);
+            var preview = page.FindControl<Image>("ImagePreview")!;
+            if (invalid) { Assert.Null(preview.Source); Assert.Contains("无法预览", page.FindControl<TextBlock>("Status")!.Text); }
+            else Assert.NotNull(preview.Source);
+            Click(page, "CloseButton"); Assert.Null(preview.Source);
+            Assert.Single(Directory.GetDirectories(store.Source));
+        }
+        finally { window.Close(); }
+    }
+
+    private static void Click(Control page, string name) => page.FindControl<Button>(name)!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    private static async Task Finished(DecryptionPreviewPage page)
+    {
+        var timeout = DateTime.UtcNow.AddSeconds(20);
+        while (!page.FindControl<StackPanel>("Inputs")!.IsEnabled)
+        { if (DateTime.UtcNow > timeout) throw new TimeoutException(); await Task.Delay(20); }
+    }
+    [AvaloniaFact]
+    public async Task StoredKeyPreviewClearsOnClosePathChangeAndDetach()
+    {
+        using var store = new FolderCryptoUiTests.Store();
+        await store.Library.GenerateAsync("preview", "password", 2048, 0);
+        var key = (await store.Library.ListAsync()).Single();
+        var source = store.Output("preview.txt"); File.WriteAllText(source, "中文 <script>passive</script>");
+        var input = store.Output("preview.gpg");
+        await GpgHelper.EncryptFileByPublicString(source, input, await store.Library.GetPublicKeyAsync(key.Id));
+        var page = new DecryptionPreviewPage(); page.Configure(store.Library, store.Source);
+        var window = new Window { Content = page }; window.Show();
+        try
+        {
+            await page.ReloadKeysAsync(); page.FindControl<ComboBox>("LibraryKeys")!.SelectedIndex = 0;
+            var path = page.FindControl<TextBox>("InputPath")!; path.Text = input;
+            var preview = page.FindControl<TextBox>("TextPreview")!;
+            Click(page, "RunButton"); await Finished(page);
+            Assert.Equal("中文 <script>passive</script>", preview.Text);
+            Assert.Single(Directory.GetDirectories(store.Source)); // Only fixture's original empty directory.
+            Click(page, "CloseButton"); Assert.True(string.IsNullOrEmpty(preview.Text));
+            Click(page, "RunButton"); await Finished(page); path.Text = "different.gpg";
+            Assert.True(string.IsNullOrEmpty(preview.Text));
+            path.Text = input; Click(page, "RunButton"); await Finished(page);
+            window.Content = null; Assert.True(string.IsNullOrEmpty(preview.Text));
+        }
+        finally { window.Close(); }
+    }
+    [AvaloniaFact]
+    public async Task ImmediateCancelDoesNotPublishLateResult()
+    {
+        using var store = new FolderCryptoUiTests.Store();
+        await store.Library.GenerateAsync("preview", "password", 2048, 0);
+        var page = new DecryptionPreviewPage(); page.Configure(store.Library, store.Source);
+        var window = new Window { Content = page }; window.Show();
+        try
+        {
+            await page.ReloadKeysAsync(); page.FindControl<ComboBox>("LibraryKeys")!.SelectedIndex = 0;
+            Click(page, "RunButton"); Click(page, "CloseButton"); await Finished(page);
+            Assert.True(string.IsNullOrEmpty(page.FindControl<TextBox>("TextPreview")!.Text));
+            Assert.Contains("取消", page.FindControl<TextBlock>("Status")!.Text);
+        }
+        finally { window.Close(); }
+    }
+}

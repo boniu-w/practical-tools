@@ -13,7 +13,7 @@
         <StackPanel Margin="16" Spacing="16">
           <TextBlock Text="GPG 文件工具" FontSize="24" />
           <TextBlock Text="文件加密、解密和密钥生成已接入共享 GPG 核心。选择对应页签开始使用。" TextWrapping="Wrap" />
-          <TextBlock Text="已支持密钥库、数据迁移、重复扫描及文件夹加解密。文件管理、黑名单和解密预览等仍在迁移中。" TextWrapping="Wrap" />
+          <TextBlock Text="已支持密钥库、数据迁移、重复扫描、文件夹加解密和基础解密预览。文件管理、黑名单等仍在迁移中。" TextWrapping="Wrap" />
           <TextBlock x:Name="DataLocation" TextWrapping="Wrap" Opacity="0.65" />
           <TextBlock Text="生成的密钥自动保存到密钥库，重启后可继续使用。请成套备份数据库和保护密钥文件。" TextWrapping="Wrap" />
         </StackPanel>
@@ -26,6 +26,7 @@
       <TabItem Header="重复扫描"><views:DuplicateScanPage x:Name="ScanPage" /></TabItem>
       <TabItem Header="文件夹加密"><views:FolderCryptoPage x:Name="FolderEncryptPage" /></TabItem>
       <TabItem Header="文件夹解密"><views:FolderCryptoPage x:Name="FolderDecryptPage" Decrypt="True" /></TabItem>
+      <TabItem Header="解密预览"><views:DecryptionPreviewPage x:Name="PreviewPage" /></TabItem>
     </TabControl>
   </Grid>
 </Window>

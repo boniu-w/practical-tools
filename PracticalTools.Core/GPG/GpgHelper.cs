@@ -698,7 +698,7 @@ public class GpgHelper
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var input = requireIntegrity ? LocalFileAccess.Open(inputFile) : File.OpenRead(inputFile);
-        if (requireIntegrity && !input.CanSeek) throw new InvalidDataException("文件夹归档输入必须是可定位的普通文件。");
+        if (requireIntegrity && !input.CanSeek) throw new InvalidDataException("加密输入必须是可定位的普通文件。");
         using var decoderStream = PgpUtilities.GetDecoderStream(input);
         var pgpObjFactory = new PgpObjectFactory(decoderStream);
 
@@ -727,7 +727,7 @@ public class GpgHelper
             throw new ArgumentException("未找到匹配的私钥");
 
         if (requireIntegrity && !encryptedData.IsIntegrityProtected())
-            throw new PgpException("文件夹归档必须包含 PGP 完整性保护。");
+            throw new PgpException("加密文件必须包含 PGP 完整性保护。");
 
         using var clear = encryptedData.GetDataStream(privateKey);
         var plainFact = new PgpObjectFactory(clear);
@@ -755,7 +755,7 @@ public class GpgHelper
             while ((read = unc.Read(buffer, 0, buffer.Length)) > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (read > maxOutputBytes - copied) throw new InvalidDataException("解密出的 ZIP 超过大小限制。");
+                if (read > maxOutputBytes - copied) throw new InvalidDataException("解密内容超过大小限制。");
                 output.Write(buffer, 0, read);
                 copied += read;
                 if (timer.ElapsedMilliseconds >= 100) { progress?.Report(copied); timer.Restart(); }

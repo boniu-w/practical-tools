@@ -16,7 +16,7 @@ namespace PracticalTools.Desktop.Tests;
 
 public class FolderCryptoUiTests
 {
-    private sealed class Store : IDisposable
+    internal sealed class Store : IDisposable
     {
         private readonly string _root = Directory.CreateTempSubdirectory("pt-folder-ui-").FullName;
         private readonly ServiceProvider _provider;
