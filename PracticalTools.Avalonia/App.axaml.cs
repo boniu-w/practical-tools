@@ -57,7 +57,15 @@ public partial class App : Application
     {
         try
         {
-            var paths = new AppDataPaths();
+            var args = desktop.Args ?? [];
+            string? dataRoot = null;
+            if (args.Length != 0)
+            {
+                if (args.Length != 2 || args[0] != "--data-dir" || !Path.IsPathFullyQualified(args[1]))
+                    throw new ArgumentException("用法：PracticalTools.Avalonia [--data-dir 绝对路径]");
+                dataRoot = args[1];
+            }
+            var paths = new AppDataPaths(dataRoot);
             paths.EnsureDirectories();
             try { _instance = SingleInstanceLease.Acquire(paths.InstanceLockPath); }
             catch (IOException ex) when (File.Exists(paths.InstanceLockPath))

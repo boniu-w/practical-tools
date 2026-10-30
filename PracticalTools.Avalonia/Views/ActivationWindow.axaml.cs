@@ -8,13 +8,21 @@ namespace PracticalTools.Desktop.Views;
 
 public partial class ActivationWindow : Window
 {
-    private readonly ActivationService _service;
+    private readonly ActivationService? _service;
     private bool _closed;
     public event Action? ActivationSucceeded;
 
-    public ActivationWindow(ActivationService service, AppDataPaths paths)
+    public ActivationWindow()
     {
         InitializeComponent();
+        ActivateButton.IsEnabled = false;
+        Status.Text = "请从应用入口启动。";
+    }
+
+    public ActivationWindow(ActivationService service, AppDataPaths paths) : this()
+    {
+        ActivateButton.IsEnabled = true;
+        Status.Text = null;
         _service = service;
         DataDirectory.Text = $"数据目录：{paths.Root}";
         Closed += (_, _) => _closed = true;
@@ -22,6 +30,7 @@ public partial class ActivationWindow : Window
 
     private async void Activate(object? sender, RoutedEventArgs e)
     {
+        if (_service == null) return;
         var code = Code.Text?.Trim() ?? "";
         if (string.IsNullOrWhiteSpace(code)) { Status.Text = "请输入激活码。"; return; }
         ActivateButton.IsEnabled = false;

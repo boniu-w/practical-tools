@@ -6,9 +6,10 @@ namespace PracticalTools.Desktop.Views;
 
 public partial class KeyImportWindow : Window
 {
-    private readonly KeyLibrary _library;
+    private readonly KeyLibrary? _library;
     private string? _armoredKey;
-    public KeyImportWindow(KeyLibrary library) { InitializeComponent(); _library = library; }
+    public KeyImportWindow() { InitializeComponent(); Form.IsEnabled = false; Status.Text = "请从密钥库打开此窗口。"; }
+    public KeyImportWindow(KeyLibrary library) : this() { _library = library; Form.IsEnabled = true; Status.Text = null; }
     private async void SelectFile(object? sender, RoutedEventArgs e)
     {
         try
@@ -27,6 +28,7 @@ public partial class KeyImportWindow : Window
     {
         try
         {
+            if (_library == null) throw new InvalidOperationException("密钥库尚未配置。");
             if (string.IsNullOrWhiteSpace(_armoredKey)) throw new ArgumentException("请先选择密钥文件。");
             Form.IsEnabled = false;
             await _library.ImportAsync(_armoredKey, Passphrase.Text ?? "", KeyName.Text ?? "", Description.Text ?? "");

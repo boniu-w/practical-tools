@@ -28,6 +28,22 @@ public class TestAppBuilder
 public class WindowTests
 {
     [AvaloniaFact]
+    public void RuntimeLoaderCanCreateWindowsWithoutOpeningServices()
+    {
+        foreach (var path in new[] { "MainWindow.axaml", "Views/ActivationWindow.axaml", "Views/KeyImportWindow.axaml" })
+        {
+            var window = Assert.IsAssignableFrom<Window>(Avalonia.Markup.Xaml.AvaloniaXamlLoader.Load(
+                new Uri("avares://PracticalTools.Avalonia/" + path)));
+            try
+            {
+                if (window is ActivationWindow) Assert.False(window.FindControl<Button>("ActivateButton")!.IsEnabled);
+                if (window is KeyImportWindow) Assert.False(window.FindControl<StackPanel>("Form")!.IsEnabled);
+            }
+            finally { window.Close(); }
+        }
+    }
+
+    [AvaloniaFact]
     public async Task ActivationRejectsInvalidCodeAndEmitsSuccessOnlyAfterDatabaseWrite()
     {
         var paths = new AppDataPaths(Path.Combine(Path.GetTempPath(), "pt-ui-tests", Guid.NewGuid().ToString("N")));
