@@ -10,6 +10,40 @@ namespace PracticalTools.Desktop.Tests;
 public class PreviewUiTests
 {
     [AvaloniaFact]
+    public async Task AudioPreviewControlsAndDetachReleasePlayback()
+    {
+        using var store = new FolderCryptoUiTests.Store();
+        await store.Library.GenerateAsync("audio", "password", 2048, 0);
+        var key = (await store.Library.ListAsync()).Single();
+        var source = store.Output("audio.wav"); File.WriteAllBytes(source, PracticalTools.TestFixtures.MediaFixture.Wave());
+        var input = store.Output("renamed.gpg");
+        await GpgHelper.EncryptFileByPublicString(source, input, await store.Library.GetPublicKeyAsync(key.Id));
+        var page = new DecryptionPreviewPage(); page.Configure(store.Library, store.Source);
+        var media = page.FindControl<MediaPreviewView>("MediaView")!;
+        PracticalTools.Desktop.Preview.MediaPlayback? session = null;
+        media.CreatePlayback = (data, demux) => session = new(data, demux, silent: true);
+        var window = new Window { Content = page }; window.Show();
+        try
+        {
+            await page.ReloadKeysAsync(); page.FindControl<ComboBox>("LibraryKeys")!.SelectedIndex = 0;
+            page.FindControl<TextBox>("InputPath")!.Text = input;
+            Click(page, "RunButton"); await Finished(page);
+            Assert.True(media.IsVisible); Assert.NotNull(session);
+            Assert.NotEqual(LibVLCSharp.Shared.VLCState.Playing, session!.Player.State);
+            Click(media, "PlayButton");
+            var end = DateTime.UtcNow.AddSeconds(10);
+            while (session.Player.State != LibVLCSharp.Shared.VLCState.Playing)
+            { if (DateTime.UtcNow > end) throw new TimeoutException(); await Task.Delay(30); }
+            Click(media, "PauseButton"); Click(media, "StopButton");
+            Assert.Equal(LibVLCSharp.Shared.VLCState.Stopped, session.Player.State);
+            window.Content = null;
+            Assert.Throws<ObjectDisposedException>(() => session.Play());
+            Assert.Single(Directory.GetDirectories(store.Source));
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
     public async Task PdfPagesZoomAndCloseReleasePreviewWithoutLatePublication()
     {
         using var store = new FolderCryptoUiTests.Store();

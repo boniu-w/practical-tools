@@ -1,9 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:PracticalTools.Desktop.Views"
              x:Class="PracticalTools.Desktop.Views.DecryptionPreviewPage">
   <Grid Margin="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
     <StackPanel x:Name="Inputs" Spacing="8">
       <TextBlock Text="解密预览" FontSize="22" />
-      <TextBlock Text="支持文本、PNG/JPEG、DOCX 正文、XLSX 和 PDF 分页预览；音视频暂未接入。" TextWrapping="Wrap" />
+      <TextBlock Text="支持文本、PNG/JPEG、DOCX/XLSX 内容、PDF 和常见音视频预览；单文件明文上限 64 MiB。" TextWrapping="Wrap" />
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
         <ComboBox x:Name="LibraryKeys" HorizontalAlignment="Stretch" PlaceholderText="选择包含私钥的密钥" />
         <Button Grid.Column="1" Content="刷新密钥" Click="RefreshKeys" />
@@ -30,6 +31,7 @@
         <TextBlock Text="按单元格地址显示原始值；公式仅显示缓存结果，可能过时。日期/百分比等不套用格式，合并单元格不还原布局。" TextWrapping="Wrap" />
       </StackPanel>
       <TextBox Grid.Row="1" x:Name="TextPreview" IsReadOnly="True" IsUndoEnabled="False" AcceptsReturn="True" TextWrapping="Wrap" IsVisible="False" />
+      <views:MediaPreviewView Grid.Row="1" x:Name="MediaView" IsVisible="False" />
       <ScrollViewer Grid.Row="1" x:Name="ImageHost" IsVisible="False" HorizontalScrollBarVisibility="Auto"><Image x:Name="ImagePreview" Stretch="Uniform" /></ScrollViewer>
     </Grid>
   </Grid>

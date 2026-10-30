@@ -1,6 +1,6 @@
-# Avalonia 解密预览（文本、图片、DOCX、XLSX、PDF）
+# Avalonia 解密预览（文本、图片、Office 内容、PDF、音视频）
 
-2026-10-30，`ava` 分支。原 WPF 的 WebView2 预览保持原状；新入口使用 Avalonia 原生只读文本框和图片控件，不启动浏览器或外部应用。
+2026-10-30，`ava` 分支。原 WPF 的 WebView2 预览保持原状；新入口使用 Avalonia 文本/图片控件、PDFium 和 LibVLC 视频窗口，不启动浏览器或外部播放器。
 
 ## 使用与范围
 
@@ -11,7 +11,22 @@
 - DOCX：只抽取正文文字、段落和表格内文字，不保留分页、图片、样式或表格布局。不加载外部资源，不执行宏。禁止 DTD/XML 外部实体，XML 字符上限 400 万，ZIP 中央目录预检最多 10000 条目。
 - XLSX：可切换工作表，按“单元格地址 + 原始值”显示内容，支持共享/内联字符串、富文本的文字、布尔值、错误值和稀疏单元格；空表、隐藏表有标注。支持 Transitional/Strict SpreadsheetML。
 - PDF：静态页面图像、上一页/下一页、页码及 50%–200% 缩放，不提供文本选择、搜索或表单编辑。
-- 音视频、其他图片以及旧 DOC/XLS 尚未迁移；需使用“文件解密”另存后自行查看。下一阶段接入音视频预览。
+- 音视频：MP4/M4V/MOV/M4A、MKV/WebM、AVI、WAV/MP3/FLAC/OGG/OGV，具体编码能否播放取决于原生解码器；提供播放、暂停、停止、跳转和音量。
+- AAC/WMV、其他图片以及旧 DOC/XLS 尚未迁移；需使用“文件解密”另存后自行查看。预览剩余格式/平台测试继续保留，下一主项为剩余工具入口盘点及文件管理/黑名单。
+
+### 音视频播放与平台依赖
+
+选择加密媒体并查看后，需手动点击“播放 / 继续”；不会自动发声。支持暂停、停止、结束后重播；进度条显示实际播放位置，拖动上方百分比滑块后点击“跳转到所选位置”。媒体完成初始化并可定位时才启用跳转。音量范围 0–100，默认 50。
+
+媒体继续受 64 MiB 明文上限约束，较大视频需通过“文件解密”保存。扩展名必须受支持，文件头需匹配对应容器；例如 MOV 当前接受 ftyp/moov 起始布局，其他布局可能被拒绝。匹配文件头不保证整个文件完整，解码失败会显示错误。不会把 M3U/网络地址作为媒体入口，解析器按格式显式指定。
+
+LibVLC 从内存回调读取，磁盘明文在显示播放页前已经删除。播放器持有独立字节副本，直至停止并释放所有输入回调，之后关闭流、清零副本。关闭预览、改输入或离开页面会停止播放，解绑原生视频窗口，释放媒体和引擎；没有后台继续播放。原生 Stop/Dispose 可能耗时，未实现硬超时或独立进程隔离。
+
+使用 LibVLCSharp.Avalonia 3.10.2、VideoLAN.LibVLC.Windows 3.0.24、VideoLAN.LibVLC.Mac 3.1.3.2（包版本）。忽略用户 VLC 配置，禁用 Lua、字幕自动搜索、网络元数据、媒体库及硬件解码。不提供流媒体、字幕加载或外部播放列表入口；这些设置不是操作系统网络/文件访问沙箱，复杂原生媒体解析也没有解码内存硬上限。
+
+Windows x64 与 Mac ARM64 发布目录含完整 `libvlc/<RID>` 原生库和插件层级，不能只复制主 DLL/dylib。Linux 需由选定发行版提供兼容 LibVLC 3、解码与音视频输出插件；视频宿主使用 X11 窗口接口，Wayland 环境需另行确认 XWayland 路径。Mac/Linux 和真实视频窗口/声音设备均未实机验收。Windows 可执行文件通过项目中的 `app.manifest` 声明 supportedOS（Win7–Win11）；Avalonia 的 `NativeControlHost` 依赖该清单创建视频子窗口，缺失时 `VideoView` 挂载会抛出 `Unable to create child window for native control host` 并终止进程，构建/发布时不要移除 `ApplicationManifest` 设置。
+
+本次原生测试使用静音 dummy 输出验证 WAV 播放、暂停、定位、停止和重播；AVI 通过视频回调验证帧解码。它们不证明真实扬声器音量、VideoView 显示或所有列明编码已通过。已知原生窗口的裁剪/层叠限制属于平台验收项。技术依据：[LibVLCSharp](https://github.com/videolan/libvlcsharp)、[Avalonia VideoView 说明](https://github.com/videolan/libvlcsharp/blob/3.x/src/LibVLCSharp.Avalonia/README.md)。许可和上游源码信息在随包的 `ThirdParty/LibVLC` 中。
 
 ### PDF 渲染与生命周期
 
@@ -54,5 +69,7 @@ Core 新增 10 项：改名密文、原文件名、HTML 被动文本、截断、
 XLSX 阶段另新增 Core 16 项、UI 1 项：标准/Strict、多类型内容、公式缓存、关系解析、稀疏地址、隐藏/空工作表、范围与字符限制、非法结构、XML 超限，以及切表、关闭和卸载后的全部内容清空。最新完整基线：Core 106 通过 / 1 跳过，共 107；UI 16/16 通过。
 
 PDF 阶段新增 Core 1 项、原生渲染 6 项、UI 1 项，覆盖分页像素、缩放、错误/超限、取消/并发、自有缓冲、翻页关闭与卸载清理。最新完整基线：Core 107 通过 / 1 跳过，共 108；Avalonia 测试 23/23 通过（含原生测试）。上段 XLSX 基线属于该阶段历史结果。
+
+音视频阶段新增 Core 7 项、原生播放 3 项和 UI 1 项，最新完整基线：Core 114 通过 / 1 跳过，共 115；Avalonia 测试 27/27 通过。上面的 XLSX/PDF 数量为相应历史阶段结果。
 
 原生图片实现参考 [Avalonia Bitmap.DecodeToWidth](https://docs.avaloniaui.net/api/avalonia/media/imaging/bitmap)。无界面测试和跨平台发布不等同于 Mac/Linux 实机验收，字体、真实文件选择器和图片渲染仍待平台测试。

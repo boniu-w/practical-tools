@@ -9,7 +9,9 @@ public sealed record PreviewContent(string Name, string? Text, byte[]? Image, bo
 {
     public IReadOnlyList<PreviewSheet>? Sheets { get; init; }
     public byte[]? Pdf { get; init; }
-    public void Dispose() { if (Image != null) Array.Clear(Image); if (Pdf != null) Array.Clear(Pdf); }
+    public byte[]? Media { get; init; }
+    public string? MediaDemux { get; init; }
+    public void Dispose() { if (Image != null) Array.Clear(Image); if (Pdf != null) Array.Clear(Pdf); if (Media != null) Array.Clear(Media); }
 }
 
 /// <summary>Produces bounded, passive content; temporary plaintext is removed before returning.</summary>
@@ -35,14 +37,16 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
             token.ThrowIfCancellationRequested();
             return new(name, null, null, workbook.Truncated) { Sheets = workbook.Sheets };
         }
-        if (extension is ".png" or ".jpg" or ".jpeg" or ".pdf")
+        if (extension is ".png" or ".jpg" or ".jpeg" or ".pdf" || MediaPreviewFormats.Supports(extension))
         {
             var bytes = File.ReadAllBytes(payload);
             try
             {
                 token.ThrowIfCancellationRequested();
+                var demux = MediaPreviewFormats.Supports(extension) ? MediaPreviewFormats.Validate(name, bytes) : null;
                 // Complete cleanup before transferring ownership of the image buffer.
                 workspace.Dispose();
+                if (demux != null) return new(name, null, null, false) { Media = bytes, MediaDemux = demux };
                 return extension == ".pdf" ? new(name, null, null, false) { Pdf = bytes } : new(name, null, bytes, false);
             }
             catch { Array.Clear(bytes); throw; }
@@ -51,7 +55,7 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
         {
             ".docx" => ReadWord(payload, token),
             ".txt" or ".md" or ".csv" or ".json" or ".xml" or ".html" or ".htm" or ".log" or ".yaml" or ".yml" or ".ini" or ".cs" or ".sql" => ReadText(payload, token),
-            _ => throw new NotSupportedException("此格式尚未接入预览。支持文本、PNG/JPEG、DOCX 正文、XLSX 和 PDF；其他格式请使用文件解密。")
+            _ => throw new NotSupportedException("此格式尚未接入预览。支持文本、PNG/JPEG、DOCX 正文、XLSX、PDF 和常见音视频；其他格式请使用文件解密。")
         };
         token.ThrowIfCancellationRequested();
         return new(name, text[..Math.Min(text.Length, MaxCharacters)], null, text.Length > MaxCharacters);

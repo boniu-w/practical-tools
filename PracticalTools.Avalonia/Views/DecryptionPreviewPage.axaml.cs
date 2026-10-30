@@ -61,7 +61,13 @@ public partial class DecryptionPreviewPage : UserControl
             var material = await _library.GetSecretAsync(key.Id);
             using var content = await _service.OpenAsync(path, material.Key, material.Passphrase, cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
-            if (content.Pdf != null)
+            if (content.Media != null)
+            {
+                var extension = Path.GetExtension(content.Name).ToLowerInvariant();
+                MediaView.IsVisible = true;
+                MediaView.Open(content.Media, content.MediaDemux!, extension is ".mp4" or ".m4v" or ".mov" or ".mkv" or ".webm" or ".avi" or ".ogv");
+            }
+            else if (content.Pdf != null)
             {
                 _pdf = content.Pdf.ToArray();
                 await ShowPdfPageAsync(0, 100, cancellation.Token);
@@ -93,6 +99,7 @@ public partial class DecryptionPreviewPage : UserControl
     }
     private void ClearContent()
     {
+        MediaView.Close(); MediaView.IsVisible = false;
         if (_pdf != null) Array.Clear(_pdf);
         _pdf = null; _pdfPage = _pdfCount = 0; _pdfZoom = 100;
         PdfControls.IsVisible = false; PdfPosition.Text = PdfZoom.Text = null;

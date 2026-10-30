@@ -9,6 +9,29 @@ namespace PracticalTools.Core.Tests;
 public class PreviewTests
 {
     [TestMethod]
+    public async Task AudioPreviewClearsDiskAndOwnedMemory()
+    {
+        var bytes = PracticalTools.TestFixtures.MediaFixture.Wave();
+        var input = await Encrypt("audio.wav", bytes);
+        var result = await new PreviewService(_root).OpenAsync(input, _secret, "password");
+        Assert.AreEqual("wav", result.MediaDemux); CollectionAssert.AreEqual(bytes, result.Media!); Clean();
+        result.Dispose(); Assert.IsTrue(result.Media!.All(b => b == 0));
+    }
+    [TestMethod]
+    public async Task RenamedPlaylistIsRejectedAndCleaned()
+    {
+        var input = await Encrypt("fake.mp4", System.Text.Encoding.UTF8.GetBytes("#EXTM3U\nhttps://invalid.example/video"));
+        await Assert.ThrowsExceptionAsync<InvalidDataException>(() => new PreviewService(_root).OpenAsync(input, _secret, "password")); Clean();
+    }
+    [DataTestMethod]
+    [DataRow("mp4", "000000186674797069736f6d", "mp4")]
+    [DataRow("webm", "1a45dfa3", "mkv")]
+    [DataRow("mp3", "494433", "mpga")]
+    [DataRow("flac", "664c6143", "flac")]
+    [DataRow("ogg", "4f676753", "ogg")]
+    public void MediaSignaturesSelectExplicitDemux(string extension, string hex, string expected) =>
+        Assert.AreEqual(expected, MediaPreviewFormats.Validate("test." + extension, Convert.FromHexString(hex)));
+    [TestMethod]
     public async Task PdfBytesAreReturnedAfterCleanupAndClearedOnDispose()
     {
         var bytes = PracticalTools.TestFixtures.PdfFixture.Create();
