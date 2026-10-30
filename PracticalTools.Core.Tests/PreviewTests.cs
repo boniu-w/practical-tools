@@ -8,6 +8,15 @@ namespace PracticalTools.Core.Tests;
 [TestClass]
 public class PreviewTests
 {
+    [TestMethod]
+    public async Task PdfBytesAreReturnedAfterCleanupAndClearedOnDispose()
+    {
+        var bytes = PracticalTools.TestFixtures.PdfFixture.Create();
+        var input = await Encrypt("document.pdf", bytes);
+        var result = await new PreviewService(_root).OpenAsync(input, _secret, "password");
+        Assert.AreEqual("document.pdf", result.Name); CollectionAssert.AreEqual(bytes, result.Pdf!); Clean();
+        result.Dispose(); Assert.IsTrue(result.Pdf!.All(b => b == 0));
+    }
     private string _root = null!;
     private static string _public = null!, _secret = null!;
     [ClassInitialize]
@@ -56,7 +65,7 @@ public class PreviewTests
     [DataRow("unsupported")]
     public async Task FailedOperationsLeaveNoWorkspace(string kind)
     {
-        var input = await Encrypt(kind == "unsupported" ? "file.pdf" : "file.txt", [65, 66, 67]);
+        var input = await Encrypt(kind == "unsupported" ? "file.exe" : "file.txt", [65, 66, 67]);
         if (kind == "tamper") { var bytes = File.ReadAllBytes(input); bytes[^1] ^= 1; File.WriteAllBytes(input, bytes); }
         using var cts = new CancellationTokenSource(); if (kind == "cancel") cts.Cancel();
         Exception? failure = null;

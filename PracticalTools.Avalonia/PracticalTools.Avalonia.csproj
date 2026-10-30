@@ -7,6 +7,10 @@
     <ApplicationIcon>../PracticalTools/Assets/app_icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="ThirdParty/PDFium/**/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <PackageReference Include="bblanchon.PDFium.Win32" Version="158.0.8125" />
+    <PackageReference Include="bblanchon.PDFium.macOS" Version="158.0.8125" />
+    <PackageReference Include="bblanchon.PDFium.Linux" Version="158.0.8125" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.21" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.21" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.21" />

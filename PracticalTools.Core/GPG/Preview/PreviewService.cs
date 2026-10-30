@@ -8,7 +8,8 @@ namespace PracticalTools.GPG.Preview;
 public sealed record PreviewContent(string Name, string? Text, byte[]? Image, bool Truncated) : IDisposable
 {
     public IReadOnlyList<PreviewSheet>? Sheets { get; init; }
-    public void Dispose() { if (Image != null) Array.Clear(Image); }
+    public byte[]? Pdf { get; init; }
+    public void Dispose() { if (Image != null) Array.Clear(Image); if (Pdf != null) Array.Clear(Pdf); }
 }
 
 /// <summary>Produces bounded, passive content; temporary plaintext is removed before returning.</summary>
@@ -34,7 +35,7 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
             token.ThrowIfCancellationRequested();
             return new(name, null, null, workbook.Truncated) { Sheets = workbook.Sheets };
         }
-        if (extension is ".png" or ".jpg" or ".jpeg")
+        if (extension is ".png" or ".jpg" or ".jpeg" or ".pdf")
         {
             var bytes = File.ReadAllBytes(payload);
             try
@@ -42,7 +43,7 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
                 token.ThrowIfCancellationRequested();
                 // Complete cleanup before transferring ownership of the image buffer.
                 workspace.Dispose();
-                return new(name, null, bytes, false);
+                return extension == ".pdf" ? new(name, null, null, false) { Pdf = bytes } : new(name, null, bytes, false);
             }
             catch { Array.Clear(bytes); throw; }
         }
@@ -50,7 +51,7 @@ public sealed class PreviewService(string workspaceParent, long maxBytes = 64 * 
         {
             ".docx" => ReadWord(payload, token),
             ".txt" or ".md" or ".csv" or ".json" or ".xml" or ".html" or ".htm" or ".log" or ".yaml" or ".yml" or ".ini" or ".cs" or ".sql" => ReadText(payload, token),
-            _ => throw new NotSupportedException("此格式尚未接入预览。支持文本、PNG/JPEG、DOCX 正文和 XLSX；其他格式请使用文件解密。")
+            _ => throw new NotSupportedException("此格式尚未接入预览。支持文本、PNG/JPEG、DOCX 正文、XLSX 和 PDF；其他格式请使用文件解密。")
         };
         token.ThrowIfCancellationRequested();
         return new(name, text[..Math.Min(text.Length, MaxCharacters)], null, text.Length > MaxCharacters);
