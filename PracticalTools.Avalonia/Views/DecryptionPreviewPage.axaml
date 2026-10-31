@@ -1,43 +1,68 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:views="using:PracticalTools.Desktop.Views"
              x:Class="PracticalTools.Desktop.Views.DecryptionPreviewPage">
-  <Grid Margin="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
-    <StackPanel x:Name="Inputs" Spacing="8">
-      <TextBlock Text="解密预览" FontSize="22" />
-      <TextBlock Text="支持文本、PNG/JPEG/BMP/GIF/ICO/WebP/AVIF 图片、DOCX/XLSX 内容、PDF 和常见音视频（含 AAC/WMV）预览；单文件明文上限 64 MiB。" TextWrapping="Wrap" />
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-        <ComboBox x:Name="LibraryKeys" HorizontalAlignment="Stretch" PlaceholderText="选择包含私钥的密钥" />
-        <Button Grid.Column="1" Content="刷新密钥" Click="RefreshKeys" />
-      </Grid>
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-        <TextBox x:Name="InputPath" Watermark="加密文件路径" />
-        <Button Grid.Column="1" Content="选择文件" Click="PickInput" />
-      </Grid>
-      <Button x:Name="RunButton" Content="查看加密文件" Click="Run" />
+  <Grid Margin="32" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
+    <StackPanel Spacing="6">
+      <TextBlock Text="解密预览" Classes="pageTitle" />
+      <TextBlock Text="支持文本、PNG/JPEG/BMP/GIF/ICO/WebP/AVIF 图片、DOCX/XLSX 内容、PDF 和常见音视频（含 AAC/WMV）预览；单文件明文上限 64 MiB。"
+                 Classes="muted" />
     </StackPanel>
-    <Button Grid.Row="1" x:Name="CloseButton" Content="关闭预览 / 取消" Click="ClosePreview" />
-    <TextBlock Grid.Row="2" x:Name="Status" TextWrapping="Wrap" />
-    <Grid Grid.Row="3" RowDefinitions="Auto,*" RowSpacing="8">
-      <StackPanel x:Name="PdfControls" IsVisible="False" Orientation="Horizontal" Spacing="8">
-        <Button x:Name="PreviousPage" Content="上一页" Click="PreviousPdfPage" />
-        <TextBlock x:Name="PdfPosition" VerticalAlignment="Center" />
-        <Button x:Name="NextPage" Content="下一页" Click="NextPdfPage" />
-        <Button x:Name="ZoomOut" Content="缩小" Click="ZoomPdfOut" />
-        <TextBlock x:Name="PdfZoom" VerticalAlignment="Center" />
-        <Button x:Name="ZoomIn" Content="放大" Click="ZoomPdfIn" />
-      </StackPanel>
-      <StackPanel x:Name="WorkbookHeader" IsVisible="False" Spacing="6">
-        <ComboBox x:Name="SheetSelector" HorizontalAlignment="Stretch" SelectionChanged="SelectSheet" />
-        <TextBlock Text="按单元格地址显示原始值；公式仅显示缓存结果，可能过时。日期/百分比等不套用格式，合并单元格不还原布局。" TextWrapping="Wrap" />
-      </StackPanel>
-      <TextBox Grid.Row="1" x:Name="TextPreview" IsReadOnly="True" IsUndoEnabled="False" AcceptsReturn="True" TextWrapping="Wrap" IsVisible="False" />
-      <views:MediaPreviewView Grid.Row="1" x:Name="MediaView" IsVisible="False" />
-      <ScrollViewer Grid.Row="1" x:Name="ImageHost" IsVisible="False" HorizontalScrollBarVisibility="Auto">
-        <Grid>
-          <Image x:Name="ImagePreview" Stretch="Uniform" />
-          <Grid x:Name="GifHost" IsVisible="False" />
+
+    <Border Grid.Row="1" Classes="card">
+      <StackPanel x:Name="Inputs" Spacing="10">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <ComboBox x:Name="LibraryKeys" HorizontalAlignment="Stretch" PlaceholderText="选择包含私钥的密钥" />
+          <Button Grid.Column="1" Content="刷新密钥" Click="RefreshKeys" />
         </Grid>
-      </ScrollViewer>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBox x:Name="InputPath" Watermark="加密文件路径" />
+          <Button Grid.Column="1" Content="选择文件" Click="PickInput" />
+        </Grid>
+        <Button x:Name="RunButton" Content="查看加密文件" Classes="primary" Click="Run" />
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+      <Button x:Name="CloseButton" Content="关闭预览 / 取消" Click="ClosePreview" />
+      <TextBlock x:Name="Status" Grid.Column="1" Classes="status" VerticalAlignment="Center" />
     </Grid>
+
+    <Border Grid.Row="3" Classes="card" Padding="0" ClipToBounds="True">
+      <Grid>
+        <Grid RowDefinitions="Auto,*" RowSpacing="8" Margin="16">
+        <StackPanel x:Name="PdfControls" IsVisible="False" Orientation="Horizontal" Spacing="8">
+          <Button x:Name="PreviousPage" Content="上一页" Click="PreviousPdfPage" />
+          <TextBlock x:Name="PdfPosition" VerticalAlignment="Center" />
+          <Button x:Name="NextPage" Content="下一页" Click="NextPdfPage" />
+          <Button x:Name="ZoomOut" Content="缩小" Click="ZoomPdfOut" />
+          <TextBlock x:Name="PdfZoom" VerticalAlignment="Center" />
+          <Button x:Name="ZoomIn" Content="放大" Click="ZoomPdfIn" />
+        </StackPanel>
+        <StackPanel x:Name="WorkbookHeader" IsVisible="False" Spacing="6">
+          <ComboBox x:Name="SheetSelector" HorizontalAlignment="Stretch" SelectionChanged="SelectSheet" />
+          <TextBlock Text="按单元格地址显示原始值；公式仅显示缓存结果，可能过时。日期/百分比等不套用格式，合并单元格不还原布局。"
+                     Classes="caption" />
+        </StackPanel>
+        <TextBox Grid.Row="1" x:Name="TextPreview" IsReadOnly="True" IsUndoEnabled="False"
+                 AcceptsReturn="True" TextWrapping="Wrap" IsVisible="False" />
+        <views:MediaPreviewView Grid.Row="1" x:Name="MediaView" IsVisible="False" />
+        <ScrollViewer Grid.Row="1" x:Name="ImageHost" IsVisible="False" HorizontalScrollBarVisibility="Auto">
+          <Grid>
+            <Image x:Name="ImagePreview" Stretch="Uniform" />
+            <Grid x:Name="GifHost" IsVisible="False" />
+          </Grid>
+        </ScrollViewer>
+        </Grid>
+        <StackPanel x:Name="PreviewPlaceholder" Spacing="6" HorizontalAlignment="Center"
+                    VerticalAlignment="Center" IsHitTestVisible="False" Margin="24">
+          <Path Width="38" Height="38" Stretch="Uniform" HorizontalAlignment="Center"
+                Fill="{DynamicResource TextMutedBrush}"
+                Data="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" />
+          <TextBlock Text="预览区域" Classes="emptyTitle" />
+          <TextBlock Text="选择一个加密文件并点击“查看加密文件”，内容会显示在这里。" Classes="emptyHint" />
+        </StackPanel>
+      </Grid>
+    </Border>
   </Grid>
 </UserControl>

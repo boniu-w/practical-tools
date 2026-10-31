@@ -1,14 +1,14 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="PracticalTools.Desktop.Views.KeyImportWindow" Title="导入密钥" Width="620" Height="470">
   <StackPanel x:Name="Form" Margin="24" Spacing="14">
-    <TextBlock Text="导入一个 ASCII 公钥或私钥环" FontSize="22" />
+    <TextBlock Text="导入一个 ASCII 公钥或私钥环" Classes="pageTitle" />
     <TextBlock Text="导入私钥时自动提取对应公钥。相同指纹的公钥记录可升级为公私钥记录；已有私钥不会被覆盖。" TextWrapping="Wrap" />
     <Button Content="选择 .asc 密钥文件" Click="SelectFile" />
     <TextBlock x:Name="FileName" TextWrapping="Wrap" />
     <TextBox x:Name="KeyName" Watermark="显示名称（可选，默认读取密钥身份）" />
     <TextBox x:Name="Description" Watermark="说明（可选）" />
     <TextBox x:Name="Passphrase" PasswordChar="●" Watermark="私钥保护口令（仅公钥不需要）" />
-    <Button Content="验证并导入" Classes="accent" Click="Import" />
+    <Button Content="验证并导入" Classes="primary" Click="Import" />
     <TextBlock x:Name="Status" TextWrapping="Wrap" />
   </StackPanel>
 </Window>

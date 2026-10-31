@@ -152,7 +152,7 @@ public class KeyLibraryUiTests
             page.FindControl<TextBox>("KeyName")!.Text = "edited in UI";
             page.FindControl<TextBox>("Description")!.Text = "new description";
             Click(page, "SaveButton");
-            await WaitUntil(() => page.FindControl<StackPanel>("Form")!.IsEnabled);
+            await WaitUntil(() => page.FindControl<Control>("Form")!.IsEnabled);
             Assert.Equal("edited in UI", (await store.Library.ListAsync()).Single().Name);
             grid.SelectedIndex = 0;
             Click(page, "DeleteButton");
@@ -165,7 +165,7 @@ public class KeyLibraryUiTests
             var confirmDialog = owner.OwnedWindows.OfType<ConfirmationWindow>().Single();
             confirmDialog.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "ConfirmButton")
                 .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            await WaitUntil(() => page.FindControl<StackPanel>("Form")!.IsEnabled && page.FindControl<TextBlock>("Status")!.Text == "已删除。");
+            await WaitUntil(() => page.FindControl<Control>("Form")!.IsEnabled && page.FindControl<TextBlock>("Status")!.Text == "已删除。");
             Assert.Empty(await store.Library.ListAsync());
             Assert.DoesNotContain("ui-password", page.FindControl<TextBlock>("Details")!.Text!);
         }

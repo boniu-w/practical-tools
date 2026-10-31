@@ -24,16 +24,16 @@ public partial class GenerateKeyPage : UserControl
             if (passphrase != ConfirmPassphrase.Text) throw new ArgumentException("两次输入的口令不一致。");
             Form.IsEnabled = false;
             Progress.IsVisible = true;
-            Status.Text = "正在生成密钥…";
+            UiStatus.Set(Status, "正在生成密钥…", UiStatusKind.Busy);
             var keys = await _library.GenerateAsync(identity, passphrase, (int)(KeyBits.Value ?? 3072), (int)(ValidDays.Value ?? 365));
             _generatedId = keys.Id;
             PublicKey.Text = await _library.GetPublicKeyAsync(keys.Id);
             Fingerprint.Text = $"公钥指纹：{keys.Fingerprint}";
             ExportPublic.IsEnabled = ExportSecret.IsEnabled = true;
             Passphrase.Text = ConfirmPassphrase.Text = "";
-            Status.Text = "生成成功并已保存到密钥库，重启后可继续使用。";
+            UiStatus.Set(Status, "生成成功并已保存到密钥库，重启后可继续使用。", UiStatusKind.Success);
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
         finally { Form.IsEnabled = true; Progress.IsVisible = false; }
     }
 
@@ -52,8 +52,8 @@ public partial class GenerateKeyPage : UserControl
             if (file == null) return;
             var path = file.TryGetLocalPath() ?? throw new IOException("请选择本地保存位置。");
             await _library.ExportAsync(_generatedId.Value, path, secret);
-            Status.Text = $"已导出：{path}";
+            UiStatus.Set(Status, $"已导出：{path}", UiStatusKind.Success);
         }
-        catch (Exception ex) { Status.Text = $"导出失败：{ex.Message}"; }
+        catch (Exception ex) { UiStatus.Set(Status, $"导出失败：{ex.Message}", UiStatusKind.Error); }
     }
 }

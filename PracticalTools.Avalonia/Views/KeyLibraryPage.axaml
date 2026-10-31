@@ -1,29 +1,58 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PracticalTools.Desktop.Views.KeyLibraryPage">
-  <ScrollViewer>
-    <StackPanel x:Name="Form" Margin="16" Spacing="10">
+  <Grid Margin="32" RowDefinitions="Auto,*,Auto" RowSpacing="16">
+    <StackPanel Spacing="6">
+      <TextBlock Text="密钥库" Classes="pageTitle" />
+      <TextBlock Text="管理本机的 GPG 密钥。私钥与口令保存在本地，列表和详情不会显示敏感内容。" Classes="muted" />
+    </StackPanel>
+
+    <Grid x:Name="Form" Grid.Row="1" RowDefinitions="Auto,*,Auto" RowSpacing="12">
       <StackPanel Orientation="Horizontal" Spacing="8">
         <Button Content="刷新" Click="Refresh" />
         <Button Content="导入密钥" Click="Import" />
         <Button Content="导出公钥" Click="ExportPublic" />
         <Button Content="导出私钥" Click="ExportSecret" />
-        <Button x:Name="DeleteButton" Content="删除…" Click="Delete" />
+        <Button x:Name="DeleteButton" Content="删除…" Classes="danger" Click="Delete" />
       </StackPanel>
-      <DataGrid x:Name="Keys" Height="230" AutoGenerateColumns="False" IsReadOnly="True"
-                SelectionMode="Single" SelectionChanged="Selected">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="220" />
-          <DataGridTextColumn Header="类型" Binding="{Binding Kind}" Width="90" />
-          <DataGridTextColumn Header="位数" Binding="{Binding KeySize}" Width="70" />
-          <DataGridTextColumn Header="到期时间（空为永久）" Binding="{Binding EndsOn}" Width="190" />
-        </DataGrid.Columns>
-      </DataGrid>
-      <TextBlock x:Name="Details" Text="选择密钥查看详情。" TextWrapping="Wrap" />
-      <TextBox x:Name="KeyName" Watermark="显示名称" />
-      <TextBox x:Name="Description" Watermark="说明" />
-      <Button x:Name="SaveButton" Content="保存名称和说明" Click="SaveMetadata" />
-      <TextBlock Text="私钥和口令默认隐藏。公钥可用于加密，只有含私钥的记录可用于解密。" TextWrapping="Wrap" />
-      <TextBlock x:Name="Status" TextWrapping="Wrap" />
-    </StackPanel>
-  </ScrollViewer>
+
+      <Border Grid.Row="1" Classes="card" Padding="0" ClipToBounds="True">
+        <Grid>
+          <DataGrid x:Name="Keys" MinHeight="180" AutoGenerateColumns="False" IsReadOnly="True"
+                    SelectionMode="Single" SelectionChanged="Selected">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="2*" />
+              <DataGridTextColumn Header="类型" Binding="{Binding Kind}" Width="90" />
+              <DataGridTextColumn Header="位数" Binding="{Binding KeySize}" Width="70" />
+              <DataGridTextColumn Header="到期时间（空为永久）" Binding="{Binding EndsOn}" Width="190" />
+            </DataGrid.Columns>
+          </DataGrid>
+          <StackPanel x:Name="EmptyKeys" Spacing="6" HorizontalAlignment="Center"
+                      VerticalAlignment="Center" IsHitTestVisible="False">
+            <Path Width="36" Height="36" Stretch="Uniform" HorizontalAlignment="Center"
+                  Fill="{DynamicResource TextMutedBrush}"
+                  Data="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2h1m-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z" />
+            <TextBlock Text="密钥库为空" Classes="emptyTitle" />
+            <TextBlock Text="导入密钥或先生成一个新密钥对。" Classes="emptyHint" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Border Grid.Row="2" Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock x:Name="Details" Text="选择密钥查看详情。" Classes="muted" />
+          <Grid ColumnDefinitions="96,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+            <TextBlock Text="显示名称" Classes="fieldLabel" />
+            <TextBox x:Name="KeyName" Grid.Column="1" Watermark="显示名称" />
+            <TextBlock Grid.Row="1" Text="说明" Classes="fieldLabel" />
+            <TextBox x:Name="Description" Grid.Row="1" Grid.Column="1" Watermark="说明" />
+          </Grid>
+          <Button x:Name="SaveButton" Content="保存名称和说明" Classes="primary"
+                  HorizontalAlignment="Left" Click="SaveMetadata" />
+          <TextBlock Text="公钥可用于加密；只有含私钥的记录可用于解密或预览。" Classes="caption" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <TextBlock x:Name="Status" Grid.Row="2" Classes="status" />
+  </Grid>
 </UserControl>

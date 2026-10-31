@@ -22,7 +22,7 @@ public partial class FileCryptoPage : UserControl
             var items = await _library.ListAsync();
             LibraryKeys.ItemsSource = Decrypt ? items.Where(k => k.HasSecret).ToList() : items;
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
     }
 
     private async void RefreshLibrary(object? sender, RoutedEventArgs e) => await ReloadKeysAsync();
@@ -66,7 +66,7 @@ public partial class FileCryptoPage : UserControl
                 InputPath.Text = file.TryGetLocalPath() ?? throw new IOException("请选择本地文件。");
             }
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
     }
 
     private async void ImportKey(object? sender, RoutedEventArgs e)
@@ -81,7 +81,7 @@ public partial class FileCryptoPage : UserControl
             LibraryKeys.SelectedItem = null;
             KeyText.Text = await reader.ReadToEndAsync();
         }
-        catch (Exception ex) { Status.Text = $"导入失败：{ex.Message}"; }
+        catch (Exception ex) { UiStatus.Set(Status, $"导入失败：{ex.Message}", UiStatusKind.Error); }
     }
 
     private async void SelectOutput(object? sender, RoutedEventArgs e)
@@ -97,7 +97,7 @@ public partial class FileCryptoPage : UserControl
             if (file != null)
                 OutputPath.Text = file.TryGetLocalPath() ?? throw new IOException("请选择本地保存位置。");
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
     }
 
     private async void Run(object? sender, RoutedEventArgs e)
@@ -129,14 +129,14 @@ public partial class FileCryptoPage : UserControl
                 throw new ArgumentException("请选择输入、输出文件并提供密钥。");
             Form.IsEnabled = false;
             Progress.IsVisible = true;
-            Status.Text = Decrypt ? "正在解密…" : "正在加密…";
+            UiStatus.Set(Status, Decrypt ? "正在解密…" : "正在加密…", UiStatusKind.Busy);
             if (Decrypt)
                 await GpgFileOperations.DecryptAsync(input, output, key, passphrase);
             else
                 await GpgFileOperations.EncryptAsync(input, output, key);
-            Status.Text = $"处理成功：{output}";
+            UiStatus.Set(Status, $"处理成功：{output}", UiStatusKind.Success);
         }
-        catch (Exception ex) { Status.Text = $"处理失败：{ex.Message}"; }
+        catch (Exception ex) { UiStatus.Set(Status, $"处理失败：{ex.Message}", UiStatusKind.Error); }
         finally
         {
             Form.IsEnabled = true;

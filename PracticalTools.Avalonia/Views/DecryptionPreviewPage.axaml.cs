@@ -46,7 +46,7 @@ public partial class DecryptionPreviewPage : UserControl
     {
         if (_library == null) return;
         try { LibraryKeys.ItemsSource = (await _library.ListAsync()).Where(k => k.HasSecret).ToList(); }
-        catch (Exception ex) { Status.Text = $"加载密钥失败：{ex.Message}"; }
+        catch (Exception ex) { UiStatus.Set(Status, $"加载密钥失败：{ex.Message}", UiStatusKind.Error); }
     }
     /// <summary>刷新密钥列表的事件处理。</summary>
     private async void RefreshKeys(object? sender, RoutedEventArgs e) => await ReloadKeysAsync();
@@ -60,7 +60,7 @@ public partial class DecryptionPreviewPage : UserControl
             if (files.Count == 0) return;
             using var file = files[0]; InputPath.Text = file.TryGetLocalPath() ?? throw new IOException("请选择本地文件。");
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
     }
     /// <summary>
     /// 解密所选文件并预览：按内容分派到媒体、PDF、工作簿、图片或文本视图。
@@ -72,7 +72,8 @@ public partial class DecryptionPreviewPage : UserControl
         if (_cancellation != null) return;
         Release();
         using var cancellation = new CancellationTokenSource();
-        _cancellation = cancellation; Inputs.IsEnabled = false; Status.Text = "正在解密并校验…";
+        _cancellation = cancellation; Inputs.IsEnabled = false;
+        UiStatus.Set(Status, "正在解密并校验…", UiStatusKind.Busy);
         string? imageNotice = null;
         try
         {
@@ -134,12 +135,13 @@ public partial class DecryptionPreviewPage : UserControl
             }
             // 其余内容按纯文本显示。
             else { TextPreview.Text = content.Text; TextPreview.IsVisible = true; }
-            Status.Text = $"{content.Name} — 临时明文已清理。" + (content.Truncated ?
+            PreviewPlaceholder.IsVisible = false;
+            UiStatus.Set(Status, $"{content.Name} — 临时明文已清理。" + (content.Truncated ?
                 content.Sheets == null ? "仅显示前 20 万字符。" : "工作簿超过预览范围或容量限制，部分内容未显示。" : "")
-                + (imageNotice is null ? "" : " " + imageNotice);
+                + (imageNotice is null ? "" : " " + imageNotice), UiStatusKind.Success);
         }
-        catch (OperationCanceledException) { Status.Text = "已取消预览。"; }
-        catch (Exception ex) { ClearContent(); Status.Text = $"无法预览：{ex.Message}"; }
+        catch (OperationCanceledException) { UiStatus.Set(Status, "已取消预览。"); }
+        catch (Exception ex) { ClearContent(); UiStatus.Set(Status, $"无法预览：{ex.Message}", UiStatusKind.Error); }
         finally { _cancellation = null; Inputs.IsEnabled = true; UpdatePdfControls(); }
     }
     /// <summary>释放图片、GIF、PDF 等预览资源，清零 PDF 明文并重置相关状态。</summary>
@@ -156,6 +158,7 @@ public partial class DecryptionPreviewPage : UserControl
         SheetSelector.ItemsSource = null; WorkbookHeader.IsVisible = false;
         TextPreview.Text = null; TextPreview.IsVisible = ImageHost.IsVisible = false;
         ImagePreview.Source = null; _bitmap?.Dispose(); _bitmap = null;
+        PreviewPlaceholder.IsVisible = true;
     }
     /// <summary>渲染指定 PDF 页并替换当前位图，同时更新页码与缩放显示。</summary>
     /// <param name="page">从 0 开始的页码。</param>
@@ -186,14 +189,14 @@ public partial class DecryptionPreviewPage : UserControl
         if (_pdf == null || _cancellation != null) return;
         using var cancellation = new CancellationTokenSource();
         _cancellation = cancellation; Inputs.IsEnabled = false; UpdatePdfControls();
-        Status.Text = "正在渲染 PDF 页面…";
+        UiStatus.Set(Status, "正在渲染 PDF 页面…", UiStatusKind.Busy);
         try
         {
             await ShowPdfPageAsync(page, zoom, cancellation.Token);
-            Status.Text = "PDF 页面已显示；临时明文已清理。";
+            UiStatus.Set(Status, "PDF 页面已显示；临时明文已清理。", UiStatusKind.Success);
         }
-        catch (OperationCanceledException) { Status.Text = "已取消预览。"; }
-        catch (Exception ex) { Status.Text = $"无法显示该页面：{ex.Message}"; }
+        catch (OperationCanceledException) { UiStatus.Set(Status, "已取消预览。"); }
+        catch (Exception ex) { UiStatus.Set(Status, $"无法显示该页面：{ex.Message}", UiStatusKind.Error); }
         finally { _cancellation = null; Inputs.IsEnabled = true; UpdatePdfControls(); }
     }
     /// <summary>转到上一页。</summary>
@@ -215,7 +218,7 @@ public partial class DecryptionPreviewPage : UserControl
         TextPreview.IsVisible = SheetSelector.SelectedItem is PreviewSheet;
     }
     /// <summary>取消正在进行的任务并释放全部预览内容。</summary>
-    private void Release() { _cancellation?.Cancel(); ClearContent(); Status.Text = "预览已关闭。"; }
+    private void Release() { _cancellation?.Cancel(); ClearContent(); UiStatus.Set(Status, "预览已关闭。"); }
 
     /// <summary>关闭预览的事件处理。</summary>
     private void ClosePreview(object? sender, RoutedEventArgs e) => Release();

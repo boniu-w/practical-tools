@@ -41,7 +41,7 @@ public partial class FolderCryptoPage : UserControl
             var keys = await _library.ListAsync();
             LibraryKeys.ItemsSource = Decrypt ? keys.Where(k => k.HasSecret).ToList() : keys;
         }
-        catch (Exception ex) { Status.Text = $"加载密钥失败：{ex.Message}"; }
+        catch (Exception ex) { UiStatus.Set(Status, $"加载密钥失败：{ex.Message}", UiStatusKind.Error); }
     }
     private async void RefreshKeys(object? sender, RoutedEventArgs e) => await ReloadKeysAsync();
 
@@ -63,7 +63,7 @@ public partial class FolderCryptoPage : UserControl
                 using var folder = folders[0]; InputPath.Text = folder.TryGetLocalPath() ?? throw new IOException("请选择本地目录。");
             }
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
     }
 
     private async void PickOutput(object? sender, RoutedEventArgs e)
@@ -88,7 +88,7 @@ public partial class FolderCryptoPage : UserControl
                 if (file != null) OutputPath.Text = file.TryGetLocalPath() ?? throw new IOException("请选择本地保存位置。");
             }
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
     }
 
     private async void Run(object? sender, RoutedEventArgs e)
@@ -98,7 +98,7 @@ public partial class FolderCryptoPage : UserControl
         _cancellation = cancellation;
         Progress.IsIndeterminate = true; Progress.Value = 0;
         Inputs.IsEnabled = false; CancelButton.IsEnabled = Progress.IsVisible = true;
-        Status.Text = "准备中…";
+        UiStatus.Set(Status, "准备中…", UiStatusKind.Busy);
         try
         {
             if (_library == null || LibraryKeys.SelectedItem is not KeySummary key) throw new ArgumentException("请先选择密钥。");
@@ -123,15 +123,15 @@ public partial class FolderCryptoPage : UserControl
                 var publicKey = await _library.GetPublicKeyAsync(key.Id);
                 result = await _service.EncryptAsync(source, output, publicKey, progress, cancellation.Token);
             }
-            Status.Text = $"成功：{result.OutputPath}\n文件 {result.Files}，目录 {result.Directories}，原始数据 {result.PlainBytes:N0} 字节。";
+            UiStatus.Set(Status, $"成功：{result.OutputPath}\n文件 {result.Files}，目录 {result.Directories}，原始数据 {result.PlainBytes:N0} 字节。", UiStatusKind.Success);
         }
-        catch (OperationCanceledException) { Status.Text = "已取消，未发布部分输出；临时内容已清理。"; }
-        catch (Exception ex) { Status.Text = $"未完成：{ex.Message}"; }
+        catch (OperationCanceledException) { UiStatus.Set(Status, "已取消，未发布部分输出；临时内容已清理。"); }
+        catch (Exception ex) { UiStatus.Set(Status, $"未完成：{ex.Message}", UiStatusKind.Error); }
         finally
         {
             _cancellation = null; Inputs.IsEnabled = true; CancelButton.IsEnabled = Progress.IsVisible = false;
         }
     }
     private void Cancel(object? sender, RoutedEventArgs e)
-    { _cancellation?.Cancel(); CancelButton.IsEnabled = false; Status.Text = "正在取消并清理…"; }
+    { _cancellation?.Cancel(); CancelButton.IsEnabled = false; UiStatus.Set(Status, "正在取消并清理…", UiStatusKind.Busy); }
 }

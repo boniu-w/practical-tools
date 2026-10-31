@@ -2,33 +2,58 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PracticalTools.Desktop.Views.FileCryptoPage">
   <ScrollViewer>
-    <StackPanel x:Name="Form" Margin="16" Spacing="12">
-      <TextBlock x:Name="Heading" Text="使用公钥加密文件" FontSize="22" />
-      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-        <ComboBox x:Name="LibraryKeys" PlaceholderText="从密钥库选择（可选）" HorizontalAlignment="Stretch" SelectionChanged="LibrarySelected" />
-        <Button Grid.Column="1" Content="刷新密钥" Click="RefreshLibrary" />
-        <Button Grid.Column="2" Content="手工输入" Click="UseManualKey" />
-      </Grid>
-      <TextBlock Text="输入文件" />
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-        <TextBox x:Name="InputPath" Watermark="选择需要处理的文件" />
-        <Button Grid.Column="1" Content="选择文件" Click="SelectInput" />
-      </Grid>
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-        <TextBlock x:Name="KeyLabel" Text="ASCII 公钥" VerticalAlignment="Center" />
-        <Button Grid.Column="1" Content="导入密钥文件" Click="ImportKey" />
-      </Grid>
-      <TextBox x:Name="KeyText" AcceptsReturn="True" Height="170" TextWrapping="Wrap"
-               Watermark="粘贴 ASCII armored 密钥，或导入 .asc 文件" />
-      <TextBox x:Name="Passphrase" IsVisible="False" PasswordChar="●" Watermark="私钥口令" />
-      <TextBlock Text="输出文件（请选择新文件名）" />
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-        <TextBox x:Name="OutputPath" Watermark="选择输出路径" />
-        <Button Grid.Column="1" Content="保存到…" Click="SelectOutput" />
-      </Grid>
-      <Button x:Name="RunButton" Content="开始加密" Classes="accent" Click="Run" />
-      <ProgressBar x:Name="Progress" IsIndeterminate="True" IsVisible="False" />
-      <TextBlock x:Name="Status" TextWrapping="Wrap" />
+    <StackPanel x:Name="Form" Margin="32" Spacing="20" MaxWidth="960" HorizontalAlignment="Center">
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="Heading" Classes="pageTitle" />
+        <TextBlock Text="使用 GPG 密钥处理单个文件。输出会写入一个新文件，不会覆盖已有内容。" Classes="muted" />
+      </StackPanel>
+
+      <Border Classes="card">
+        <StackPanel Spacing="14">
+          <TextBlock Text="密钥" Classes="sectionTitle" />
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <ComboBox x:Name="LibraryKeys" PlaceholderText="从密钥库选择（可选）"
+                      HorizontalAlignment="Stretch" SelectionChanged="LibrarySelected" />
+            <Button Grid.Column="1" Content="刷新密钥" Click="RefreshLibrary" />
+            <Button Grid.Column="2" Content="手工输入" Click="UseManualKey" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBlock x:Name="KeyLabel" Text="ASCII 公钥" Classes="fieldLabel" />
+            <Button Grid.Column="1" Content="导入密钥文件" Click="ImportKey" />
+          </Grid>
+          <TextBox x:Name="KeyText" AcceptsReturn="True" Height="150" TextWrapping="Wrap"
+                   Watermark="粘贴 ASCII armored 密钥，或导入 .asc 文件" />
+          <TextBox x:Name="Passphrase" IsVisible="False" PasswordChar="●" Watermark="私钥口令" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="14">
+          <TextBlock Text="文件" Classes="sectionTitle" />
+          <StackPanel Spacing="6">
+            <TextBlock Text="输入文件" Classes="fieldLabel" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox x:Name="InputPath" Watermark="选择需要处理的文件" />
+              <Button Grid.Column="1" Content="选择文件" Click="SelectInput" />
+            </Grid>
+          </StackPanel>
+          <StackPanel Spacing="6">
+            <TextBlock Text="输出文件（请选择新文件名）" Classes="fieldLabel" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox x:Name="OutputPath" Watermark="选择输出路径" />
+              <Button Grid.Column="1" Content="保存到…" Click="SelectOutput" />
+            </Grid>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button x:Name="RunButton" Content="开始加密" Classes="primary" Click="Run" />
+            <ProgressBar x:Name="Progress" IsIndeterminate="True" IsVisible="False"
+                         Width="220" VerticalAlignment="Center" />
+          </StackPanel>
+          <TextBlock Text="输出文件必须尚不存在；处理失败时不会留下半成品文件。" Classes="caption" />
+        </StackPanel>
+      </Border>
+
+      <TextBlock x:Name="Status" Classes="status" />
     </StackPanel>
   </ScrollViewer>
 </UserControl>

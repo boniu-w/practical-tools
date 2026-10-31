@@ -37,22 +37,22 @@ public partial class MigrationPage : UserControl
     private async void ChooseLegacy(object? sender, RoutedEventArgs e)
     {
         try { var path = await PickAsync("选择原 Windows 实用工具数据库"); if (path != null) LegacyPath.Text = path; }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
     }
 
     private async void ChoosePackage(object? sender, RoutedEventArgs e)
     {
         try { var path = await PickAsync("选择加密迁移包"); if (path != null) PackagePath.Text = path; }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
     }
 
     private async Task BusyAsync(Func<Task> action)
     {
-        if (_service == null) { Status.Text = "迁移服务尚未初始化。"; return; }
+        if (_service == null) { UiStatus.Set(Status, "迁移服务尚未初始化。", UiStatusKind.Error); return; }
         Form.IsEnabled = false;
-        Status.Text = "处理中…";
+        UiStatus.Set(Status, "处理中…", UiStatusKind.Busy);
         try { await action(); }
-        catch (Exception ex) { InvalidatePreview(); Status.Text = $"未完成：{ex.Message}"; }
+        catch (Exception ex) { InvalidatePreview(); UiStatus.Set(Status, $"未完成：{ex.Message}", UiStatusKind.Error); }
         finally { Form.IsEnabled = true; }
     }
 
@@ -71,11 +71,11 @@ public partial class MigrationPage : UserControl
             {
                 Title = "保存加密迁移包（请选择新文件名）", SuggestedFileName = "PracticalTools.ptmigration"
             });
-            if (file == null) { Status.Text = "已取消导出。"; return; }
+            if (file == null) { UiStatus.Set(Status, "已取消导出。"); return; }
             var target = file.TryGetLocalPath() ?? throw new IOException("请选择本地保存位置。");
             if (legacy) await _service!.ExportLegacyAsync(source, target, password);
             else await _service!.ExportCurrentAsync(target, password);
-            Status.Text = $"迁移包已保存：{target}。请在目标电脑输入同一迁移口令预览后导入。";
+            UiStatus.Set(Status, $"迁移包已保存：{target}。请在目标电脑输入同一迁移口令预览后导入。", UiStatusKind.Success);
         });
     }
 
@@ -89,7 +89,7 @@ public partial class MigrationPage : UserControl
             PreviewText.Text = $"密钥 {_preview.Keys} · 黑名单 {_preview.Blacklist} · 扫描记录 {_preview.Scans} · 文件记录 {_preview.Files}\n" +
                 "密钥指纹（最多展示 10 个）：\n" + string.Join("\n", _preview.Fingerprints.Take(10));
             ConfirmImportButton.IsEnabled = true;
-            Status.Text = "验证成功，尚未写入数据。确认后导入；重复项跳过，激活状态保持当前记录。";
+            UiStatus.Set(Status, "验证成功，尚未写入数据。确认后导入；重复项跳过，激活状态保持当前记录。", UiStatusKind.Success);
         });
     }
 
@@ -102,7 +102,7 @@ public partial class MigrationPage : UserControl
             var result = await _service!.ImportAsync(PackagePath.Text ?? "", Password.Text ?? "", digest);
             _preview = null;
             ConfirmImportButton.IsEnabled = false;
-            Status.Text = result.ToString();
+            UiStatus.Set(Status, result.ToString(), UiStatusKind.Success);
         });
     }
 }

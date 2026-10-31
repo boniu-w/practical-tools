@@ -74,7 +74,9 @@ public partial class DuplicateScanPage : UserControl
         _scan = null;
         Actions.IsEnabled = false;
         Results.ItemsSource = _visible = [];
+        ShowEmpty("还没有扫描结果", "设置目录和后缀后开始扫描。");
         Warnings.Text = "";
+        UiStatus.Set(Status, "正在扫描…", UiStatusKind.Busy);
         using var cancellation = new CancellationTokenSource();
         _cancellation = cancellation;
         Progress.IsVisible = CancelButton.IsEnabled = true;
@@ -93,16 +95,16 @@ public partial class DuplicateScanPage : UserControl
             _scan = completed;
             ApplyFilter();
             var groups = completed.Duplicates.Select(f => f.Sha256).Distinct().Count();
-            Status.Text = $"完成：{completed.Files.Count} 个文件，{groups} 组重复、{completed.Duplicates.Count} 条结果；按路径计重复 {completed.DuplicateBytes:N0} 字节，跳过 {completed.Skipped} 项。";
+            UiStatus.Set(Status, $"完成：{completed.Files.Count} 个文件，{groups} 组重复、{completed.Duplicates.Count} 条结果；按路径计重复 {completed.DuplicateBytes:N0} 字节，跳过 {completed.Skipped} 项。", UiStatusKind.Success);
             Warnings.Text = string.Join("\n", completed.Warnings.Take(20).Select(w => $"{w.Path}：{w.Reason}"));
             if (_history != null)
             {
                 try { await _history.SaveAsync(completed); Status.Text += " 扫描记录已保存。"; }
-                catch (Exception ex) { Status.Text += $" 记录保存失败：{ex.Message}"; }
+                catch (Exception ex) { UiStatus.Set(Status, Status.Text + $" 记录保存失败：{ex.Message}", UiStatusKind.Error); }
             }
         }
-        catch (OperationCanceledException) { Status.Text = "扫描已取消，未发布部分结果、未保存记录。"; }
-        catch (Exception ex) { Status.Text = $"扫描失败：{ex.Message}"; }
+        catch (OperationCanceledException) { UiStatus.Set(Status, "扫描已取消，未发布部分结果、未保存记录。"); }
+        catch (Exception ex) { UiStatus.Set(Status, $"扫描失败：{ex.Message}", UiStatusKind.Error); }
         finally
         {
             _cancellation = null;
@@ -116,7 +118,7 @@ public partial class DuplicateScanPage : UserControl
     {
         _cancellation?.Cancel();
         CancelButton.IsEnabled = false;
-        Status.Text = "正在取消扫描…";
+        UiStatus.Set(Status, "正在取消扫描…", UiStatusKind.Busy);
     }
 
     /// <summary>筛选条件变化时重新应用筛选。</summary>
@@ -128,6 +130,18 @@ public partial class DuplicateScanPage : UserControl
         var term = Search.Text?.Trim() ?? "";
         _visible = (_scan?.Duplicates ?? []).Where(f => f.FilePath.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
         Results.ItemsSource = _visible;
+        if (_scan == null) ShowEmpty("还没有扫描结果", "设置目录和后缀后开始扫描。");
+        else if (_visible.Count == 0)
+            ShowEmpty(term.Length == 0 ? "没有发现重复文件" : "没有匹配的筛选结果",
+                term.Length == 0 ? "该扫描没有找到内容相同的文件。" : "尝试更换筛选关键词。");
+        else EmptyResults.IsVisible = false;
+    }
+
+    private void ShowEmpty(string title, string hint)
+    {
+        EmptyResultsTitle.Text = title;
+        EmptyResultsHint.Text = hint;
+        EmptyResults.IsVisible = true;
     }
 
     /// <summary>
@@ -138,7 +152,7 @@ public partial class DuplicateScanPage : UserControl
     {
         Results.SelectedItems.Clear();
         foreach (var file in DuplicateScan.SuggestRemovals(_visible)) Results.SelectedItems.Add(file);
-        Status.Text = $"已选择 {Results.SelectedItems.Count} 项，优先保留创建时间较早、路径较浅的一份；尚未执行移除。";
+        UiStatus.Set(Status, $"已选择 {Results.SelectedItems.Count} 项，优先保留创建时间较早、路径较浅的一份；尚未执行移除。");
     }
 
     /// <summary>
@@ -149,26 +163,30 @@ public partial class DuplicateScanPage : UserControl
     {
         if (_busy || _scan == null || TopLevel.GetTopLevel(this) is not Window owner) return;
         var selected = Results.SelectedItems.OfType<ScannedFile>().ToList();
-        if (selected.Count == 0) { Status.Text = "请先选择文件。"; return; }
+        if (selected.Count == 0) { UiStatus.Set(Status, "请先选择文件。", UiStatusKind.Error); return; }
         var mode = RemovalMode.SelectedIndex == 0 ? FileRemovalMode.Recycle : FileRemovalMode.Permanent;
         var action = mode == FileRemovalMode.Recycle ? "移入 Windows 回收站" : "永久删除（不可恢复）";
         SetBusy(true);
         try
         {
             // 永久删除不可恢复，必须经用户确认。
-            var message = $"即将{action} {selected.Count} 个文件。\n每组必须保留至少一份；确认后仍会重新校验内容。\n\n" +
-                string.Join("\n", selected.Select(f => f.FilePath));
-            if (!await ConfirmationWindow.AskAsync(owner, message)) { Status.Text = "已取消移除，没有改动文件。"; return; }
-            Status.Text = $"正在复查并{action}…";
+            var listed = string.Join("\n", selected.Take(20).Select(f => f.FilePath));
+            if (selected.Count > 20) listed += $"\n…等 {selected.Count} 项";
+            var message = $"即将{action} {selected.Count} 个文件。\n每组必须保留至少一份；确认后仍会重新校验内容。\n\n" + listed;
+            if (!await ConfirmationWindow.AskAsync(owner, message, "确认移除文件", "确认移除",
+                mode == FileRemovalMode.Permanent)) { UiStatus.Set(Status, "已取消移除，没有改动文件。"); return; }
+            UiStatus.Set(Status, $"正在复查并{action}…", UiStatusKind.Busy);
             Progress.IsVisible = true;
             var result = await _scanner.RemoveAsync(_scan, selected, mode);
             var removed = result.Outcomes.Where(o => o.Success).Select(o => o.Path).ToList();
             _scan = _scan.Without(removed);
             ApplyFilter();
-            Status.Text = $"已移除 {removed.Count}，未移除 {result.Outcomes.Count - removed.Count}。" + (result.Cancelled ? "用户取消了后续处理。" : "");
+            var failed = result.Outcomes.Count - removed.Count;
+            UiStatus.Set(Status, $"已移除 {removed.Count}，未移除 {failed}。" + (result.Cancelled ? "用户取消了后续处理。" : ""),
+                failed == 0 ? UiStatusKind.Success : UiStatusKind.Error);
             Warnings.Text = string.Join("\n", result.Outcomes.Where(o => !o.Success).Select(o => $"{o.Path}：{o.Error}"));
         }
-        catch (Exception ex) { Status.Text = $"未完成移除：{ex.Message}"; }
+        catch (Exception ex) { UiStatus.Set(Status, $"未完成移除：{ex.Message}", UiStatusKind.Error); }
         finally { Progress.IsVisible = false; SetBusy(false); }
     }
 
@@ -178,7 +196,7 @@ public partial class DuplicateScanPage : UserControl
         if (_busy || _history == null) return;
         HistoryButton.IsEnabled = false;
         try { History.ItemsSource = await _history.RecentAsync(); }
-        catch (Exception ex) { Status.Text = $"加载记录失败：{ex.Message}"; }
+        catch (Exception ex) { UiStatus.Set(Status, $"加载记录失败：{ex.Message}", UiStatusKind.Error); }
         finally { HistoryButton.IsEnabled = !_busy; }
     }
 }

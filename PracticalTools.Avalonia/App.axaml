@@ -1,10 +1,223 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="PracticalTools.Desktop.App" RequestedThemeVariant="Default">
+             x:Class="PracticalTools.Desktop.App" RequestedThemeVariant="Light">
+  <Application.Resources>
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F6F8" />
+    <SolidColorBrush x:Key="SidebarBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="AppBorderBrush" Color="#E4E7EC" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#101828" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#475467" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#98A2B3" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#3B5BDB" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#334FC2" />
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="#2B43A3" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#EEF1FF" />
+    <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="NavHoverBrush" Color="#F2F4F7" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#D92D20" />
+    <SolidColorBrush x:Key="DangerSoftBrush" Color="#FEF3F2" />
+    <SolidColorBrush x:Key="DangerHoverBrush" Color="#FEE4E2" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#067647" />
+    <SolidColorBrush x:Key="DisabledBrush" Color="#E4E7EC" />
+  </Application.Resources>
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
-    <Style Selector="Button"><Setter Property="Padding" Value="16,9" /></Style>
-    <Style Selector="TextBox"><Setter Property="MinHeight" Value="36" /></Style>
+
+    <Style Selector="Window">
+      <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="CornerRadius" Value="7" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="Padding" Value="10,7" />
+      <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="MinHeight" Value="36" />
+    </Style>
+
+    <!-- 主操作按钮 -->
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentPressedBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+    </Style>
+    <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DisabledBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource DisabledBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+    </Style>
+
+    <!-- 危险操作按钮 -->
+    <Style Selector="Button.danger">
+      <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+    </Style>
+    <Style Selector="Button.danger /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DangerSoftBrush}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DangerHoverBrush}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+    </Style>
+
+    <!-- 左侧导航 -->
+    <Style Selector="Button.nav">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="12,8" />
+      <Setter Property="MinHeight" Value="36" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="Button.nav /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource NavHoverBrush}" />
+    </Style>
+    <Style Selector="Button.nav:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource NavHoverBrush}" />
+    </Style>
+    <Style Selector="Button.nav.active">
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.nav.active /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    </Style>
+    <Style Selector="Button.nav.active:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+    </Style>
+    <Style Selector="Button.nav Path">
+      <Setter Property="Fill" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="Button.nav.active Path">
+      <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
+    </Style>
+
+    <!-- 文本层级 -->
+    <Style Selector="TextBlock.pageTitle">
+      <Setter Property="FontSize" Value="24" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.sectionTitle">
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.caption">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.fieldLabel">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.navGroup">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+      <Setter Property="Margin" Value="12,0,0,6" />
+    </Style>
+    <Style Selector="TextBlock.status">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.status.busy">
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="TextBlock.status.success">
+      <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+    </Style>
+    <Style Selector="TextBlock.status.error">
+      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+    </Style>
+    <Style Selector="TextBlock.emptyTitle">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.emptyHint">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.dialogText">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="LineHeight" Value="22" />
+    </Style>
+
+    <!-- 卡片与表格 -->
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="20" />
+    </Style>
+    <Style Selector="DataGrid">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="RowHeight" Value="38" />
+      <Setter Property="ColumnHeaderHeight" Value="40" />
+      <Setter Property="GridLinesVisibility" Value="Horizontal" />
+      <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource AppBorderBrush}" />
+      <Setter Property="HeadersVisibility" Value="Column" />
+    </Style>
+    <Style Selector="DataGridColumnHeader">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="ProgressBar">
+      <Setter Property="MinHeight" Value="4" />
+      <Setter Property="CornerRadius" Value="2" />
+    </Style>
   </Application.Styles>
 </Application>

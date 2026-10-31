@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PracticalTools.Desktop.Views.FileOrganizerPage">
+  <Grid Margin="32" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
+    <StackPanel Spacing="6">
+      <TextBlock Text="文件整理" Classes="pageTitle" />
+      <TextBlock Text="按后缀把当前目录的文件移入同名子目录；先预览再确认，不覆盖已有文件。" Classes="muted" />
+    </StackPanel>
+
+    <Border Grid.Row="1" Classes="card">
+      <StackPanel Spacing="12">
+        <StackPanel x:Name="InputsPanel" Spacing="12">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBox x:Name="FolderPath" Watermark="整理目录（仅直接子文件）" />
+            <Button Grid.Column="1" Content="选择目录" Click="PickFolder" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBox x:Name="Suffixes" Watermark="后缀，例如 jpg,png,nef" />
+            <Button x:Name="Preview" Grid.Column="1" Content="预览移动" Classes="primary" Click="PreviewPlan" />
+          </Grid>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button x:Name="Apply" Content="确认整理" IsEnabled="False" Click="ApplyPlan" />
+          <Button x:Name="Cancel" Content="取消" IsEnabled="False" Click="CancelRun" />
+          <TextBlock Text="仅处理当前目录的直接子文件，不会递归。" Classes="caption" VerticalAlignment="Center" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Row="2" Classes="card" Padding="0" ClipToBounds="True">
+      <Grid>
+        <DataGrid x:Name="MovePreview" MinHeight="200" AutoGenerateColumns="False" IsReadOnly="True">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="源文件" Binding="{Binding Source}" Width="*" />
+            <DataGridTextColumn Header="目标文件" Binding="{Binding Target}" Width="*" />
+          </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel x:Name="EmptyPlan" Spacing="6" HorizontalAlignment="Center"
+                    VerticalAlignment="Center" IsHitTestVisible="False">
+          <Path Width="36" Height="36" Stretch="Uniform" HorizontalAlignment="Center"
+                Fill="{DynamicResource TextMutedBrush}"
+                Data="M10 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
+          <TextBlock x:Name="EmptyPlanTitle" Text="还没有预览结果" Classes="emptyTitle" />
+          <TextBlock x:Name="EmptyPlanHint" Text="选择目录和后缀后点击“预览移动”。" Classes="emptyHint" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <TextBlock x:Name="StatusText" Grid.Row="3" Classes="status" />
+  </Grid>
+</UserControl>

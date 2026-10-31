@@ -2,34 +2,225 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:PracticalTools.Desktop.Views"
         x:Class="PracticalTools.Desktop.MainWindow"
-        Title="实用工具 · Avalonia" Width="1040" Height="760" MinWidth="760" MinHeight="600">
-  <Grid Margin="28" RowDefinitions="Auto,*" RowSpacing="20">
-    <StackPanel Spacing="6">
-      <TextBlock Text="实用工具" FontSize="28" FontWeight="SemiBold" />
-      <TextBlock Text="跨平台迁移预览 · Windows / macOS / Linux" Opacity="0.65" />
-    </StackPanel>
-    <TabControl Grid.Row="1" TabStripPlacement="Left">
-      <TabItem Header="首页">
-        <StackPanel Margin="16" Spacing="16">
-          <TextBlock Text="GPG 文件工具" FontSize="24" />
-          <TextBlock Text="文件加密、解密和密钥生成已接入共享 GPG 核心。选择对应页签开始使用。" TextWrapping="Wrap" />
-          <TextBlock Text="已支持密钥库、数据迁移、重复扫描、文件夹加解密、解密预览、文件整理、文件记录及黑名单管理。" TextWrapping="Wrap" />
-          <TextBlock x:Name="DataLocation" TextWrapping="Wrap" Opacity="0.65" />
-          <TextBlock Text="生成的密钥自动保存到密钥库，重启后可继续使用。请成套备份数据库和保护密钥文件。" TextWrapping="Wrap" />
+        Title="实用工具" Width="1200" Height="800" MinWidth="960" MinHeight="680">
+  <Grid ColumnDefinitions="248,*">
+    <Border Grid.Column="0" Background="{DynamicResource SidebarBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,1,0"
+            Padding="16,22,16,16">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="8,0,8,20">
+          <Border Width="38" Height="38" CornerRadius="10" Background="{DynamicResource AccentBrush}">
+            <Viewbox Width="20" Height="20">
+              <Path Fill="White" Data="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2h1m-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z" />
+            </Viewbox>
+          </Border>
+          <StackPanel VerticalAlignment="Center" Spacing="1">
+            <TextBlock Text="实用工具" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="文件与密钥工具箱" Classes="caption" />
+          </StackPanel>
         </StackPanel>
-      </TabItem>
-      <TabItem Header="文件加密"><views:FileCryptoPage x:Name="EncryptPage" /></TabItem>
-      <TabItem Header="文件解密"><views:FileCryptoPage x:Name="DecryptPage" Decrypt="True" /></TabItem>
-      <TabItem Header="生成密钥"><views:GenerateKeyPage x:Name="GeneratePage" /></TabItem>
-      <TabItem Header="密钥库"><views:KeyLibraryPage x:Name="LibraryPage" /></TabItem>
-      <TabItem Header="数据迁移"><views:MigrationPage x:Name="MigrationPage" /></TabItem>
-      <TabItem Header="重复扫描"><views:DuplicateScanPage x:Name="ScanPage" /></TabItem>
-      <TabItem Header="文件夹加密"><views:FolderCryptoPage x:Name="FolderEncryptPage" /></TabItem>
-      <TabItem Header="文件夹解密"><views:FolderCryptoPage x:Name="FolderDecryptPage" Decrypt="True" /></TabItem>
-      <TabItem Header="解密预览"><views:DecryptionPreviewPage x:Name="PreviewPage" /></TabItem>
-      <TabItem Header="文件整理"><views:FileOrganizerPage /></TabItem>
-      <TabItem Header="文件记录" x:Name="FilesTab" />
-      <TabItem Header="黑名单" x:Name="BlacklistTab" />
-    </TabControl>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="本地运行 · 数据不会上传"
+                   Classes="caption" Margin="10,12,0,0" />
+
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <StackPanel x:Name="NavPanel" Spacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="概览" Classes="navGroup" />
+              <Button Classes="nav active" Tag="home" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                  <TextBlock Text="首页" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Text="文件工具" Classes="navGroup" />
+              <Button Classes="nav" Tag="encrypt" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M12 17a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2h1m-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z" />
+                  <TextBlock Text="文件加密" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="decrypt" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M18 8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h9V6a3 3 0 0 0-6 0H7a5 5 0 0 1 10 0v2h1m-6 9a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2z" />
+                  <TextBlock Text="文件解密" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="preview" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" />
+                  <TextBlock Text="解密预览" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="organize" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M10 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
+                  <TextBlock Text="文件整理" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Text="密钥与安全" Classes="navGroup" />
+              <Button Classes="nav" Tag="generate" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M7 14c-2.76 0-5-2.24-5-5s2.24-5 5-5s5 2.24 5 5c0 .55-.1 1.07-.26 1.56L22 21.06V22h-3v-3h-3v-3h-2.44l-1.09-1.09A4.98 4.98 0 0 1 7 14m0-2a3 3 0 1 0 0-6a3 3 0 0 0 0 6z" />
+                  <TextBlock Text="生成密钥" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="library" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M12 1L3 5v6c0 5.55 3.84 10.74 9 12c5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                  <TextBlock Text="密钥库" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="migration" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" />
+                  <TextBlock Text="数据迁移" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Text="扫描与记录" Classes="navGroup" />
+              <Button Classes="nav" Tag="scan" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5A6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5S14 7.01 14 9.5S11.99 14 9.5 14z" />
+                  <TextBlock Text="重复扫描" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="records" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6m4 18H6V4h7v5h5v11z" />
+                  <TextBlock Text="文件记录" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="blacklist" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m0 18c-4.42 0-8-3.58-8-8c0-1.85.63-3.55 1.69-4.9L16.9 18.31A7.9 7.9 0 0 1 12 20m6.31-3.1L7.1 5.69A7.9 7.9 0 0 1 12 4c4.42 0 8 3.58 8 8c0 1.85-.63 3.55-1.69 4.9z" />
+                  <TextBlock Text="黑名单" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+              <TextBlock Text="文件夹工具" Classes="navGroup" />
+              <Button Classes="nav" Tag="folder-encrypt" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M10 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
+                  <TextBlock Text="文件夹加密" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="folder-decrypt" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M10 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
+                  <TextBlock Text="文件夹解密" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+
+    <Border Grid.Column="1" Margin="24" Background="{DynamicResource CardBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
+            CornerRadius="16" ClipToBounds="True">
+      <TabControl x:Name="Tabs" SelectedIndex="0" Background="Transparent">
+        <TabControl.Template>
+          <ControlTemplate TargetType="TabControl">
+            <Grid>
+              <!-- 保留 ItemsPresenter 以便 TabControl 生成并维护内容容器，但隐藏页签条。 -->
+              <ItemsPresenter Name="PART_ItemsPresenter" IsVisible="False" />
+              <ContentPresenter Name="PART_SelectedContentHost"
+                                Content="{TemplateBinding SelectedContent}"
+                                ContentTemplate="{TemplateBinding SelectedContentTemplate}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch" />
+            </Grid>
+          </ControlTemplate>
+        </TabControl.Template>
+
+        <TabItem x:Name="HomeTab" Header="首页">
+          <ScrollViewer>
+            <StackPanel Margin="32" Spacing="24">
+              <StackPanel Spacing="8">
+                <TextBlock Text="欢迎使用实用工具" Classes="pageTitle" />
+                <TextBlock Text="一个本地优先的文件与密钥工具箱：加密、解密、预览、整理与重复扫描。" Classes="muted" />
+              </StackPanel>
+
+              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
+                <Border Classes="card" Padding="18">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="加密与解密" Classes="sectionTitle" />
+                    <TextBlock Text="GPG 公钥加密、私钥解密，支持单个文件与整个文件夹。" Classes="muted" />
+                  </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Classes="card" Padding="18">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="密钥管理" Classes="sectionTitle" />
+                    <TextBlock Text="生成、导入、导出密钥，口令在本地使用 AES-GCM 保护。" Classes="muted" />
+                  </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Classes="card" Padding="18">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="扫描与整理" Classes="sectionTitle" />
+                    <TextBlock Text="按 SHA-256 查找重复文件，并按后缀整理目录。" Classes="muted" />
+                  </StackPanel>
+                </Border>
+              </Grid>
+
+              <Border Classes="card">
+                <StackPanel Spacing="8">
+                  <TextBlock Text="快速开始" Classes="sectionTitle" />
+                  <TextBlock Text="从左侧选择功能。文件加密需要公钥；文件解密与预览需要包含私钥的密钥。所有处理都在本机完成。"
+                             Classes="muted" />
+                </StackPanel>
+              </Border>
+
+              <Border Classes="card">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="数据位置" Classes="sectionTitle" />
+                  <TextBlock x:Name="DataLocation" Classes="muted" />
+                </StackPanel>
+              </Border>
+
+              <TextBlock Text="请成套备份数据库与 secret-protection.key；丢失密钥文件后，已保存的口令将无法解密。"
+                         Classes="caption" />
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <TabItem x:Name="EncryptTab" Header="文件加密"><views:FileCryptoPage x:Name="EncryptPage" /></TabItem>
+        <TabItem x:Name="DecryptTab" Header="文件解密"><views:FileCryptoPage x:Name="DecryptPage" Decrypt="True" /></TabItem>
+        <TabItem x:Name="GenerateTab" Header="生成密钥"><views:GenerateKeyPage x:Name="GeneratePage" /></TabItem>
+        <TabItem x:Name="LibraryTab" Header="密钥库"><views:KeyLibraryPage x:Name="LibraryPage" /></TabItem>
+        <TabItem x:Name="MigrationTab" Header="数据迁移"><views:MigrationPage x:Name="MigrationPage" /></TabItem>
+        <TabItem x:Name="ScanTab" Header="重复扫描"><views:DuplicateScanPage x:Name="ScanPage" /></TabItem>
+        <TabItem x:Name="FolderEncryptTab" Header="文件夹加密"><views:FolderCryptoPage x:Name="FolderEncryptPage" /></TabItem>
+        <TabItem x:Name="FolderDecryptTab" Header="文件夹解密"><views:FolderCryptoPage x:Name="FolderDecryptPage" Decrypt="True" /></TabItem>
+        <TabItem x:Name="PreviewTab" Header="解密预览"><views:DecryptionPreviewPage x:Name="PreviewPage" /></TabItem>
+        <TabItem x:Name="OrganizeTab" Header="文件整理"><views:FileOrganizerPage /></TabItem>
+        <TabItem x:Name="FilesTab" Header="文件记录" />
+        <TabItem x:Name="BlacklistTab" Header="黑名单" />
+      </TabControl>
+    </Border>
   </Grid>
 </Window>

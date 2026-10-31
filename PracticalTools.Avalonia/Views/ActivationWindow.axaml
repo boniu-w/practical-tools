@@ -3,10 +3,10 @@
         x:Class="PracticalTools.Desktop.Views.ActivationWindow"
         Title="实用工具 · 软件激活" Width="560" Height="380" CanResize="False">
   <StackPanel Margin="28" Spacing="16">
-    <TextBlock Text="软件激活" FontSize="24" />
+    <TextBlock Text="软件激活" Classes="pageTitle" />
     <TextBlock Text="请输入原版激活码。此版本使用独立的数据目录，首次运行需重新激活。" TextWrapping="Wrap" />
     <TextBox x:Name="Code" Watermark="激活码" />
-    <Button x:Name="ActivateButton" Content="激活并进入" Classes="accent" Click="Activate" />
+    <Button x:Name="ActivateButton" Content="激活并进入" Classes="primary" Click="Activate" />
     <TextBlock x:Name="Status" TextWrapping="Wrap" />
     <TextBlock x:Name="DataDirectory" TextWrapping="Wrap" Opacity="0.65" FontSize="12" />
   </StackPanel>

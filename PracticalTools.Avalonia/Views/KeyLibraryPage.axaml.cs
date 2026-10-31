@@ -21,8 +21,13 @@ public partial class KeyLibraryPage : UserControl
     private async Task ReloadCoreAsync()
     {
         if (_library == null) return;
-        try { Keys.ItemsSource = await _library.ListAsync(); }
-        catch (Exception ex) { Status.Text = $"加载失败：{ex.Message}"; }
+        try
+        {
+            var items = await _library.ListAsync();
+            Keys.ItemsSource = items;
+            EmptyKeys.IsVisible = items.Count == 0;
+        }
+        catch (Exception ex) { UiStatus.Set(Status, $"加载失败：{ex.Message}", UiStatusKind.Error); }
     }
 
     private KeySummary SelectedKey => Keys.SelectedItem as KeySummary
@@ -58,10 +63,11 @@ public partial class KeyLibraryPage : UserControl
             var id = SelectedKey.Id;
             Form.IsEnabled = false;
             var updated = await _library.UpdateMetadataAsync(id, KeyName.Text ?? "", Description.Text ?? "");
-            Status.Text = updated ? "已保存。" : "密钥已不存在，请刷新。";
+            UiStatus.Set(Status, updated ? "已保存。" : "密钥已不存在，请刷新。",
+                updated ? UiStatusKind.Success : UiStatusKind.Error);
             await ReloadAsync();
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
         finally { Form.IsEnabled = true; }
     }
 
@@ -71,13 +77,15 @@ public partial class KeyLibraryPage : UserControl
         try
         {
             var selected = SelectedKey;
-            if (!await ConfirmationWindow.AskAsync(owner, $"删除“{selected.Name}”？\n指纹：{selected.Fingerprint}\n此操作将移除库中的密钥和口令，请确认已有备份。"))
-            { Status.Text = "已取消删除。"; return; }
+            if (!await ConfirmationWindow.AskAsync(owner, $"删除“{selected.Name}”？\n指纹：{selected.Fingerprint}\n此操作将移除库中的密钥和口令，请确认已有备份。",
+                "删除密钥", "删除密钥", destructive: true))
+            { UiStatus.Set(Status, "已取消删除。"); return; }
             Form.IsEnabled = false;
-            Status.Text = await _library.DeleteAsync(selected.Id) ? "已删除。" : "密钥已不存在。";
+            UiStatus.Set(Status, await _library.DeleteAsync(selected.Id) ? "已删除。" : "密钥已不存在。",
+                UiStatusKind.Success);
             await ReloadAsync();
         }
-        catch (Exception ex) { Status.Text = ex.Message; }
+        catch (Exception ex) { UiStatus.Set(Status, ex.Message, UiStatusKind.Error); }
         finally { Form.IsEnabled = true; }
     }
 
@@ -98,8 +106,8 @@ public partial class KeyLibraryPage : UserControl
             if (file == null) return;
             var path = file.TryGetLocalPath() ?? throw new IOException("请选择本地保存位置。");
             await _library.ExportAsync(selected.Id, path, secret);
-            Status.Text = $"已导出：{path}";
+            UiStatus.Set(Status, $"已导出：{path}", UiStatusKind.Success);
         }
-        catch (Exception ex) { Status.Text = $"导出失败：{ex.Message}"; }
+        catch (Exception ex) { UiStatus.Set(Status, $"导出失败：{ex.Message}", UiStatusKind.Error); }
     }
 }
