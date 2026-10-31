@@ -9,29 +9,35 @@ public partial class DuplicateScanPage : UserControl
 {
     private IDuplicateScanner _scanner = new DuplicateScanner();
     private ScanHistoryStore? _history;
-    private DuplicateScan? _scan;
+    private DuplicateScan? _scan;          // 当前扫描结果。
     private CancellationTokenSource? _cancellation;
     private bool _busy;
-    private List<ScannedFile> _visible = [];
+    private List<ScannedFile> _visible = []; // 当前筛选后显示的结果。
 
+    /// <summary>初始化控件；离开界面时取消仍在运行的扫描。</summary>
     public DuplicateScanPage()
     {
         InitializeComponent();
         ConfigureRemovalMode();
         DetachedFromVisualTree += (_, _) => _cancellation?.Cancel();
     }
+    /// <summary>注入查重扫描器和可选的扫描记录存储。</summary>
+    /// <param name="scanner">执行扫描与移除的扫描器实现。</param>
+    /// <param name="history">扫描记录存储；为 null 时不保存历史。</param>
     public void Configure(IDuplicateScanner scanner, ScanHistoryStore? history = null)
     {
         _scanner = scanner; _history = history;
         ConfigureRemovalMode();
     }
 
+    /// <summary>按扫描器是否支持回收站来启用移除方式，并选择默认方式。</summary>
     private void ConfigureRemovalMode()
     {
         RecycleChoice.IsEnabled = _scanner.CanRecycle;
         RemovalMode.SelectedIndex = _scanner.CanRecycle ? 0 : 1;
     }
 
+    /// <summary>选择多个扫描目录并填入输入框，每行一个路径。</summary>
     private async void PickFolders(object? sender, RoutedEventArgs e)
     {
         try
@@ -48,6 +54,7 @@ public partial class DuplicateScanPage : UserControl
         catch (Exception ex) { Status.Text = ex.Message; }
     }
 
+    /// <summary>扫描或移除期间禁用输入与结果操作，并同步按钮状态。</summary>
     private void SetBusy(bool busy)
     {
         _busy = busy;
@@ -56,6 +63,10 @@ public partial class DuplicateScanPage : UserControl
         Results.IsEnabled = !busy;
     }
 
+    /// <summary>
+    /// 按输入的目录和扩展名启动查重扫描，并实时显示进度。
+    /// 完成后应用筛选并可保存扫描记录；取消时丢弃部分结果且不保存记录。
+    /// </summary>
     private async void Start(object? sender, RoutedEventArgs e)
     {
         if (_busy) return;
@@ -72,6 +83,7 @@ public partial class DuplicateScanPage : UserControl
             var roots = (Roots.Text ?? "").Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
             var progress = new Progress<ScanProgress>(p =>
             {
+                // 只让当前扫描任务更新进度；已取消或已被替换时忽略回传。
                 if (!ReferenceEquals(_cancellation, cancellation) || cancellation.IsCancellationRequested) return;
                 Status.Text = $"{p.Phase}：已发现 {p.Discovered} 个文件，已比较 {p.Hashed}/{p.Candidates}，读取 {p.BytesRead:N0}/{p.TotalBytes:N0} 字节。";
             });
@@ -99,6 +111,7 @@ public partial class DuplicateScanPage : UserControl
         }
     }
 
+    /// <summary>请求取消正在运行的扫描。</summary>
     private void Cancel(object? sender, RoutedEventArgs e)
     {
         _cancellation?.Cancel();
@@ -106,7 +119,10 @@ public partial class DuplicateScanPage : UserControl
         Status.Text = "正在取消扫描…";
     }
 
+    /// <summary>筛选条件变化时重新应用筛选。</summary>
     private void Filter(object? sender, TextChangedEventArgs e) { if (Results != null) ApplyFilter(); }
+
+    /// <summary>按路径关键字（不区分大小写）筛选当前扫描的重复文件。</summary>
     private void ApplyFilter()
     {
         var term = Search.Text?.Trim() ?? "";
@@ -114,6 +130,10 @@ public partial class DuplicateScanPage : UserControl
         Results.ItemsSource = _visible;
     }
 
+    /// <summary>
+    /// 自动勾选建议移除的文件：每组优先保留创建时间较早、路径较浅的一份。
+    /// 只更改选择，不执行任何删除。
+    /// </summary>
     private void Suggest(object? sender, RoutedEventArgs e)
     {
         Results.SelectedItems.Clear();
@@ -121,6 +141,10 @@ public partial class DuplicateScanPage : UserControl
         Status.Text = $"已选择 {Results.SelectedItems.Count} 项，优先保留创建时间较早、路径较浅的一份；尚未执行移除。";
     }
 
+    /// <summary>
+    /// 二次确认后移除选中的重复文件：按所选方式移入回收站或永久删除，完成后刷新当前结果。
+    /// 扫描器会在移除前重新校验文件内容。
+    /// </summary>
     private async void Remove(object? sender, RoutedEventArgs e)
     {
         if (_busy || _scan == null || TopLevel.GetTopLevel(this) is not Window owner) return;
@@ -131,6 +155,7 @@ public partial class DuplicateScanPage : UserControl
         SetBusy(true);
         try
         {
+            // 永久删除不可恢复，必须经用户确认。
             var message = $"即将{action} {selected.Count} 个文件。\n每组必须保留至少一份；确认后仍会重新校验内容。\n\n" +
                 string.Join("\n", selected.Select(f => f.FilePath));
             if (!await ConfirmationWindow.AskAsync(owner, message)) { Status.Text = "已取消移除，没有改动文件。"; return; }
@@ -147,6 +172,7 @@ public partial class DuplicateScanPage : UserControl
         finally { Progress.IsVisible = false; SetBusy(false); }
     }
 
+    /// <summary>加载最近的扫描记录供查看。</summary>
     private async void LoadHistory(object? sender, RoutedEventArgs e)
     {
         if (_busy || _history == null) return;
