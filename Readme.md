@@ -30,6 +30,9 @@
 # 发布 Avalonia 迁移预览版（Apple Silicon）
 dotnet publish PracticalTools.Avalonia/PracticalTools.Avalonia.csproj -c Release -r osx-arm64 --self-contained true -o ./publish-mac-arm64
 
+# 一次性发布3个平台的版本, 在主文件夹里执行脚本
+ .\scripts\publish-release.ps1
+
 ```
 
 ## Avalonia 跨平台迁移（ava 分支）
