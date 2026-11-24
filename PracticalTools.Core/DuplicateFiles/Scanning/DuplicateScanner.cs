@@ -10,11 +10,11 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
     public bool CanRecycle => _removal.CanRecycle;
 
     public Task<DuplicateScan> ScanAsync(IReadOnlyList<string> roots, string extensions,
-        IProgress<ScanProgress>? progress = null, CancellationToken cancellationToken = default) =>
-        Task.Run(() => Scan(roots, extensions, progress, cancellationToken), cancellationToken);
+        IProgress<ScanProgress>? progress = null, CancellationToken cancellationToken = default, bool excludeSelectedExtensions = false) =>
+        Task.Run(() => Scan(roots, extensions, progress, cancellationToken, excludeSelectedExtensions), cancellationToken);
 
     private static DuplicateScan Scan(IReadOnlyList<string> inputRoots, string extensions,
-        IProgress<ScanProgress>? progress, CancellationToken token)
+        IProgress<ScanProgress>? progress, CancellationToken token, bool excludeSelectedExtensions)
     {
         var roots = inputRoots.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => Path.TrimEndingDirectorySeparator(Path.GetFullPath(p.Trim())))
             .DistinctBy(LocalFileAccess.Identity).ToList();
@@ -49,7 +49,7 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
                         var attributes = File.GetAttributes(path);
                         if ((attributes & FileAttributes.ReparsePoint) != 0) { Warn(path, "符号链接/重解析点，已跳过。"); continue; }
                         if ((attributes & FileAttributes.Directory) != 0) { pending.Push((path, directory.Root)); continue; }
-                        if (filter.Count > 0 && !filter.Contains(Path.GetExtension(path))) continue;
+                        if (filter.Count > 0 && filter.Contains(Path.GetExtension(path)) == excludeSelectedExtensions) continue;
                         var info = new FileInfo(path);
                         var identity = LocalFileAccess.Identity(path);
                         if (files.TryGetValue(identity, out var previous) && previous.FilePath != path)
@@ -115,7 +115,7 @@ public sealed class DuplicateScanner(IFileRemoval? removal = null) : IDuplicateS
         return new(roots, files.Values.ToList(), warnings, skipped, DateTime.UtcNow);
     }
 
-    private static HashSet<string> ParseExtensions(string text)
+    public static HashSet<string> ParseExtensions(string text)
     {
         var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var raw in text.Split([';', ',', ' ', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries))

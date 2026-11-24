@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Controls.Primitives;
@@ -10,6 +11,8 @@ namespace PracticalTools.Desktop.Views;
 
 public partial class DuplicateScanPage : UserControl
 {
+    private readonly ObservableCollection<string> _selectedExtensions = [];
+    private readonly Dictionary<string, CheckBox> _extensionOptions = new(StringComparer.OrdinalIgnoreCase);
     private IDuplicateScanner _scanner = new DuplicateScanner();
     private ScanHistoryStore? _history;
     private DuplicateScan? _scan;          // 当前扫描结果。
@@ -21,10 +24,74 @@ public partial class DuplicateScanPage : UserControl
     public DuplicateScanPage()
     {
         InitializeComponent();
+        ExtensionTags.ItemsSource = _selectedExtensions;
+        foreach (var extension in ".txt .pdf .doc .docx .xls .xlsx .ppt .pptx .csv .jpg .jpeg .png .gif .webp .mp3 .wav .mp4 .mkv .zip .rar .7z".Split(' '))
+            GetExtensionOption(extension);
         Results.AddHandler(PointerPressedEvent, FitColumnOnDoubleClick, RoutingStrategies.Tunnel);
         Results.LayoutUpdated += FillPathColumn;
         ConfigureRemovalMode();
         DetachedFromVisualTree += (_, _) => _cancellation?.Cancel();
+    }
+
+    private void OpenExtensionList(object? sender, RoutedEventArgs e) => ExtensionPopup.IsOpen = true;
+
+    private void ExtensionTagsPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.Source is Avalonia.Visual source && source is not Button &&
+            source.FindAncestorOfType<Button>() == null && e.GetCurrentPoint(ExtensionTags).Properties.IsLeftButtonPressed)
+            ExtensionPopup.IsOpen = true;
+    }
+
+    private CheckBox GetExtensionOption(string extension)
+    {
+        if (_extensionOptions.TryGetValue(extension, out var existing)) return existing;
+
+        var option = new CheckBox { Content = extension, MinWidth = 78 };
+        option.IsCheckedChanged += (_, _) =>
+        {
+            if (option.IsChecked == true) _selectedExtensions.Add(extension);
+            else _selectedExtensions.Remove(extension);
+            ExtensionHint.IsVisible = _selectedExtensions.Count == 0;
+            ClearExtensionsButton.IsEnabled = _selectedExtensions.Count > 0;
+        };
+        _extensionOptions.Add(extension, option);
+        ExtensionOptions.Children.Add(option);
+        return option;
+    }
+
+    private void ClearExtensions(object? sender, RoutedEventArgs e)
+    {
+        foreach (var extension in _selectedExtensions.ToArray())
+            _extensionOptions[extension].IsChecked = false;
+    }
+
+    private void RemoveExtension(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string extension }) _extensionOptions[extension].IsChecked = false;
+        e.Handled = true;
+    }
+
+    private void CustomExtensionKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        AddCustomExtensions(sender, e);
+        e.Handled = true;
+    }
+
+    private void AddCustomExtensions(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            foreach (var extension in DuplicateScanner.ParseExtensions(CustomExtensions.Text ?? ""))
+                GetExtensionOption(extension).IsChecked = true;
+            CustomExtensions.Clear();
+            ExtensionError.IsVisible = false;
+        }
+        catch (ArgumentException ex)
+        {
+            ExtensionError.Text = ex.Message;
+            ExtensionError.IsVisible = true;
+        }
     }
 
     // 用表头的实际可视宽度作为基准，扣除其他列后，剩余空间由路径列占满。
@@ -135,7 +202,8 @@ public partial class DuplicateScanPage : UserControl
                 if (!ReferenceEquals(_cancellation, cancellation) || cancellation.IsCancellationRequested) return;
                 Status.Text = $"{p.Phase}：已发现 {p.Discovered} 个文件，已比较 {p.Hashed}/{p.Candidates}，读取 {p.BytesRead:N0}/{p.TotalBytes:N0} 字节。";
             });
-            var completed = await _scanner.ScanAsync(roots, Extensions.Text ?? "", progress, cancellation.Token);
+            var completed = await _scanner.ScanAsync(roots, string.Join(";", _selectedExtensions), progress, cancellation.Token,
+                excludeSelectedExtensions: ExcludeExtensions.IsChecked == true);
             cancellation.Token.ThrowIfCancellationRequested();
             CancelButton.IsEnabled = false;
             _scan = completed;

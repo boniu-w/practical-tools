@@ -10,12 +10,56 @@
       <Border Classes="card">
         <StackPanel x:Name="Inputs" Spacing="12">
           <TextBlock Text="扫描范围" Classes="sectionTitle" />
-          <TextBox x:Name="Roots" AcceptsReturn="True" Height="70"
-                   Watermark="每行一个目录，可分次添加" />
-          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-            <Button Content="添加文件夹（可多选）" Click="PickFolders" />
-            <TextBox x:Name="Extensions" Grid.Column="1" Watermark="扩展名，如 .txt;.pdf，留空为全部" />
-            <Button x:Name="ScanButton" Grid.Column="2" Content="开始扫描" Classes="primary" Click="Start" />
+          <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto,Auto" RowSpacing="12" ColumnSpacing="12">
+            <TextBlock Text="目录" VerticalAlignment="Center" />
+            <TextBox x:Name="Roots" Grid.Column="1" Grid.ColumnSpan="2" AcceptsReturn="True" Height="70"
+                     Watermark="每行一个目录，可分次添加" />
+            <Button Grid.Column="3" Content="添加文件夹" VerticalAlignment="Center"
+                    HorizontalAlignment="Stretch" ToolTip.Tip="可一次选择多个文件夹" Click="PickFolders" />
+            <TextBlock Grid.Row="1" Text="扩展名" VerticalAlignment="Center" />
+            <Grid Grid.Row="1" Grid.Column="1" x:Name="ExtensionField">
+              <Button x:Name="OpenExtensions" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                      AutomationProperties.Name="选择扫描扩展名" Click="OpenExtensionList">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock x:Name="ExtensionHint" Text="全部类型" Classes="muted" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="▾" VerticalAlignment="Center" />
+                </Grid>
+              </Button>
+              <ItemsControl x:Name="ExtensionTags" PointerPressed="ExtensionTagsPressed" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,2,32,2">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Margin="2" Padding="6,2,1,2" CornerRadius="4" Background="{DynamicResource AccentSoftBrush}">
+                      <StackPanel Orientation="Horizontal" Spacing="2">
+                        <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+                        <Button Content="×" Click="RemoveExtension" Tag="{Binding}" VerticalAlignment="Top"
+                                ToolTip.Tip="移除此扩展名" AutomationProperties.Name="{Binding StringFormat='移除 {0}'}"
+                                MinWidth="20" MinHeight="20" Height="20" Padding="0" Background="Transparent" BorderThickness="0" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Popup x:Name="ExtensionPopup" PlacementTarget="{Binding #ExtensionField}" Placement="Bottom"
+                     IsLightDismissEnabled="True">
+                <Border Width="{Binding #ExtensionField.Bounds.Width}" Padding="10" CornerRadius="6"
+                        Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1">
+                  <StackPanel Spacing="6">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="4">
+                      <TextBox x:Name="CustomExtensions" Watermark="自定义扩展名，如 .log" KeyDown="CustomExtensionKeyDown" />
+                      <Button x:Name="AddExtensionButton" Grid.Column="1" Content="添加" Click="AddCustomExtensions" />
+                    </Grid>
+                    <TextBlock x:Name="ExtensionError" IsVisible="False" TextWrapping="Wrap" />
+                    <ScrollViewer MaxHeight="220"><WrapPanel x:Name="ExtensionOptions" /></ScrollViewer>
+                    <Button x:Name="ClearExtensionsButton" Content="清除所选" HorizontalAlignment="Right" IsEnabled="False" Click="ClearExtensions" />
+                  </StackPanel>
+                </Border>
+              </Popup>
+            </Grid>
+            <CheckBox x:Name="ExcludeExtensions" Grid.Row="1" Grid.Column="2" Content="排除所选"
+                      VerticalAlignment="Center" ToolTip.Tip="扫描时跳过选中的扩展名" />
+            <Button x:Name="ScanButton" Grid.Row="1" Grid.Column="3" Content="开始扫描" Classes="primary"
+                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Click="Start" />
           </Grid>
           <ProgressBar x:Name="Progress" IsVisible="False" IsIndeterminate="True" />
         </StackPanel>
@@ -72,10 +116,10 @@
       <Expander Header="扫描记录（最近 500 条，只读，不用于删除）">
         <StackPanel Spacing="8" Margin="0,8,0,0">
           <Button x:Name="HistoryButton" Content="加载记录" Click="LoadHistory" />
-          <DataGrid x:Name="History" Height="230" AutoGenerateColumns="False" IsReadOnly="True">
+          <DataGrid x:Name="History" Height="230" CanUserResizeColumns="True" HorizontalScrollBarVisibility="Auto" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
               <DataGridTextColumn Header="文件名" Binding="{Binding FileName}" Width="170" />
-              <DataGridTextColumn Header="原路径" Binding="{Binding FilePath}" Width="*" />
+              <DataGridTextColumn Header="原路径" Binding="{Binding FilePath}" Width="360" />
               <DataGridTextColumn Header="记录时间" Binding="{Binding ScanTime}" Width="170" />
             </DataGrid.Columns>
           </DataGrid>

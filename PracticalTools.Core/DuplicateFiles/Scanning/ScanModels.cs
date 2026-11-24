@@ -43,7 +43,7 @@ public interface IDuplicateScanner
 {
     bool CanRecycle { get; }
     Task<DuplicateScan> ScanAsync(IReadOnlyList<string> roots, string extensions,
-        IProgress<ScanProgress>? progress = null, CancellationToken cancellationToken = default);
+        IProgress<ScanProgress>? progress = null, CancellationToken cancellationToken = default, bool excludeSelectedExtensions = false);
     Task<FileRemovalReport> RemoveAsync(DuplicateScan scan, IReadOnlyList<ScannedFile> selected, FileRemovalMode mode);
 }
 

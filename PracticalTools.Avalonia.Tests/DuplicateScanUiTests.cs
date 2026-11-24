@@ -1,4 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -25,7 +28,7 @@ public class DuplicateScanUiTests
         public bool CanRecycle => false;
         public bool Started { get; private set; }
         public async Task<DuplicateScan> ScanAsync(IReadOnlyList<string> roots, string extensions,
-            IProgress<ScanProgress>? progress = null, CancellationToken cancellationToken = default)
+            IProgress<ScanProgress>? progress = null, CancellationToken cancellationToken = default, bool excludeSelectedExtensions = false)
         { Started = true; await Task.Delay(Timeout.Infinite, cancellationToken); throw new InvalidOperationException(); }
         public Task<FileRemovalReport> RemoveAsync(DuplicateScan scan, IReadOnlyList<ScannedFile> selected, FileRemovalMode mode) => throw new NotSupportedException();
     }
@@ -66,6 +69,89 @@ public class DuplicateScanUiTests
         var timeout = DateTime.UtcNow.AddSeconds(20);
         while (!condition())
         { if (DateTime.UtcNow > timeout) throw new TimeoutException("Scan UI did not finish."); await Task.Delay(20); }
+    }
+
+    [AvaloniaFact]
+    public void HistoryColumnsCanBeResizedByDraggingTheirRightEdges()
+    {
+        var page = new DuplicateScanPage();
+        var window = new Window { Content = page, Width = 1200, Height = 1300 };
+        window.Show();
+        try
+        {
+            var history = page.FindControl<DataGrid>("History")!;
+            page.GetVisualDescendants().OfType<Expander>().Single().IsExpanded = true;
+            window.UpdateLayout();
+            history.BringIntoView();
+            window.UpdateLayout();
+            foreach (var column in history.Columns)
+            {
+                var header = history.GetVisualDescendants().OfType<DataGridColumnHeader>()
+                    .Single(h => Equals(h.Content, column.Header));
+                var edge = header.TranslatePoint(new Point(header.Bounds.Width - 2, header.Bounds.Height / 2), window)!.Value;
+                var before = column.ActualWidth;
+                window.MouseMove(edge);
+                window.MouseDown(edge, MouseButton.Left);
+                var end = edge.WithX(edge.X + 30);
+                window.MouseMove(end, RawInputModifiers.LeftMouseButton);
+                window.MouseUp(end, MouseButton.Left);
+                window.UpdateLayout();
+                Assert.InRange(column.ActualWidth - before, 29, 31);
+            }
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
+    public async Task ExtensionTagsStayInSyncWithOptionsAndFilterTheScan()
+    {
+        using var store = new Store();
+        var page = new DuplicateScanPage();
+        var window = new Window { Content = page, Width = 1000, Height = 800 };
+        window.Show();
+        try
+        {
+            Click(page, "OpenExtensions");
+            var popup = page.FindControl<Avalonia.Controls.Primitives.Popup>("ExtensionPopup")!;
+            Assert.True(popup.IsOpen);
+            var options = page.FindControl<WrapPanel>("ExtensionOptions")!;
+            var txt = options.Children.OfType<CheckBox>().Single(c => Equals(c.Content, ".txt"));
+            txt.IsChecked = true;
+            page.FindControl<TextBox>("CustomExtensions")!.Text = "TXT;*.log";
+            Click(page, "AddExtensionButton");
+            var tags = page.FindControl<ItemsControl>("ExtensionTags")!;
+            Assert.Equal(new[] { ".txt", ".log" }, tags.Items.Cast<string>());
+            Assert.True(popup.IsOpen);
+            popup.IsOpen = false;
+            window.UpdateLayout();
+            var remove = tags.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Tag, ".txt"));
+            remove.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Assert.False(txt.IsChecked);
+            Assert.Equal(".log", Assert.Single(tags.Items.Cast<string>()));
+
+            page.FindControl<TextBox>("Roots")!.Text = store.Content;
+            Click(page, "ScanButton");
+            await WaitUntil(() => page.FindControl<StackPanel>("Inputs")!.IsEnabled);
+            Assert.Contains("完成：0 个文件", page.FindControl<TextBlock>("Status")!.Text);
+            File.WriteAllText(Path.Combine(store.Content, "keep.bin"), "keep");
+            File.WriteAllText(Path.Combine(store.Content, "skip.LOG"), "skip");
+            txt.IsChecked = true;
+            page.FindControl<CheckBox>("ExcludeExtensions")!.IsChecked = true;
+            Click(page, "ScanButton");
+            await WaitUntil(() => page.FindControl<StackPanel>("Inputs")!.IsEnabled);
+            Assert.Contains("完成：1 个文件", page.FindControl<TextBlock>("Status")!.Text);
+            Click(page, "OpenExtensions");
+            Click(page, "ClearExtensionsButton");
+            popup.IsOpen = false;
+            Assert.Empty(tags.Items);
+            Assert.All(options.Children.OfType<CheckBox>(), option => Assert.False(option.IsChecked));
+            Assert.False(page.FindControl<Button>("ClearExtensionsButton")!.IsEnabled);
+            Assert.True(page.FindControl<TextBlock>("ExtensionHint")!.IsVisible);
+            Click(page, "ScanButton");
+            await WaitUntil(() => page.FindControl<StackPanel>("Inputs")!.IsEnabled);
+            Assert.Contains("完成：5 个文件", page.FindControl<TextBlock>("Status")!.Text);
+        }
+        finally { window.Close(); }
     }
 
     [AvaloniaFact]
