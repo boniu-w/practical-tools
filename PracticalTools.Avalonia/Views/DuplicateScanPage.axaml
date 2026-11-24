@@ -11,9 +11,9 @@
         <StackPanel x:Name="Inputs" Spacing="12">
           <TextBlock Text="扫描范围" Classes="sectionTitle" />
           <TextBox x:Name="Roots" AcceptsReturn="True" Height="70"
-                   Watermark="扫描目录，每行一个；或点击选择多个目录" />
+                   Watermark="每行一个目录，可分次添加" />
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-            <Button Content="选择目录" Click="PickFolders" />
+            <Button Content="添加文件夹（可多选）" Click="PickFolders" />
             <TextBox x:Name="Extensions" Grid.Column="1" Watermark="扩展名，如 .txt;.pdf，留空为全部" />
             <Button x:Name="ScanButton" Grid.Column="2" Content="开始扫描" Classes="primary" Click="Start" />
           </Grid>
@@ -41,12 +41,12 @@
             </StackPanel>
           </StackPanel>
           <Grid>
-            <DataGrid x:Name="Results" Height="280" IsReadOnly="True" AutoGenerateColumns="False" SelectionMode="Extended">
+            <DataGrid x:Name="Results" Height="280" CanUserResizeColumns="True" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" AutoGenerateColumns="False" SelectionMode="Extended">
               <DataGrid.Columns>
                 <DataGridTextColumn Header="重复组" Binding="{Binding Group}" Width="115" />
                 <DataGridTextColumn Header="文件名" Binding="{Binding Name}" Width="170" />
                 <DataGridTextColumn Header="字节数" Binding="{Binding Length}" Width="90" />
-                <DataGridTextColumn Header="完整路径" Binding="{Binding FilePath}" Width="*" />
+                <DataGridTextColumn Header="完整路径" Binding="{Binding FilePath}" Width="360" />
               </DataGrid.Columns>
             </DataGrid>
             <StackPanel x:Name="EmptyResults" Spacing="6" HorizontalAlignment="Center"
@@ -58,6 +58,10 @@
               <TextBlock x:Name="EmptyResultsHint" Text="设置目录和后缀后开始扫描。" Classes="emptyHint" />
             </StackPanel>
           </Grid>
+          <StackPanel Spacing="4" IsVisible="{Binding #Results.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <TextBlock Text="所选文件的完整路径" Classes="caption" />
+            <SelectableTextBlock Text="{Binding #Results.SelectedItem.FilePath}" TextWrapping="Wrap" />
+          </StackPanel>
           <TextBlock x:Name="Warnings" Classes="caption" />
         </StackPanel>
       </Border>

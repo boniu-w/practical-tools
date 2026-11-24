@@ -1,4 +1,7 @@
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Controls.Primitives;
+using Avalonia.VisualTree;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using PracticalTools.DuplicateFiles.Scanning;
@@ -18,9 +21,48 @@ public partial class DuplicateScanPage : UserControl
     public DuplicateScanPage()
     {
         InitializeComponent();
+        Results.AddHandler(PointerPressedEvent, FitColumnOnDoubleClick, RoutingStrategies.Tunnel);
+        Results.LayoutUpdated += FillPathColumn;
         ConfigureRemovalMode();
         DetachedFromVisualTree += (_, _) => _cancellation?.Cancel();
     }
+
+    // 用表头的实际可视宽度作为基准，扣除其他列后，剩余空间由路径列占满。
+    private void FillPathColumn(object? sender, EventArgs e)
+    {
+        var headers = Results.GetVisualDescendants().OfType<DataGridColumnHeadersPresenter>().FirstOrDefault();
+        if (headers == null || headers.Bounds.Width <= 0) return;
+
+        var pathColumn = Results.Columns[3];
+        var otherWidth = Results.Columns.Where(c => c != pathColumn && c.IsVisible).Sum(c => c.ActualWidth);
+        var minWidth = Math.Max(Results.MinColumnWidth, headers.Bounds.Width - otherWidth);
+        if (Math.Abs(pathColumn.MinWidth - minWidth) > 0.01)
+            pathColumn.MinWidth = minWidth;
+    }
+    private void FitColumnOnDoubleClick(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.ClickCount != 2 || !e.GetCurrentPoint(Results).Properties.IsLeftButtonPressed ||
+            e.Source is not Avalonia.Visual source) return;
+
+        var header = source as DataGridColumnHeader ?? source.FindAncestorOfType<DataGridColumnHeader>();
+        if (header == null) return;
+
+        var column = Results.Columns.FirstOrDefault(c => Equals(c.Header, header.Content));
+        if (column == null) return;
+
+        const double edgeWidth = 5;
+        var x = e.GetPosition(header).X;
+        if (x <= edgeWidth)
+            column = Results.Columns.Where(c => c.IsVisible && c.DisplayIndex < column.DisplayIndex)
+                .MaxBy(c => c.DisplayIndex);
+        else if (header.Bounds.Width - x > edgeWidth)
+            return;
+
+        if (column == null) return;
+        column.Width = DataGridLength.Auto;
+        e.Handled = true;
+    }
+
     /// <summary>注入查重扫描器和可选的扫描记录存储。</summary>
     /// <param name="scanner">执行扫描与移除的扫描器实现。</param>
     /// <param name="history">扫描记录存储；为 null 时不保存历史。</param>
@@ -49,7 +91,11 @@ public partial class DuplicateScanPage : UserControl
             {
                 using (folder) paths.Add(folder.TryGetLocalPath() ?? throw new IOException("请选择本地目录。"));
             }
-            if (paths.Count > 0) Roots.Text = string.Join(Environment.NewLine, paths);
+            if (paths.Count == 0) return;
+
+            var existing = (Roots.Text ?? "").Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+            var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+            Roots.Text = string.Join(Environment.NewLine, existing.Union(paths, comparer));
         }
         catch (Exception ex) { Status.Text = ex.Message; }
     }

@@ -69,6 +69,26 @@ public class DuplicateScanUiTests
     }
 
     [AvaloniaFact]
+    public async Task PathColumnFillsUnusedHeaderSpace()
+    {
+        var page = new DuplicateScanPage();
+        var window = new Window { Content = page, Width = 1200, Height = 800 };
+        window.Show();
+        try
+        {
+            var grid = page.FindControl<DataGrid>("Results")!;
+            var headers = grid.GetVisualDescendants()
+                .OfType<Avalonia.Controls.Primitives.DataGridColumnHeadersPresenter>().Single();
+            await WaitUntil(() => headers.Bounds.Width > 800 &&
+                Math.Abs(headers.Bounds.Width - grid.Columns.Sum(column => column.ActualWidth)) < 1);
+
+            grid.Columns[1].Width = new DataGridLength(100);
+            await WaitUntil(() => Math.Abs(headers.Bounds.Width - grid.Columns.Sum(column => column.ActualWidth)) < 1);
+        }
+        finally { window.Close(); }
+    }
+
+    [AvaloniaFact]
     public async Task ScanHistorySmartSelectionCancelAndConfirmedRemovalWorkTogether()
     {
         using var store = new Store();
