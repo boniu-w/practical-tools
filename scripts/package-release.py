@@ -17,13 +17,15 @@ ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--version', default='0.7.0')
 parser.add_argument('--output', required=True)
+parser.add_argument('--source-root', type=Path, default=ROOT, help='parent of the three RID publish directories')
 args = parser.parse_args()
 if not all(x.isdigit() for x in args.version.split('.')) or len(args.version.split('.')) != 3:
     parser.error('version must have three numeric components')
 out = Path(args.output).resolve()
 if out.exists():
     parser.error('output must be a new directory')
-sources = {'win-x64': ROOT / 'publish-win-x64', 'osx-arm64': ROOT / 'publish-mac-arm64', 'linux-x64': ROOT / 'publish-linux-x64'}
+source_root = args.source_root.resolve()
+sources = {'win-x64': source_root / 'publish-win-x64', 'osx-arm64': source_root / 'publish-mac-arm64', 'linux-x64': source_root / 'publish-linux-x64'}
 for rid, source in sources.items():
     exe = 'PracticalTools.Avalonia' + ('.exe' if rid == 'win-x64' else '')
     if not (source / exe).is_file():
