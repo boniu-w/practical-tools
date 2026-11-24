@@ -2,6 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PracticalTools.Activation.Service;
@@ -24,7 +27,40 @@ public partial class App : Application
     private SingleInstanceLease? _instance;
     private bool _exiting;
 
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+        InputElement.PointerPressedEvent.AddClassHandler<DataGrid>(ResizeColumnAtHeaderEdge, RoutingStrategies.Tunnel);
+    }
+
+    private static void ResizeColumnAtHeaderEdge(DataGrid grid, PointerPressedEventArgs e)
+    {
+        if (e.Source is not Visual source || !e.GetCurrentPoint(grid).Properties.IsLeftButtonPressed) return;
+        var header = source as DataGridColumnHeader ?? source.FindAncestorOfType<DataGridColumnHeader>();
+        if (header == null || header.FindAncestorOfType<DataGrid>() != grid) return;
+
+        const double edgeWidth = 5;
+        double x = e.GetPosition(header).X;
+        if (x > edgeWidth && header.Bounds.Width - x > edgeWidth) return;
+        var column = grid.Columns.FirstOrDefault(c => Equals(c.Header, header.Content));
+        if (column == null) return;
+        if (x <= edgeWidth)
+            column = grid.Columns.Where(c => c.IsVisible && c.DisplayIndex < column.DisplayIndex)
+                .MaxBy(c => c.DisplayIndex);
+        if (column?.CanUserResize != true) return;
+
+        // 星号列保留初始的比例布局；开始调宽时固定当前宽度，允许独立拖动最右列。
+        var starWidths = grid.Columns.Where(c => c.IsVisible && c.Width.IsStar)
+            .Select(c => (Column: c, Width: c.ActualWidth)).ToArray();
+        foreach (var item in starWidths)
+            item.Column.Width = new DataGridLength(item.Width);
+
+        if (e.ClickCount == 2)
+        {
+            column.Width = DataGridLength.Auto;
+            e.Handled = true;
+        }
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {

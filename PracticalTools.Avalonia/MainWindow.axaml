@@ -52,6 +52,20 @@
                   <TextBlock Text="文件解密" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
+              <Button Classes="nav" Tag="folder-encrypt" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M10 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
+                  <TextBlock Text="文件夹加密" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="nav" Tag="folder-decrypt" Click="Navigate">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
+                        Data="M10 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
+                  <TextBlock Text="文件夹解密" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
               <Button Classes="nav" Tag="preview" Click="Navigate">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                   <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
@@ -118,23 +132,6 @@
               </Button>
             </StackPanel>
 
-            <StackPanel Spacing="4">
-              <TextBlock Text="文件夹工具" Classes="navGroup" />
-              <Button Classes="nav" Tag="folder-encrypt" Click="Navigate">
-                <StackPanel Orientation="Horizontal" Spacing="12">
-                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
-                        Data="M10 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
-                  <TextBlock Text="文件夹加密" VerticalAlignment="Center" />
-                </StackPanel>
-              </Button>
-              <Button Classes="nav" Tag="folder-decrypt" Click="Navigate">
-                <StackPanel Orientation="Horizontal" Spacing="12">
-                  <Path Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"
-                        Data="M10 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z" />
-                  <TextBlock Text="文件夹解密" VerticalAlignment="Center" />
-                </StackPanel>
-              </Button>
-            </StackPanel>
           </StackPanel>
         </ScrollViewer>
       </DockPanel>

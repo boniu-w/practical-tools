@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.VisualTree;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,42 @@ public class TestAppBuilder
 
 public class WindowTests
 {
+    [AvaloniaFact]
+    public void GlobalColumnSizingSupportsDragAndDoubleClickOnTheLastStarColumn()
+    {
+        var grid = new DataGrid { AutoGenerateColumns = false };
+        var star = new DataGridLength(1, DataGridLengthUnitType.Star);
+        grid.Columns.Add(new DataGridTextColumn { Header = "名称", Width = star });
+        var last = new DataGridTextColumn { Header = "路径", Width = star };
+        grid.Columns.Add(last);
+        var window = new Window { Content = grid, Width = 600, Height = 200 };
+        window.Show();
+        try
+        {
+            window.UpdateLayout();
+            var header = grid.GetVisualDescendants().OfType<DataGridColumnHeader>().Single(h => Equals(h.Content, "路径"));
+            Point Edge() => header.TranslatePoint(new Point(header.Bounds.Width - 2, header.Bounds.Height / 2), window)!.Value;
+            var start = Edge();
+            var end = start.WithX(start.X - 40);
+            double before = last.ActualWidth;
+            window.MouseMove(start);
+            window.MouseDown(start, MouseButton.Left);
+            window.MouseMove(end, RawInputModifiers.LeftMouseButton);
+            window.MouseUp(end, MouseButton.Left);
+            window.UpdateLayout();
+            Assert.InRange(before - last.ActualWidth, 39, 41);
+
+            var edge = Edge();
+            for (int i = 0; i < 2; i++)
+            {
+                window.MouseDown(edge, MouseButton.Left);
+                window.MouseUp(edge, MouseButton.Left);
+            }
+            Assert.True(last.Width.IsAuto);
+        }
+        finally { window.Close(); }
+    }
+
     [AvaloniaFact]
     public void RuntimeLoaderCanCreateWindowsWithoutOpeningServices()
     {

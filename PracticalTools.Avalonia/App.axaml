@@ -201,6 +201,8 @@
       <Setter Property="Padding" Value="20" />
     </Style>
     <Style Selector="DataGrid">
+      <Setter Property="CanUserResizeColumns" Value="True" />
+      <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />

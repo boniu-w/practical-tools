@@ -27,7 +27,6 @@ public partial class DuplicateScanPage : UserControl
         ExtensionTags.ItemsSource = _selectedExtensions;
         foreach (var extension in ".txt .pdf .doc .docx .xls .xlsx .ppt .pptx .csv .jpg .jpeg .png .gif .webp .mp3 .wav .mp4 .mkv .zip .rar .7z".Split(' '))
             GetExtensionOption(extension);
-        Results.AddHandler(PointerPressedEvent, FitColumnOnDoubleClick, RoutingStrategies.Tunnel);
         Results.LayoutUpdated += FillPathColumn;
         ConfigureRemovalMode();
         DetachedFromVisualTree += (_, _) => _cancellation?.Cancel();
@@ -106,30 +105,6 @@ public partial class DuplicateScanPage : UserControl
         if (Math.Abs(pathColumn.MinWidth - minWidth) > 0.01)
             pathColumn.MinWidth = minWidth;
     }
-    private void FitColumnOnDoubleClick(object? sender, PointerPressedEventArgs e)
-    {
-        if (e.ClickCount != 2 || !e.GetCurrentPoint(Results).Properties.IsLeftButtonPressed ||
-            e.Source is not Avalonia.Visual source) return;
-
-        var header = source as DataGridColumnHeader ?? source.FindAncestorOfType<DataGridColumnHeader>();
-        if (header == null) return;
-
-        var column = Results.Columns.FirstOrDefault(c => Equals(c.Header, header.Content));
-        if (column == null) return;
-
-        const double edgeWidth = 5;
-        var x = e.GetPosition(header).X;
-        if (x <= edgeWidth)
-            column = Results.Columns.Where(c => c.IsVisible && c.DisplayIndex < column.DisplayIndex)
-                .MaxBy(c => c.DisplayIndex);
-        else if (header.Bounds.Width - x > edgeWidth)
-            return;
-
-        if (column == null) return;
-        column.Width = DataGridLength.Auto;
-        e.Handled = true;
-    }
-
     /// <summary>注入查重扫描器和可选的扫描记录存储。</summary>
     /// <param name="scanner">执行扫描与移除的扫描器实现。</param>
     /// <param name="history">扫描记录存储；为 null 时不保存历史。</param>
