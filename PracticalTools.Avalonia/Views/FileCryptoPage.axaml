@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PracticalTools.Desktop.Views.FileCryptoPage">
   <ScrollViewer>
-    <StackPanel x:Name="Form" Margin="32" Spacing="20" MaxWidth="960" HorizontalAlignment="Center">
+    <StackPanel x:Name="Form" Margin="24,32" Spacing="20" HorizontalAlignment="Stretch">
       <StackPanel Spacing="6">
         <TextBlock x:Name="Heading" Classes="pageTitle" />
         <TextBlock Text="使用 GPG 密钥处理单个文件。输出会写入一个新文件，不会覆盖已有内容。" Classes="muted" />

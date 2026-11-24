@@ -33,13 +33,25 @@ public sealed class ToolRecordsPage : UserControl
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
         actions.Children.Add(Button("刷新 / 搜索", "Refresh", ReloadAsync));
         actions.Children.Add(Button(blacklist ? "新建记录" : "添加文件", "Add", blacklist ? () => { NewRecord(); return Task.CompletedTask; } : AddFiles));
-        actions.Children.Add(Button("保存", "Save", Save));
-        actions.Children.Add(Button("删除记录", "Delete", Delete));
-        var editor = new WrapPanel { Orientation = Orientation.Horizontal };
+        var editActions = blacklist
+            ? new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right }
+            : actions;
+        editActions.Children.Add(Button("保存", "Save", Save));
+        editActions.Children.Add(Button("删除记录", "Delete", Delete));
+
+        Panel editor;
+        if (blacklist)
+        {
+            var fields = new Avalonia.Controls.Primitives.UniformGrid { Columns = 2 };
+            fields.SizeChanged += (_, e) => fields.Columns = e.NewSize.Width >= 840 ? 4 : e.NewSize.Width >= 400 ? 2 : 1;
+            editor = fields;
+        }
+        else editor = new WrapPanel();
+
         for (var i = 0; i < _fields.Length; i++)
         {
             var field = _fields[i];
-            field.Width = 220;
+            if (!blacklist) field.Width = 220;
             var label = new TextBlock { Text = names[i] };
             label.Classes.Add("fieldLabel");
             var box = new StackPanel { Spacing = 4, Children = { label, field }, Margin = new Avalonia.Thickness(0, 0, 12, 12) };
@@ -55,8 +67,20 @@ public sealed class ToolRecordsPage : UserControl
         subtitle.Classes.Add("muted");
         var pageHeader = new StackPanel { Spacing = 6, Children = { title, subtitle } };
 
-        _form.Children.Add(_search);
-        _form.Children.Add(actions);
+        if (blacklist)
+        {
+            _search.Watermark = "搜索平台、作者或作品";
+            var toolbar = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), ColumnSpacing = 8 };
+            Grid.SetColumn(actions, 1);
+            toolbar.Children.Add(_search);
+            toolbar.Children.Add(actions);
+            _form.Children.Add(toolbar);
+        }
+        else
+        {
+            _form.Children.Add(_search);
+            _form.Children.Add(actions);
+        }
         var formCard = new Border { Child = _form };
         formCard.Classes.Add("card");
         var emptyTitle = new TextBlock { Text = blacklist ? "还没有黑名单记录" : "还没有文件记录" };
@@ -76,6 +100,7 @@ public sealed class ToolRecordsPage : UserControl
         var editorTitle = new TextBlock { Text = blacklist ? "新建 / 编辑记录" : "编辑类别" };
         editorTitle.Classes.Add("sectionTitle");
         var editorBox = new StackPanel { Spacing = 10, Children = { editorTitle, editor } };
+        if (blacklist) editorBox.Children.Add(editActions);
         var editorCard = new Border { Child = editorBox };
         editorCard.Classes.Add("card");
 
@@ -90,7 +115,12 @@ public sealed class ToolRecordsPage : UserControl
         Grid.SetRow(tableCard, 2);
         Grid.SetRow(editorCard, 3);
         Grid.SetRow(_status, 4);
-        Content = layout;
+        if (blacklist)
+        {
+            _table.Height = 230;
+            Content = new ScrollViewer { Content = layout };
+        }
+        else Content = layout;
         _table.SelectionChanged += (_, _) => Fill();
         AttachedToVisualTree += async (_, _) => await Execute(ReloadAsync);
         NewRecord();
