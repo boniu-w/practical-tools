@@ -284,7 +284,13 @@ public partial class DuplicateScanPage : UserControl
     {
         if (_busy || _history == null) return;
         HistoryButton.IsEnabled = false;
-        try { History.ItemsSource = await _history.RecentAsync(); }
+        try
+        {
+            // 记录以 UTC 保存，显示时转回本地时间；格式固定为 24 小时制，不受系统区域设置影响。
+            var records = await _history.RecentAsync();
+            History.ItemsSource = records.Select(r => new
+                { r.FileName, r.FilePath, ScanTime = r.ScanTime?.ToLocalTime() }).ToList();
+        }
         catch (Exception ex) { UiStatus.Set(Status, $"加载记录失败：{ex.Message}", UiStatusKind.Error); }
         finally { HistoryButton.IsEnabled = !_busy; }
     }

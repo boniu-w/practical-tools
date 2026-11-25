@@ -120,7 +120,8 @@
             <DataGrid.Columns>
               <DataGridTextColumn Header="文件名" Binding="{Binding FileName}" Width="170" />
               <DataGridTextColumn Header="原路径" Binding="{Binding FilePath}" Width="360" />
-              <DataGridTextColumn Header="记录时间" Binding="{Binding ScanTime}" Width="170" />
+              <DataGridTextColumn Header="记录时间" Binding="{Binding ScanTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                  Width="170" />
             </DataGrid.Columns>
           </DataGrid>
         </StackPanel>
