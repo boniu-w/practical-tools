@@ -37,7 +37,29 @@ Avalonia 版
 
 
 
-mac版说明
+### macOS 正式分发（Apple Silicon）
+
+Windows 上照常运行 `scripts/publish-release.ps1`。将产出的 `*-osx-arm64-unsigned.zip` 和仓库里的 `scripts/notarize-macos.sh` 复制到发布用 Mac 的同一目录，在该目录打开终端。签名步骤需要 macOS、Xcode 命令行工具以及 Apple Developer Program 团队的 **Developer ID Application** 证书和对应私钥。
+
+首次配置时，运行以下命令查看可用的签名身份，并按提示将 Apple ID、Team ID 和 App 专用密码存入本机钥匙串。
+
+```bash
+security find-identity -v -p codesigning
+xcrun notarytool store-credentials "PracticalTools-notary"
+```
+
+每次发布时，将下面的证书名替换为上一步列出的完整名称，并使用实际版本的 zip 文件名。
+
+```bash
+export MACOS_SIGN_IDENTITY='Developer ID Application: 你的姓名或组织名 (TEAMID)'
+bash notarize-macos.sh PracticalTools-0.7.0-osx-arm64-unsigned.zip
+```
+
+脚本签名应用和内置原生库，提交 Apple 公证，附加公证票据，再解压成品检查签名、票据和 Gatekeeper。成功后同目录会生成 `PracticalTools-0.7.0-osx-arm64-notarized.zip`，终端会打印该成品的 SHA-256。将这个 zip 发给用户。原始三平台发布清单记录的是签名前的产物。
+
+[Apple 官方签名和公证说明](https://developer.apple.com/developer-id/)
+
+### macOS 未签名测试包
 
 ```
   PracticalTools-0.7.0-osx-arm64-unsigned.zip
@@ -53,11 +75,42 @@ mac版说明
 
 ```
 
+`notarize-macos.sh` 是**发布者在 Mac 上运行的签名和公证脚本**。它接收 Windows 打包生成的 `*-unsigned.zip`，处理成功后，在同一目录生成可以发给用户的 `*-notarized.zip`。
+
+它依次做四件事：
+
+1. 解压，用你的 **Developer ID Application** 证书给应用和内置原生库签名。
+2. 把签名后的应用提交给 Apple 公证，等待审核结果。
+3. 公证通过后，把 Apple 的公证票据附到应用上，重新压成 zip。
+4. 解压最终的 zip，检查签名、公证票据，以及 macOS 的安全检查能否通过。
+
+**你每发布一个 Mac 版本运行一次。** 收到公证版 zip 的用户通常解压后双击就能打开，无需运行脚本或输入 `xattr` 命令。
+
+
+
+我最终需要一个mac电脑
+
+可以。你想要的是：**用户下载 PracticalTools，解压，双击就能用。** 首次打开时，macOS 可能会弹出系统确认框，用户点「打开」即可，无需敲命令或修改安全设置。
+
+要做到这一点，**签名和公证由你在发布前完成**。现在的 `unsigned.zip` 是未签名测试包。你接下来要做的是：
+
+1. **首次准备**：在你的 M4 上配置 Apple 的 **Developer ID Application** 发布证书。如果还没有 Apple Developer Program 会员，需要先加入，或使用你所在团队的会员资格。[Apple 官方说明](https://developer.apple.com/developer-id/)
+2. **每次发布**：你在 M4 上运行项目里的 `notarize-macos.sh`。它负责签名、公证和验证。
+3. **发给用户**：只发脚本成功后生成的 **PracticalTools-0.7.0-osx-arm64-notarized.zip**。用户只需解压并打开应用。
+
+**不用上架 App Store。你当前这份 0.7.0 可以直接用于签名和公证，也不用重新编译。**
+
+**不用买 Mac。** 我前面把用来测试的 M4 当成了你的电脑。你可以继续用 Windows 开发，把签名和公证交给 GitHub Actions 提供的云端 Mac。[GitHub 官方说明](https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications)
+
+对 PracticalTools 来说，只需首次配置好发布流程。之后，**你在 Windows 上点一次发布，云端 Mac 运行 notarize-macos.sh，你把生成的 notarized.zip 发给用户**。用户解压后双击即可，首次打开时可能需要点一下系统的「打开」。
+
+目前项目里已有公证脚本，还需要把它接到 GitHub Actions。你或团队也需要有 **Apple Developer Program 会员资格、Developer ID Application 证书和公证凭据**。云端 Mac 解决了设备问题，发布时仍要用你或团队的开发者身份签名。[Apple 官方说明](https://developer.apple.com/developer-id/)
+
 
 
 linux版说明
 
-```
+```sh
   PracticalTools-0.7.0-linux-x64.tar.gz
   Linux 包是自包含的（linux-x64，x86_64），不需要安装 .NET。整个目录包含原生库，请不要只拷贝可执行文件。
      
